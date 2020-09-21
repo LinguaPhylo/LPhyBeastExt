@@ -1,6 +1,6 @@
 # LPhyBeast
 
-Convert LPhy scripts to BEAST 2 XML 
+Convert [LPhy](http://linguaphylo.github.io/) scripts to [BEAST 2](http://beast2.org/) XML 
 
 ## Examples
 
