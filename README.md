@@ -1,6 +1,6 @@
 # LPhyBeast
 
-Convert [LPhy](http://linguaphylo.github.io/) scripts to [BEAST 2](http://beast2.org/) XML 
+LPhyBEAST is a command-line program that takes an [LPhy](http://linguaphylo.github.io/) model specification, including a data block and produces a [BEAST 2](http://beast2.org/) XML input file. It therefore enables LPHY as an alternative way to succinctly express and communicate BEAST2 analyses.
 
 ## Dependencies
 
