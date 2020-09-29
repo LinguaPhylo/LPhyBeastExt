@@ -1,0 +1,147 @@
+<project default="build" basedir="." name="lphybeast">
+
+    <!-- CONFIGURATION: Source, JUnit test code and jar library locations. -->
+    <!--  <property name="test" location="test"/>-->
+    <property name="lphy" location="../linguaPhylo/"/>
+    <property name="outercore" location="../beast-outercore/"/>
+
+    <!-- Java 11 -->
+    <property name="sourceVersion" value="11"/>
+    <property name="targetVersion" value="11"/>
+    <property name="beastSrcRevision" value="master"/>
+    <!--*******************************************************************-->
+
+    <!-- Names of temporary build/test directories -->
+    <property name="build" location="build"/>
+    <property name="build-test" location="build-test"/>
+    <property name="test-reports" location="test-reports"/>
+    <property name="dist" location="dist"/>
+
+    <property name="lphybeName" value="lphybeast"/>
+    <property name="projName" value="LPhyBEAST"/>
+    <property name="projVersion" value="0.0.1"/>
+
+    <import file="${lphy}/build.xml"/>
+    <import file="${outercore}/build.xml" />
+
+    <path id="classpath">
+        <pathelement path="${lphy}/${build}"/>
+        <fileset dir="${lphy}/lib" includes="*.jar"/>
+        <pathelement path="${outercore}/${build}"/>
+        <fileset dir="${outercore}/lib" includes="*.jar"/>
+        <pathelement path="${classpath}"/>
+        <fileset dir="lib" includes="*.jar"/>
+    </path>
+
+
+    <!-- Prepare for compilation -->
+    <target name="init">
+        <echo message="Java version: ${java.version}"/>
+        <echo message="${ant.project.name}: ${ant.file}"/>
+        <mkdir dir="${build}"/>
+        <mkdir dir="${dist}"/>
+    </target>
+
+    <!-- Compile -->
+    <target name="compile" depends="init">
+        <javac target="${targetVersion}" source="${sourceVersion}" srcdir="src"
+               destdir="${build}" classpathref="classpath" includeantruntime="false">
+        </javac>
+        <echo message="Successfully compiled ${lphybeName}."/>
+    </target>
+
+    <!-- Release -->
+    <property name="pack" value="${dist}/package"/>
+
+    <target name="dist-lphybe" depends="compile">
+        <mkdir dir="${pack}"/>
+        <jar jarfile="${pack}/${lphybeName}.src.jar">
+            <fileset dir="src"/>
+        </jar>
+
+        <!-- lphybeast depends on lphy -->
+        <jar jarfile="${pack}/${lphybeName}.v${projVersion}.jar">
+            <fileset dir="${build}"/>
+            <!-- TODO main in dev -->
+            <manifest>
+                <attribute name="Main-Class" value="lphybeast.LPhyBEAST"/>
+            </manifest>
+            <zipgroupfileset dir="${lphy}/lib" includes="*.jar"/>
+            <zipgroupfileset dir="lib" includes="*.jar"/>
+        </jar>
+    </target>
+
+
+    <target name="dist" depends="build,dist-lphybe">
+        <property name="packageName" value="${projName}.v${projVersion}"/>
+        <mkdir dir="${pack}"/>
+        <copy file="README.md" tofile="${pack}/README"/>
+        <!--
+            <copy file="COPYING" todir="${pack}" />
+            <copy todir="${pack}">
+              <fileset dir="${lib}" includes="LICENSE*" />
+            </copy>
+        -->
+        <mkdir dir="${pack}/examples"/>
+
+        <copy todir="${pack}/examples">
+            <fileset dir="${lphy}/examples" includes="*.lphy"/>
+            <fileset dir="${lphy}/examples" includes="*.nex"/>
+        </copy>
+
+        <zip destfile="${dist}/${packageName}.zip" basedir="${pack}"/>
+
+        <!--    <delete dir="${pack}"/>-->
+
+        <echo/>
+        <echo/>
+        <echo>** Package ${dist}/${packageName}.zip created successfuly! **</echo>
+    </target>
+
+
+    <target name="build" depends="clean, compile"/>
+
+    <!-- Prepare for unit test compilation -->
+    <target name="init-test">
+        <mkdir dir="${build-test}"/>
+        <mkdir dir="${test-reports}"/>
+    </target>
+
+
+    <!-- Compile unit tests -->
+    <target name="compile-test" depends="init-test,compile">
+        <javac target="${targetVersion}" source="${sourceVersion}" srcdir="test"
+               destdir="${build-test}" classpathref="classpath" includeantruntime="false">
+        </javac>
+        <echo message="Successfully compiled ${lphybeName} tests."/>
+    </target>
+
+
+    <!-- Run unit tests -->
+    <target name="test" depends="compile-test">
+        <junit printsummary="yes" failureproperty="testFailed">
+            <classpath refid="classpath"/>
+            <batchtest fork="yes" todir="${test-reports}">
+                <fileset dir="test">
+                    <include name="**/*Test.java"/>
+                </fileset>
+                <formatter type="plain"/>
+            </batchtest>
+        </junit>
+
+        <fail if="testFailed" status="1" message="Unit test of ${lphybeName} failed."/>
+    </target>
+
+    <!-- Revert to pristine state. -->
+    <target name="clean">
+        <delete dir="${build}"/>
+        <delete dir="${dist}"/>
+        <delete dir="${build-test}"/>
+        <delete dir="${test-reports}"/>
+    </target>
+
+    <target name="travis" depends="clean, compile, test">
+        <fail if="testFailed" message="One or more ${lphybeName} tests failed."/>
+    </target>
+
+</project>
