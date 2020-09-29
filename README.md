@@ -11,7 +11,7 @@ LPhyBEAST is a command-line program that takes an [LPhy](http://linguaphylo.gith
 ## Examples
 
 The scripts and data are available in 
-[linguaPhylo/examples](https://github.com/LinguaPhylo/linguaPhylo/examples).
+[linguaPhylo/examples](https://github.com/LinguaPhylo/linguaPhylo/tree/master/examples).
 
 A Kingman coalescent tree generative distribution for serially sampled data imported from _Dengue4.nex_.
 
