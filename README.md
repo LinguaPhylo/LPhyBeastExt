@@ -1,5 +1,8 @@
 # LPhyBeast
 
+[![Build Status](https://travis-ci.org/LinguaPhylo/LPhyBeast.svg?branch=master)](https://travis-ci.org/LinguaPhylo/LPhyBeast)
+
+
 LPhyBEAST is a command-line program that takes an [LPhy](http://linguaphylo.github.io/) model specification, including a data block and produces a [BEAST 2](http://beast2.org/) XML input file. It therefore enables LPHY as an alternative way to succinctly express and communicate BEAST2 analyses.
 
 ## Dependencies
