@@ -26,10 +26,11 @@ public class Exclusion {
     }
 
     public static boolean isExcludedGenerator(Generator generator) {
+
         return ((generator instanceof NTaxaFunction) || (generator instanceof NCharFunction) ||
-                (generator instanceof TaxaFunction) ||
+                (generator instanceof TaxaFunction) || (generator instanceof Species) ||
                 (generator instanceof Nexus) || (generator instanceof TaxaAgesFromFunction) ||
-                (generator instanceof ARange) ||
+                (generator instanceof ARange) || (generator instanceof CreateTaxa) ||
                 (generator instanceof Range) || (generator instanceof Partition) );
     }
 }
