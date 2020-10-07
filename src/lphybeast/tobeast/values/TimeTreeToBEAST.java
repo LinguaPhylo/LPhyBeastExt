@@ -36,7 +36,7 @@ public class TimeTreeToBEAST implements ValueToBEAST<TimeTree, TreeParser> {
         taxa.initAndValidate();
         tree.setInputValue("taxonset", taxa);
 
-        if (!timeTreeValue.value().isUlrametric()) {
+        if (!timeTreeValue.value().isUltrametric()) {
 
             TraitSet traitSet = new TraitSet();
             traitSet.setInputValue("traitname", TraitSet.AGE_TRAIT);
