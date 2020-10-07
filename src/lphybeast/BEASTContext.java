@@ -19,6 +19,7 @@ import lphy.core.distributions.Dirichlet;
 import lphy.core.distributions.RandomComposition;
 import lphy.evolution.alignment.CharSetAlignment;
 import lphy.graphicalModel.*;
+import lphy.parser.ParserUtils;
 import lphybeast.tobeast.generators.*;
 import lphybeast.tobeast.values.*;
 import org.xml.sax.SAXException;
@@ -670,6 +671,15 @@ public class BEASTContext {
         }
     }
 
+    /**
+     * @param id
+     * @return the taxon with this id.
+     */
+    public Taxon getTaxon(String id) {
+        addTaxon(id);
+        return allTaxa.get(id);
+    }
+
     public List<Taxon> createTaxonList(List<String> ids) {
         List<Taxon> taxonList = new ArrayList<>();
         for (String id : ids) {
@@ -685,10 +695,11 @@ public class BEASTContext {
     }
 
     public void putBEASTObject(GraphicalModelNode node, BEASTInterface beastInterface) {
-        beastObjects.put(node, beastInterface);
+        addToContext(node,beastInterface);
     }
 
     public void addExtraLogger(Loggable loggable) {
         extraLoggables.add(loggable);
     }
+
 }
