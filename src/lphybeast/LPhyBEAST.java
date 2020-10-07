@@ -52,7 +52,7 @@ public class LPhyBEAST implements Callable<Integer> {
 
         //*** Parse LPhy file ***//
         LPhyParser parser = new REPL();
-        source(reader, parser);
+        parser.source(reader);
 
         // If dataExchanger is null, then using simulated alignment
         BEASTContext context = new BEASTContext(parser);
@@ -80,31 +80,31 @@ public class LPhyBEAST implements Callable<Integer> {
         return 0;
     }
 
-    private static void source(BufferedReader reader, LPhyParser parser)
-            throws IOException {
-        LPhyParser.Context mode = null;
-
-        String line = reader.readLine();
-        while (line != null) {
-            String s = line.replaceAll("\\s+","");
-            if (s.isEmpty()) {
-                // skip empty lines
-            } else if (s.startsWith("data{"))
-                mode = LPhyParser.Context.data;
-            else if (s.startsWith("model{"))
-                mode = LPhyParser.Context.model;
-            else if (s.startsWith("}"))
-                mode = null; // reset
-            else {
-                if (mode == null)
-                    throw new IllegalArgumentException("Please use data{} to define data and " +
-                            "model{} to define models !\n" + line);
-
-                parser.parse(line, mode);
-            }
-            line = reader.readLine();
-        }
-        reader.close();
-    }
+//    private static void source(BufferedReader reader, LPhyParser parser)
+//            throws IOException {
+//        LPhyParser.Context mode = null;
+//
+//        String line = reader.readLine();
+//        while (line != null) {
+//            String s = line.replaceAll("\\s+","");
+//            if (s.isEmpty()) {
+//                // skip empty lines
+//            } else if (s.startsWith("data{"))
+//                mode = LPhyParser.Context.data;
+//            else if (s.startsWith("model{"))
+//                mode = LPhyParser.Context.model;
+//            else if (s.startsWith("}"))
+//                mode = null; // reset
+//            else {
+//                if (mode == null)
+//                    throw new IllegalArgumentException("Please use data{} to define data and " +
+//                            "model{} to define models !\n" + line);
+//
+//                parser.parse(line, mode);
+//            }
+//            line = reader.readLine();
+//        }
+//        reader.close();
+//    }
 
 }
