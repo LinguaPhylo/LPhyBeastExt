@@ -10,6 +10,7 @@ import lphy.evolution.tree.TimeTree;
 import lphybeast.BEASTContext;
 import lphybeast.GeneratorToBEAST;
 import starbeast2.GeneTree;
+import starbeast2.PopulationModel;
 import starbeast2.SpeciesTree;
 
 import java.util.ArrayList;
@@ -40,9 +41,13 @@ public class MultispeciesCoalescentToStarBEAST2 implements
         context.removeBEASTObject(vanillaSpeciesTree);
         context.putBEASTObject(generator.getSpeciesTree(), speciesTree);
 
-        starbeast2.ConstantPopulations populationModel = new starbeast2.ConstantPopulations();
-        populationModel.setInputValue("speciesTree", speciesTree);
-        populationModel.setInputValue("populationSizes", context.getBEASTObject(generator.getPopulationSizes()));
+        starbeast2.ConstantPopulations constantPopulations = new starbeast2.ConstantPopulations();
+        constantPopulations.setInputValue("speciesTree", speciesTree);
+        constantPopulations.setInputValue("populationSizes", context.getBEASTObject(generator.getPopulationSizes()));
+        constantPopulations.initAndValidate();
+
+        starbeast2.PassthroughModel populationModel = new starbeast2.PassthroughModel();
+        populationModel.setInputValue("childModel", constantPopulations);
         populationModel.initAndValidate();
 
         starbeast2.GeneTree starbeast2GeneTree = new starbeast2.GeneTree();
@@ -57,9 +62,27 @@ public class MultispeciesCoalescentToStarBEAST2 implements
         List<Tree> geneTrees = asList(geneTree);
         List<GeneTree> geneTreeDists = asList(starbeast2GeneTree);
 
+        starbeast2.StarBeastInitializer starBeastInitializer = createStarBEASTInitializer(speciesTree, geneTrees, populationModel);
+        starBeastInitializer.setID("SBI");
+
+        context.addInit(starBeastInitializer);
+
         addOperators(starBeastTaxonSet, speciesTree, geneTrees, geneTreeDists, context);
 
         return starbeast;
+    }
+
+    private starbeast2.StarBeastInitializer createStarBEASTInitializer(SpeciesTree tree, List<Tree> geneTree, PopulationModel populationModel) {
+
+        starbeast2.StarBeastInitializer starBeastInitializer = new starbeast2.StarBeastInitializer();
+        starBeastInitializer.setInputValue("speciesTree", tree);
+        starBeastInitializer.setInputValue("geneTree", geneTree);
+        starBeastInitializer.setInputValue("estimate", false);
+        starBeastInitializer.setInputValue("populationModel", populationModel);
+        starBeastInitializer.initAndValidate();
+
+        return starBeastInitializer;
+
     }
 
     private void addOperators(starbeast2.StarBeastTaxonSet starBeastTaxonSet, SpeciesTree tree, List<Tree> geneTree, List<GeneTree> geneTreeDists, BEASTContext context) {
@@ -88,14 +111,14 @@ public class MultispeciesCoalescentToStarBEAST2 implements
 
         context.addExtraOperator(coordinatedUniform);
 
-        starbeast2.CoordinatedExponential coordinatedExponential = new starbeast2.CoordinatedExponential();
-        coordinatedExponential.setInputValue("speciesTree", tree);
-        coordinatedExponential.setInputValue("geneTree", geneTree);
-        coordinatedExponential.setInputValue("weight", BEASTContext.getOperatorWeight(totalNodeCount));
-        coordinatedExponential.initAndValidate();
-        coordinatedExponential.setID(tree.getID()+".coordinatedExponential");
-
-        context.addExtraOperator(coordinatedExponential);
+//        starbeast2.CoordinatedExponential coordinatedExponential = new starbeast2.CoordinatedExponential();
+//        coordinatedExponential.setInputValue("speciesTree", tree);
+//        coordinatedExponential.setInputValue("geneTree", geneTree);
+//        coordinatedExponential.setInputValue("weight", BEASTContext.getOperatorWeight(totalNodeCount));
+//        coordinatedExponential.initAndValidate();
+//        coordinatedExponential.setID(tree.getID()+".coordinatedExponential");
+//
+//        context.addExtraOperator(coordinatedExponential);
     }
 
     /**

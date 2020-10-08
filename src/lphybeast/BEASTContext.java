@@ -23,6 +23,7 @@ import lphy.parser.ParserUtils;
 import lphybeast.tobeast.generators.*;
 import lphybeast.tobeast.values.*;
 import org.xml.sax.SAXException;
+import starbeast2.StarBeastInitializer;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
@@ -34,6 +35,7 @@ public class BEASTContext {
     List<StateNode> state = new ArrayList<>();
 
     Set<BEASTInterface> elements = new HashSet<>();
+    List<StateNodeInitialiser> inits = new ArrayList<>();
 
     // a map of graphical model nodes to equivalent BEASTInterface objects
     private Map<GraphicalModelNode<?>, BEASTInterface> beastObjects = new HashMap<>();
@@ -626,6 +628,8 @@ public class BEASTContext {
         // TODO make sure the stateNode list is being correctly populated
         mcmc.setInputValue("state", state);
 
+        if (inits.size() > 0) mcmc.setInputValue("init", inits);
+
         mcmc.initAndValidate();
         return mcmc;
     }
@@ -702,4 +706,7 @@ public class BEASTContext {
         extraLoggables.add(loggable);
     }
 
+    public void addInit(StateNodeInitialiser beastInitializer) {
+        inits.add(beastInitializer);
+    }
 }
