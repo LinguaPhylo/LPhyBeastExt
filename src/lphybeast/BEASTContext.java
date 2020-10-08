@@ -19,11 +19,9 @@ import lphy.core.distributions.Dirichlet;
 import lphy.core.distributions.RandomComposition;
 import lphy.evolution.alignment.CharSetAlignment;
 import lphy.graphicalModel.*;
-import lphy.parser.ParserUtils;
 import lphybeast.tobeast.generators.*;
 import lphybeast.tobeast.values.*;
 import org.xml.sax.SAXException;
-import starbeast2.StarBeastInitializer;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
