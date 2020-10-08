@@ -14,7 +14,6 @@ import starbeast2.PopulationModel;
 import starbeast2.SpeciesTree;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static java.util.Arrays.*;
@@ -46,14 +45,15 @@ public class MultispeciesCoalescentToStarBEAST2 implements
         constantPopulations.setInputValue("populationSizes", context.getBEASTObject(generator.getPopulationSizes()));
         constantPopulations.initAndValidate();
 
-        starbeast2.PassthroughModel populationModel = new starbeast2.PassthroughModel();
-        populationModel.setInputValue("childModel", constantPopulations);
-        populationModel.initAndValidate();
+// PASSTHROUGH MODEL ONLY NEEDED FOR BEAUTI WORKAROUND
+//        starbeast2.PassthroughModel populationModel = new starbeast2.PassthroughModel();
+//        populationModel.setInputValue("childModel", constantPopulations);
+//        populationModel.initAndValidate();
 
         starbeast2.GeneTree starbeast2GeneTree = new starbeast2.GeneTree();
         starbeast2GeneTree.setInputValue("speciesTree", speciesTree);
         starbeast2GeneTree.setInputValue("tree", geneTree);
-        starbeast2GeneTree.setInputValue("populationModel", populationModel);
+        starbeast2GeneTree.setInputValue("populationModel", constantPopulations);
         starbeast2GeneTree.initAndValidate();
 
         starbeast.setInputValue("distribution", starbeast2GeneTree);
@@ -62,7 +62,7 @@ public class MultispeciesCoalescentToStarBEAST2 implements
         List<Tree> geneTrees = asList(geneTree);
         List<GeneTree> geneTreeDists = asList(starbeast2GeneTree);
 
-        starbeast2.StarBeastInitializer starBeastInitializer = createStarBEASTInitializer(speciesTree, geneTrees, populationModel);
+        starbeast2.StarBeastInitializer starBeastInitializer = createStarBEASTInitializer(speciesTree, geneTrees, constantPopulations);
         starBeastInitializer.setID("SBI");
 
         context.addInit(starBeastInitializer);
