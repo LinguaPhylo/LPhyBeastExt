@@ -10,6 +10,7 @@ import beast.core.util.CompoundDistribution;
 import beast.evolution.alignment.Taxon;
 import beast.evolution.operators.*;
 import beast.evolution.substitutionmodel.Frequencies;
+import beast.evolution.substitutionmodel.LewisMK;
 import beast.evolution.tree.Tree;
 import beast.math.distributions.ParametricDistribution;
 import beast.math.distributions.Prior;
@@ -96,6 +97,7 @@ public class BEASTContext {
                 HKYToBEAST.class,
                 JukesCantorToBEAST.class,
                 K80ToBEAST.class,
+                LewisMK.class,
                 LocalBranchRatesToBEAST.class,
                 LogNormalMultiToBEAST.class,
                 LogNormalToBEAST.class,
