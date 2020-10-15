@@ -18,7 +18,6 @@ import beast.util.XMLProducer;
 import lphy.core.LPhyParser;
 import lphy.core.distributions.Dirichlet;
 import lphy.core.distributions.RandomComposition;
-import lphy.evolution.alignment.CharSetAlignment;
 import lphy.graphicalModel.*;
 import lphybeast.tobeast.generators.*;
 import lphybeast.tobeast.values.*;
@@ -66,6 +65,7 @@ public class BEASTContext {
                 MapValueToBEAST.class,
                 DoubleValueToBEAST.class,
                 DoubleArrayValueToBEAST.class,
+                NumberArrayValueToBEAST.class,
                 DoubleArray2DValueToBEAST.class,
                 IntegerValueToBEAST.class,
                 IntegerArrayValueToBEAST.class,
@@ -92,12 +92,15 @@ public class BEASTContext {
                 DirichletToBEAST.class,
                 ExpToBEAST.class,
                 F81ToBEAST.class,
+                FossilBirthDeathTreeToBEAST.class,
                 GammaToBEAST.class,
                 GTRToBEAST.class,
                 HKYToBEAST.class,
+                InverseGammaToBEAST.class,
+                InverseGammaMultiToBEAST.class,
                 JukesCantorToBEAST.class,
                 K80ToBEAST.class,
-                LewisMK.class,
+                LewisMKToBeast.class,
                 LocalBranchRatesToBEAST.class,
                 LogNormalMultiToBEAST.class,
                 LogNormalToBEAST.class,
@@ -112,6 +115,7 @@ public class BEASTContext {
                 StructuredCoalescentToMascot.class,
                 TreeLengthToBEAST.class,
                 TN93ToBEAST.class,
+                UniformToBEAST.class,
                 YuleToBEAST.class,
                 ExpMarkovChainToBEAST.class
         };
@@ -285,8 +289,8 @@ public class BEASTContext {
             for (Class c : valueToBEASTMap.keySet()) {
                 if (c.isAssignableFrom(val.value().getClass())) {
                     toBEAST = valueToBEASTMap.get(c);
-                    if (! (val.value() instanceof CharSetAlignment))
-                        beastValue = toBEAST.valueToBEAST(val, this);
+//                    if (! (val.value() instanceof CharSetAlignment))
+//                        beastValue = toBEAST.valueToBEAST(val, this);
                 }
             }
         }

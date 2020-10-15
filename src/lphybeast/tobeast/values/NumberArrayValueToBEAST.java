@@ -8,27 +8,23 @@ import lphybeast.BEASTContext;
 import lphybeast.ValueToBEAST;
 import outercore.parameter.KeyRealParameter;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class DoubleArrayValueToBEAST implements ValueToBEAST<Double[], KeyRealParameter> {
+public class NumberArrayValueToBEAST implements ValueToBEAST<Number[], KeyRealParameter> {
 
     @Override
-    public KeyRealParameter valueToBEAST(Value<Double[]> value, BEASTContext context) {
+    public KeyRealParameter valueToBEAST(Value<Number[]> value, BEASTContext context) {
 
         KeyRealParameter parameter = new KeyRealParameter();
-        List<Number> values = Arrays.asList(value.value());
+        List<Double> values = new ArrayList<>();
+        for (int i = 0; i < value.value().length; i++) {
+            values.add(value.value()[i].doubleValue());
+        }
         parameter.setInputValue("value", values);
         parameter.setInputValue("dimension", values.size());
-
-        // check domain
-        if (value.getGenerator() instanceof Dirichlet) {
-            parameter.setInputValue("lower", 0.0);
-            parameter.setInputValue("upper", 1.0);
-        } else if (value.getGenerator() instanceof LogNormalMulti) {
-            parameter.setInputValue("lower", 0.0);
-        }
-
+        
         parameter.initAndValidate();
         ValueToParameter.setID(parameter, value);
         return parameter;
@@ -36,7 +32,7 @@ public class DoubleArrayValueToBEAST implements ValueToBEAST<Double[], KeyRealPa
 
     @Override
     public Class getValueClass() {
-        return Double[].class;
+        return Number[].class;
     }
 
     @Override

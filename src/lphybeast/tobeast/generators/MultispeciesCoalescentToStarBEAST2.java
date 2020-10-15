@@ -31,7 +31,6 @@ public class MultispeciesCoalescentToStarBEAST2 implements
                 generator.getSpeciesTree().value().getTaxa(),
                 ((TimeTree) context.getGraphicalModelNode(geneTree).value()).getTaxa(), context);
 
-
         Tree vanillaSpeciesTree =  (Tree) context.getBEASTObject(generator.getSpeciesTree());
 
         SpeciesTree speciesTree = convertToStarBEASTSpeciesTree(vanillaSpeciesTree, starBeastTaxonSet);
@@ -144,13 +143,14 @@ public class MultispeciesCoalescentToStarBEAST2 implements
                     Taxon geneTaxon = context.getTaxon(taxon.getName());
                     geneTaxonList.add(geneTaxon);
                     System.out.println("  taxon " + taxon.getName());
-
                 }
             }
-            spTaxonSet.setInputValue("taxon", geneTaxonList);
-            spTaxonSet.initAndValidate();
-            spTaxonSet.setID(speciesId);
-            spTaxonSets.add(spTaxonSet);
+            if (geneTaxonList.size() > 0) {
+                spTaxonSet.setInputValue("taxon", geneTaxonList);
+                spTaxonSet.initAndValidate();
+                spTaxonSet.setID(speciesId);
+                spTaxonSets.add(spTaxonSet);
+            }
         }
 
         sbtaxonSuperSet.setInputValue("taxon", spTaxonSets);

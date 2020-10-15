@@ -31,10 +31,10 @@ public class AlignmentToBEAST implements ValueToBEAST<SimpleAlignment, beast.evo
         }
 
         beastAlignment = new beast.evolution.alignment.Alignment();
-        // e.g. "nucleotide", "binary" // TODO: check if match BEAST 2 data type?
-        // TODO I don't like methods called "guess". We don't guess in science. The type must be *known* not "guessed".
 
-        beastAlignment.setInputValue("dataType", Utils.guessDataType(sequenceType).getTypeDescription());
+        alignment.getDataTypeDescription();
+
+        beastAlignment.setInputValue("dataType", alignment.getDataTypeDescription());
         beastAlignment.setInputValue("sequence", sequences);
         beastAlignment.initAndValidate();
 

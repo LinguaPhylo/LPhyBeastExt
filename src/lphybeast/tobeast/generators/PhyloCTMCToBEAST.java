@@ -32,8 +32,8 @@ public class PhyloCTMCToBEAST implements GeneratorToBEAST<PhyloCTMC, TreeLikelih
         treeLikelihood.setInputValue("data", alignment);
 
         Tree tree = (Tree) context.getBEASTObject(phyloCTMC.getTree());
-        tree.setInputValue("taxa", value);
-        tree.initAndValidate();
+        //tree.setInputValue("taxa", value);
+        //tree.initAndValidate();
 
         treeLikelihood.setInputValue("tree", tree);
 
