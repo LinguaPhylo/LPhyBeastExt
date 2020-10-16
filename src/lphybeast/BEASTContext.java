@@ -283,12 +283,13 @@ public class BEASTContext {
         ValueToBEAST toBEAST = valueToBEASTMap.get(val.value().getClass());
 
         if (toBEAST != null) {
+            // if *ToBEAST has not been initiated
             beastValue = toBEAST.valueToBEAST(val, this);
         } else {
             for (Class c : valueToBEASTMap.keySet()) {
+                // if *ToBEAST exists
                 if (c.isAssignableFrom(val.value().getClass())) {
                     toBEAST = valueToBEASTMap.get(c);
-                    //
                     beastValue = toBEAST.valueToBEAST(val, this);
                 }
             }
