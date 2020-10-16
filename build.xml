@@ -24,7 +24,7 @@
     <import file="${lphy}/build.xml"/>
     <import file="${outercore}/build.xml" />
 
-    <path id="classpath">
+    <path id="dependency">
         <pathelement path="${lphy}/${build}"/>
         <fileset dir="${lphy}/lib" includes="*.jar"/>
         <pathelement path="${outercore}/${build}"/>
@@ -45,9 +45,14 @@
     <!-- Compile -->
     <target name="compile" depends="init">
         <javac target="${targetVersion}" source="${sourceVersion}" srcdir="src"
-               destdir="${build}" classpathref="classpath" includeantruntime="false">
+               destdir="${build}" includeantruntime="false">
+            <classpath>
+                <path refid="dependency"/>
+                <pathelement path="${classpath}"/>
+                <fileset dir="lib" includes="*.jar"/>
+            </classpath>
         </javac>
-        <echo message="Successfully compiled ${lphybeName}."/>
+        <echo message="Successfully compiled ${lphybeName}." />
     </target>
 
     <!-- Release -->
@@ -111,7 +116,12 @@
     <!-- Compile unit tests -->
     <target name="compile-test" depends="init-test,compile">
         <javac target="${targetVersion}" source="${sourceVersion}" srcdir="test"
-               destdir="${build-test}" classpathref="classpath" includeantruntime="false">
+               destdir="${build-test}" includeantruntime="false">
+            <classpath>
+                <path refid="dependency"/>
+                <pathelement path="${classpath}"/>
+                <fileset dir="lib" includes="*.jar"/>
+            </classpath>
         </javac>
         <echo message="Successfully compiled ${lphybeName} tests."/>
     </target>
@@ -120,7 +130,11 @@
     <!-- Run unit tests -->
     <target name="test" depends="compile-test">
         <junit printsummary="yes" failureproperty="testFailed">
-            <classpath refid="classpath"/>
+            <classpath>
+                <path refid="dependency"/>
+                <pathelement path="${classpath}"/>
+                <fileset dir="lib" includes="*.jar"/>
+            </classpath>
             <batchtest fork="yes" todir="${test-reports}">
                 <fileset dir="test">
                     <include name="**/*Test.java"/>

@@ -12,13 +12,7 @@ FROM openjdk:11
 # Install Apache Ant
 RUN apt-get update && apt-get install -y ant
 
-# Install and configure VNC server
-RUN apt-get update && apt-get install -y tightvncserver twm
-ENV DISPLAY :0
 ENV USER root
-RUN mkdir /root/.vnc
-RUN echo password | vncpasswd -f > /root/.vnc/passwd
-RUN chmod 600 /root/.vnc/passwd
 
 # Install LPhy
 RUN cd /root && git clone https://github.com/LinguaPhylo/linguaPhylo.git
@@ -34,4 +28,4 @@ WORKDIR /root/LPhyBEAST
 
 ADD . ./
 
-CMD vncserver $DISPLAY -geometry 1920x1080; ant travis
+CMD ant travis
