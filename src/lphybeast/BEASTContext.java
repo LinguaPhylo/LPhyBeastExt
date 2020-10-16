@@ -17,6 +17,7 @@ import beast.util.XMLProducer;
 import lphy.core.LPhyParser;
 import lphy.core.distributions.Dirichlet;
 import lphy.core.distributions.RandomComposition;
+import lphy.evolution.alignment.Alignment;
 import lphy.graphicalModel.*;
 import lphybeast.tobeast.generators.*;
 import lphybeast.tobeast.values.*;
@@ -712,5 +713,15 @@ public class BEASTContext {
 
     public void addInit(StateNodeInitialiser beastInitializer) {
         inits.add(beastInitializer);
+    }
+
+    public List<Value<lphy.evolution.alignment.Alignment>> getAlignments() {
+        ArrayList<Value<lphy.evolution.alignment.Alignment>> alignments = new ArrayList<>();
+        for (GraphicalModelNode node : beastObjects.keySet()) {
+            if (node instanceof Value && node.value() instanceof lphy.evolution.alignment.Alignment) {
+                alignments.add((Value<lphy.evolution.alignment.Alignment>)node);
+            }
+        }
+        return alignments;
     }
 }
