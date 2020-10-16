@@ -1,14 +1,10 @@
 package lphybeast.tobeast.values;
 
 import beast.core.parameter.RealParameter;
-import beast.evolution.alignment.Sequence;
-import jebl.evolution.sequences.SequenceType;
 import lphy.evolution.alignment.ContinuousCharacterData;
-import lphy.evolution.alignment.SimpleAlignment;
 import lphy.graphicalModel.Value;
 import lphybeast.BEASTContext;
 import lphybeast.ValueToBEAST;
-import lphybeast.tobeast.Utils;
 
 import java.util.ArrayList;
 import java.util.Arrays;

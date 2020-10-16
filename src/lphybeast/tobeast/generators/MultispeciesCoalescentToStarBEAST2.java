@@ -38,7 +38,7 @@ public class MultispeciesCoalescentToStarBEAST2 implements
 
         Tree vanillaSpeciesTree =  (Tree) context.getBEASTObject(generator.getSpeciesTree());
 
-        TraitSet traitSet = createTraitSet(generator.getSpeciesTree().value(), starBeastTaxonSet, context);
+        TraitSet traitSet = createTraitSet(generator.getSpeciesTree().value(), starBeastTaxonSet);
 
         SpeciesTree speciesTree = convertToStarBEASTSpeciesTree(vanillaSpeciesTree, traitSet, starBeastTaxonSet);
         speciesTree.setID(vanillaSpeciesTree.getID());
@@ -134,6 +134,19 @@ public class MultispeciesCoalescentToStarBEAST2 implements
      */
     private starbeast2.StarBeastTaxonSet createStarBeastTaxonSet(Taxa speciesTaxa, Taxa geneTaxa, BEASTContext context) {
 
+        List<String> speciesTaxaNames = Arrays.asList(speciesTaxa.getTaxaNames());
+
+        List<Value<Alignment>> alignments = context.getAlignments();
+
+        Value<lphy.evolution.alignment.Alignment> a = null;
+        for (Value<lphy.evolution.alignment.Alignment> candidate : alignments) {
+            List<String> taxaNames = Arrays.asList(candidate.value().getTaxa().getTaxaNames());
+            if (taxaNames.containsAll(speciesTaxaNames)) {
+                a = candidate;
+                break;
+            }
+        }
+
         // This is the mapping from gene tree taxa to species tree taxa
         starbeast2.StarBeastTaxonSet sbtaxonSuperSet = new starbeast2.StarBeastTaxonSet();
         List<Taxon> spTaxonSets = new ArrayList<>();
@@ -161,6 +174,9 @@ public class MultispeciesCoalescentToStarBEAST2 implements
         }
 
         sbtaxonSuperSet.setInputValue("taxon", spTaxonSets);
+        if (a != null) {
+            sbtaxonSuperSet.setInputValue("alignment", context.getBEASTObject(a));
+        }
         sbtaxonSuperSet.initAndValidate();
         return sbtaxonSuperSet;
     }
@@ -187,20 +203,7 @@ public class MultispeciesCoalescentToStarBEAST2 implements
         return speciesTree;
     }
 
-    private TraitSet createTraitSet(TimeTree tree, TaxonSet taxonSuperSet, BEASTContext context) {
-
-        List<String> treeTaxaNames = Arrays.asList(tree.getTaxa().getTaxaNames());
-
-        List<Value<Alignment>> alignments = context.getAlignments();
-
-        Value<lphy.evolution.alignment.Alignment> a = null;
-        for (Value<lphy.evolution.alignment.Alignment> candidate : alignments) {
-            List<String> taxaNames = Arrays.asList(candidate.value().getTaxa().getTaxaNames());
-            if (taxaNames.containsAll(treeTaxaNames)) {
-                a = candidate;
-                break;
-            }
-        }
+    private TraitSet createTraitSet(TimeTree tree, TaxonSet taxonSuperSet) {
 
         StringBuilder builder = new StringBuilder();
         lphy.evolution.Taxon[] taxonArray = tree.getTaxa().getTaxonArray();
@@ -221,9 +224,6 @@ public class MultispeciesCoalescentToStarBEAST2 implements
         traitSet.setInputValue("traitname", "date-backward");
         traitSet.setInputValue("value", traitValueString);
         traitSet.setInputValue("taxa", taxonSuperSet);
-        if (a != null) {
-            traitSet.setInputValue("alignment", context.getBEASTObject(a));
-        }
         traitSet.initAndValidate();
 
         return traitSet;

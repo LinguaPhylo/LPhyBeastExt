@@ -192,7 +192,11 @@ public class BEASTContext {
         Set<Value<?>> sinks = parser.getModelSinks();
 
         for (Value<?> value : sinks) {
-            createBEASTObjects(value);
+            createBEASTObjects(value, true, false);
+        }
+
+        for (Value<?> value : sinks) {
+            createBEASTObjects(value, false, true);
         }
     }
 
@@ -224,10 +228,9 @@ public class BEASTContext {
         return null;
     }
 
-    private void createBEASTObjects(Value<?> value) {
+    private void createBEASTObjects(Value<?> value, boolean createValues, boolean createGenerators) {
 
-        if (beastObjects.get(value) == null) {
-
+        if (beastObjects.get(value) == null && createValues) {
             valueToBEAST(value);
         }
 
@@ -236,10 +239,10 @@ public class BEASTContext {
 
             for (Object inputObject : generator.getParams().values()) {
                 Value<?> input = (Value<?>) inputObject;
-                createBEASTObjects(input);
+                createBEASTObjects(input, createValues, createGenerators);
             }
 
-            generatorToBEAST(value, generator);
+            if (createGenerators) generatorToBEAST(value, generator);
         }
     }
 

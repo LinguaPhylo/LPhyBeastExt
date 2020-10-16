@@ -1,15 +1,11 @@
 package lphybeast.tobeast.values;
 
-import beast.core.parameter.RealParameter;
-import lphy.core.distributions.Dirichlet;
-import lphy.core.distributions.LogNormalMulti;
 import lphy.graphicalModel.Value;
 import lphybeast.BEASTContext;
 import lphybeast.ValueToBEAST;
 import outercore.parameter.KeyRealParameter;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class NumberArrayValueToBEAST implements ValueToBEAST<Number[], KeyRealParameter> {
