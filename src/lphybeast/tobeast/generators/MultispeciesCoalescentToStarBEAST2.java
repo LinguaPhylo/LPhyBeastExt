@@ -6,8 +6,10 @@ import beast.evolution.alignment.TaxonSet;
 import beast.evolution.tree.TraitSet;
 import beast.evolution.tree.Tree;
 import lphy.evolution.Taxa;
+import lphy.evolution.alignment.Alignment;
 import lphy.evolution.coalescent.MultispeciesCoalescent;
 import lphy.evolution.tree.TimeTree;
+import lphy.graphicalModel.Value;
 import lphybeast.BEASTContext;
 import lphybeast.GeneratorToBEAST;
 import starbeast2.GeneTree;
@@ -15,6 +17,8 @@ import starbeast2.PopulationModel;
 import starbeast2.SpeciesTree;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static java.util.Arrays.*;
@@ -34,7 +38,7 @@ public class MultispeciesCoalescentToStarBEAST2 implements
 
         Tree vanillaSpeciesTree =  (Tree) context.getBEASTObject(generator.getSpeciesTree());
 
-        TraitSet traitSet = createTraitSet(generator.getSpeciesTree().value(), starBeastTaxonSet);
+        TraitSet traitSet = createTraitSet(generator.getSpeciesTree().value(), starBeastTaxonSet, context);
 
         SpeciesTree speciesTree = convertToStarBEASTSpeciesTree(vanillaSpeciesTree, traitSet, starBeastTaxonSet);
         speciesTree.setID(vanillaSpeciesTree.getID());
@@ -183,7 +187,20 @@ public class MultispeciesCoalescentToStarBEAST2 implements
         return speciesTree;
     }
 
-    private TraitSet createTraitSet(TimeTree tree, TaxonSet taxonSuperSet) {
+    private TraitSet createTraitSet(TimeTree tree, TaxonSet taxonSuperSet, BEASTContext context) {
+
+        List<String> treeTaxaNames = Arrays.asList(tree.getTaxa().getTaxaNames());
+
+        List<Value<Alignment>> alignments = context.getAlignments();
+
+        Value<lphy.evolution.alignment.Alignment> a = null;
+        for (Value<lphy.evolution.alignment.Alignment> candidate : alignments) {
+            List<String> taxaNames = Arrays.asList(candidate.value().getTaxa().getTaxaNames());
+            if (taxaNames.containsAll(treeTaxaNames)) {
+                a = candidate;
+                break;
+            }
+        }
 
         StringBuilder builder = new StringBuilder();
         lphy.evolution.Taxon[] taxonArray = tree.getTaxa().getTaxonArray();
@@ -195,7 +212,7 @@ public class MultispeciesCoalescentToStarBEAST2 implements
             builder.append(",\n");
             builder.append(taxonArray[i].getName());
             builder.append("=");
-            builder.append(taxonArray[0].getAge());
+            builder.append(taxonArray[i].getAge());
         }
         builder.append("\n");
         String traitValueString = builder.toString();
@@ -204,6 +221,9 @@ public class MultispeciesCoalescentToStarBEAST2 implements
         traitSet.setInputValue("traitname", "date-backward");
         traitSet.setInputValue("value", traitValueString);
         traitSet.setInputValue("taxa", taxonSuperSet);
+        if (a != null) {
+            traitSet.setInputValue("alignment", context.getBEASTObject(a));
+        }
         traitSet.initAndValidate();
 
         return traitSet;
