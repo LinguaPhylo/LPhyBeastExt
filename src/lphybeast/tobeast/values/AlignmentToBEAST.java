@@ -1,12 +1,10 @@
 package lphybeast.tobeast.values;
 
 import beast.evolution.alignment.Sequence;
-import jebl.evolution.sequences.SequenceType;
 import lphy.evolution.alignment.SimpleAlignment;
 import lphy.graphicalModel.Value;
 import lphybeast.BEASTContext;
 import lphybeast.ValueToBEAST;
-import lphybeast.tobeast.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +15,7 @@ public class AlignmentToBEAST implements ValueToBEAST<SimpleAlignment, beast.evo
     public beast.evolution.alignment.Alignment valueToBEAST(Value<SimpleAlignment> alignmentValue, BEASTContext context) {
 
         SimpleAlignment alignment = alignmentValue.value();
-        SequenceType sequenceType = alignment.getSequenceType();
+//        SequenceType sequenceType = alignment.getSequenceType();// binary has no datatype
         String[] taxaNames = alignment.getTaxaNames();
         beast.evolution.alignment.Alignment beastAlignment;
 
@@ -32,9 +30,11 @@ public class AlignmentToBEAST implements ValueToBEAST<SimpleAlignment, beast.evo
 
         beastAlignment = new beast.evolution.alignment.Alignment();
 
-        alignment.getDataTypeDescription();
+        String datatype = alignment.getSequenceTypeStr();
+        if (datatype.equalsIgnoreCase("unknown"))
+            throw new IllegalArgumentException("Invalid data type " + datatype);
 
-        beastAlignment.setInputValue("dataType", alignment.getDataTypeDescription());
+        beastAlignment.setInputValue("dataType", datatype);
         beastAlignment.setInputValue("sequence", sequences);
         beastAlignment.initAndValidate();
 

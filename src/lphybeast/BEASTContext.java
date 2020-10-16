@@ -1,7 +1,7 @@
 package lphybeast;
 
-import beast.core.*;
 import beast.core.Loggable;
+import beast.core.*;
 import beast.core.parameter.BooleanParameter;
 import beast.core.parameter.IntegerParameter;
 import beast.core.parameter.Parameter;
@@ -10,7 +10,6 @@ import beast.core.util.CompoundDistribution;
 import beast.evolution.alignment.Taxon;
 import beast.evolution.operators.*;
 import beast.evolution.substitutionmodel.Frequencies;
-import beast.evolution.substitutionmodel.LewisMK;
 import beast.evolution.tree.Tree;
 import beast.math.distributions.ParametricDistribution;
 import beast.math.distributions.Prior;
@@ -62,7 +61,7 @@ public class BEASTContext {
         final Class[] valuesToBEASTs = {
                 AlignmentToBEAST.class, // simulated alignment
                 TimeTreeToBEAST.class,
-                MapValueToBEAST.class,
+//                MapValueToBEAST.class,
                 DoubleValueToBEAST.class,
                 DoubleArrayValueToBEAST.class,
                 NumberArrayValueToBEAST.class,
@@ -289,16 +288,16 @@ public class BEASTContext {
             for (Class c : valueToBEASTMap.keySet()) {
                 if (c.isAssignableFrom(val.value().getClass())) {
                     toBEAST = valueToBEASTMap.get(c);
-//                    if (! (val.value() instanceof CharSetAlignment))
-//                        beastValue = toBEAST.valueToBEAST(val, this);
+                    //
+                    beastValue = toBEAST.valueToBEAST(val, this);
                 }
             }
         }
         if (beastValue == null) {
             // ignore all String: d = nexus(file="Dengue4.nex");
             if (! Exclusion.isExcludedValue(val) )
-                 throw new UnsupportedOperationException("Unhandled value in valueToBEAST(): " +
-                    val + " of type " + val.value().getClass());
+                 throw new UnsupportedOperationException("Unhandled value in valueToBEAST(): \"" +
+                    val + "\" of type " + val.value().getClass());
         } else {
             addToContext(val, beastValue);
         }
