@@ -3,6 +3,7 @@ package lphybeast.tobeast.generators;
 import beast.core.BEASTInterface;
 import beast.evolution.alignment.Taxon;
 import beast.evolution.alignment.TaxonSet;
+import beast.evolution.tree.TraitSet;
 import beast.evolution.tree.Tree;
 import lphy.evolution.Taxa;
 import lphy.evolution.coalescent.MultispeciesCoalescent;
@@ -33,7 +34,9 @@ public class MultispeciesCoalescentToStarBEAST2 implements
 
         Tree vanillaSpeciesTree =  (Tree) context.getBEASTObject(generator.getSpeciesTree());
 
-        SpeciesTree speciesTree = convertToStarBEASTSpeciesTree(vanillaSpeciesTree, starBeastTaxonSet);
+        TraitSet traitSet = createTraitSet(generator.getSpeciesTree().value(), starBeastTaxonSet);
+
+        SpeciesTree speciesTree = convertToStarBEASTSpeciesTree(vanillaSpeciesTree, traitSet, starBeastTaxonSet);
         speciesTree.setID(vanillaSpeciesTree.getID());
         // replace species tree in context with newly converted tree so that tree operators are attached to the correct tree.
         context.removeBEASTObject(vanillaSpeciesTree);
@@ -164,7 +167,7 @@ public class MultispeciesCoalescentToStarBEAST2 implements
      * @param tree
      * @return
      */
-    private starbeast2.SpeciesTree convertToStarBEASTSpeciesTree(Tree tree, TaxonSet taxonSet) {
+    private starbeast2.SpeciesTree convertToStarBEASTSpeciesTree(Tree tree, TraitSet traitSet, TaxonSet taxonSet) {
 
         tree.m_taxonset.set(taxonSet);
 
@@ -173,11 +176,37 @@ public class MultispeciesCoalescentToStarBEAST2 implements
 
         SpeciesTree speciesTree = new SpeciesTree();
         //speciesTree.setInputValue("initial", tree);
+        speciesTree.setInputValue("trait", traitSet);
         speciesTree.setInputValue("taxonset", taxonSet);
         speciesTree.initAndValidate();
 
-
         return speciesTree;
+    }
+
+    private TraitSet createTraitSet(TimeTree tree, TaxonSet taxonSuperSet) {
+
+        StringBuilder builder = new StringBuilder();
+        lphy.evolution.Taxon[] taxonArray = tree.getTaxa().getTaxonArray();
+        builder.append(taxonArray[0].getName());
+        builder.append("=");
+        builder.append(taxonArray[0].getAge());
+
+        for (int i = 1; i < taxonArray.length; i++) {
+            builder.append(",\n");
+            builder.append(taxonArray[i].getName());
+            builder.append("=");
+            builder.append(taxonArray[0].getAge());
+        }
+        builder.append("\n");
+        String traitValueString = builder.toString();
+
+        TraitSet traitSet = new TraitSet();
+        traitSet.setInputValue("traitname", "date-backward");
+        traitSet.setInputValue("value", traitValueString);
+        traitSet.setInputValue("taxa", taxonSuperSet);
+        traitSet.initAndValidate();
+
+        return traitSet;
     }
 
     @Override
