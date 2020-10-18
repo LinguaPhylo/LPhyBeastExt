@@ -1,36 +1,44 @@
 <project default="build" basedir="." name="lphybeast">
 
-    <!-- CONFIGURATION: Source, JUnit test code and jar library locations. -->
-    <!--  <property name="test" location="test"/>-->
-    <property name="lphy" location="../linguaPhylo/"/>
-    <property name="outercore" location="../beast-outercore/"/>
-
     <!-- Java 11 -->
     <property name="sourceVersion" value="11"/>
     <property name="targetVersion" value="11"/>
-    <property name="beastSrcRevision" value="master"/>
+
     <!--*******************************************************************-->
 
-    <!-- Names of temporary build/test directories -->
-    <property name="build" location="build"/>
-    <property name="build-test" location="build-test"/>
-    <property name="test-reports" location="test-reports"/>
-    <property name="dist" location="dist"/>
+    <!-- Ant build fails if the repo dir isn't named linguaPhylo -->
+    <property name="repoName" value="LPhyBeast"/>
+    <!-- source code dir separated from test   -->
+    <property name="src" location="../${repoName}/src" />
+    <!-- source code dir of test   -->
+    <property name="lib" location="../${repoName}/lib" />
+    <property name="test" location="../${repoName}/test" />
+    <!-- Names of temporary build/test directories, which are deleted before build -->
+    <property name="build" location="../${repoName}/build" />
+    <property name="dist" location="../${repoName}/dist" />
+    <property name="build-test" location="../${repoName}/build-test"/>
+    <property name="test-reports" location="../${repoName}/test-reports"/>
 
-    <property name="lphybeName" value="lphybeast"/>
     <property name="projName" value="LPhyBEAST"/>
     <property name="projVersion" value="0.0.1"/>
+
+    <!--*******************************************************************-->
+
+    <property name="lphy" location="../linguaPhylo/"/>
+    <property name="outercore" location="../beast-outercore/"/>
 
     <import file="${lphy}/build.xml"/>
     <import file="${outercore}/build.xml" />
 
-    <path id="dependency">
-        <pathelement path="${lphy}/${build}"/>
+    <!--*******************************************************************-->
+
+    <path id="lphybe-clspath">
+        <pathelement path="${lphy}/build"/>
         <fileset dir="${lphy}/lib" includes="*.jar"/>
-        <pathelement path="${outercore}/${build}"/>
+        <pathelement path="${outercore}/build"/>
         <fileset dir="${outercore}/lib" includes="*.jar"/>
         <pathelement path="${classpath}"/>
-        <fileset dir="lib" includes="*.jar"/>
+        <fileset dir="${lib}" includes="*.jar"/>
     </path>
 
 
@@ -38,21 +46,27 @@
     <target name="init">
         <echo message="Java version: ${java.version}"/>
         <echo message="${ant.project.name}: ${ant.file}"/>
+        <echo message="Working dir is ${repoName}." />
+
         <mkdir dir="${build}"/>
         <mkdir dir="${dist}"/>
+
+        <echo message="build ${lphy}/build.xml"/>
+        <!-- avoid to overwrite ${repoName} -->
+        <ant antfile="${lphy}/build.xml" target="build" inheritAll="false"/>
+        <echo message="build ${outercore}/build.xml"/>
+        <ant antfile="${outercore}/build.xml" target="build" inheritAll="false"/>
     </target>
 
     <!-- Compile -->
     <target name="compile" depends="init">
-        <javac target="${targetVersion}" source="${sourceVersion}" srcdir="src"
-               destdir="${build}" includeantruntime="false">
-            <classpath>
-                <path refid="dependency"/>
-                <pathelement path="${classpath}"/>
-                <fileset dir="lib" includes="*.jar"/>
-            </classpath>
+<!--        <pathconvert property="classpathproperty" refid="lphybe-path"/>-->
+<!--        <echo>${repoName} classpath is ${classpathproperty}</echo>-->
+
+        <javac target="${targetVersion}" source="${sourceVersion}" srcdir="src" destdir="${build}"
+               classpathref="lphybe-clspath" includeantruntime="false">
         </javac>
-        <echo message="Successfully compiled ${lphybeName}." />
+        <echo message="Successfully compiled ${projName}." />
     </target>
 
     <!-- Release -->
@@ -60,19 +74,19 @@
 
     <target name="dist-lphybe" depends="compile">
         <mkdir dir="${pack}"/>
-        <jar jarfile="${pack}/${lphybeName}.src.jar">
+        <jar jarfile="${pack}/${projName}.src.jar">
             <fileset dir="src"/>
         </jar>
 
         <!-- lphybeast depends on lphy -->
-        <jar jarfile="${pack}/${lphybeName}.v${projVersion}.jar">
+        <jar jarfile="${pack}/${projName}.v${projVersion}.jar">
             <fileset dir="${build}"/>
             <!-- TODO main in dev -->
             <manifest>
                 <attribute name="Main-Class" value="lphybeast.LPhyBEAST"/>
             </manifest>
             <zipgroupfileset dir="${lphy}/lib" includes="*.jar"/>
-            <zipgroupfileset dir="lib" includes="*.jar"/>
+            <zipgroupfileset dir="${lib}" includes="*.jar"/>
         </jar>
     </target>
 
@@ -108,6 +122,10 @@
 
     <!-- Prepare for unit test compilation -->
     <target name="init-test">
+        <echo message="Java version: ${java.version}"/>
+        <echo message="${ant.project.name}: ${ant.file}"/>
+        <echo message="Working dir is ${repoName}." />
+
         <mkdir dir="${build-test}"/>
         <mkdir dir="${test-reports}"/>
     </target>
@@ -115,15 +133,10 @@
 
     <!-- Compile unit tests -->
     <target name="compile-test" depends="init-test,compile">
-        <javac target="${targetVersion}" source="${sourceVersion}" srcdir="test"
-               destdir="${build-test}" includeantruntime="false">
-            <classpath>
-                <path refid="dependency"/>
-                <pathelement path="${classpath}"/>
-                <fileset dir="lib" includes="*.jar"/>
-            </classpath>
+        <javac target="${targetVersion}" source="${sourceVersion}" srcdir="test" destdir="${build-test}"
+               classpathref="lphybe-clspath"  includeantruntime="false">
         </javac>
-        <echo message="Successfully compiled ${lphybeName} tests."/>
+        <echo message="Successfully compiled ${projName} tests."/>
     </target>
 
 
@@ -131,9 +144,8 @@
     <target name="test" depends="compile-test">
         <junit printsummary="yes" failureproperty="testFailed">
             <classpath>
-                <path refid="dependency"/>
-                <pathelement path="${classpath}"/>
-                <fileset dir="lib" includes="*.jar"/>
+                <path refid="lphybe-clspath"/>
+                <pathelement path="${build-test}"/>
             </classpath>
             <batchtest fork="yes" todir="${test-reports}">
                 <fileset dir="test">
@@ -143,7 +155,7 @@
             </batchtest>
         </junit>
 
-        <fail if="testFailed" status="1" message="Unit test of ${lphybeName} failed."/>
+        <fail if="testFailed" status="1" message="Unit test of ${projName} failed."/>
     </target>
 
     <!-- Revert to pristine state. -->
@@ -155,7 +167,7 @@
     </target>
 
     <target name="travis" depends="clean, compile, test">
-        <fail if="testFailed" message="One or more ${lphybeName} tests failed."/>
+        <fail if="testFailed" message="One or more ${projName} tests failed."/>
     </target>
 
 </project>
