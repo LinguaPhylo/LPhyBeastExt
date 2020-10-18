@@ -80,6 +80,8 @@ public class PhyloCTMCToBEAST implements GeneratorToBEAST<PhyloCTMC, TreeLikelih
         } else {
             SubstitutionModel substitutionModel = (SubstitutionModel) context.getBEASTObject(qGenerator);
 
+            if (substitutionModel == null) throw new IllegalArgumentException("Substitution Model was null!");
+
             SiteModel siteModel = new SiteModel();
             siteModel.setInputValue("substModel", substitutionModel);
             siteModel.initAndValidate();

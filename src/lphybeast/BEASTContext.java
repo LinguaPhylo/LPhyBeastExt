@@ -192,11 +192,15 @@ public class BEASTContext {
         Set<Value<?>> sinks = parser.getModelSinks();
 
         for (Value<?> value : sinks) {
-            createBEASTObjects(value, true, false);
+            createBEASTObjects(value, true, false, false);
         }
 
         for (Value<?> value : sinks) {
-            createBEASTObjects(value, false, true);
+            createBEASTObjects(value, false, true, false);
+        }
+
+        for (Value<?> value : sinks) {
+            createBEASTObjects(value, false, false, true);
         }
     }
 
@@ -228,7 +232,7 @@ public class BEASTContext {
         return null;
     }
 
-    private void createBEASTObjects(Value<?> value, boolean createValues, boolean createGenerators) {
+    private void createBEASTObjects(Value<?> value, boolean createValues, boolean modifyValues, boolean createGenerators) {
 
         if (beastObjects.get(value) == null && createValues) {
             valueToBEAST(value);
@@ -239,10 +243,10 @@ public class BEASTContext {
 
             for (Object inputObject : generator.getParams().values()) {
                 Value<?> input = (Value<?>) inputObject;
-                createBEASTObjects(input, createValues, createGenerators);
+                createBEASTObjects(input, createValues, modifyValues, createGenerators);
             }
 
-            if (createGenerators) generatorToBEAST(value, generator);
+            generatorToBEAST(value, generator, modifyValues, createGenerators);
         }
     }
 
@@ -253,7 +257,7 @@ public class BEASTContext {
      * @param value
      * @param generator
      */
-    private void generatorToBEAST(Value value, Generator generator) {
+    private void generatorToBEAST(Value value, Generator generator, boolean modifyValues, boolean createGenerators) {
 
         if (getBEASTObject(generator) == null) {
 
@@ -268,14 +272,21 @@ public class BEASTContext {
                     beastValue = getBEASTObject(getClampedValue(value.getId()));
                 }
 
-                beastGenerator = toBEAST.generatorToBEAST(generator, beastValue, this);
+                if (modifyValues) {
+                    toBEAST.modifyBEASTValues(generator, beastValue, this);
+                }
+                if (createGenerators) {
+                    beastGenerator = toBEAST.generatorToBEAST(generator, beastValue, this);
+                }
             }
 
-            if (beastGenerator == null) {
-                if ( ! Exclusion.isExcludedGenerator(generator) )
-                   throw new UnsupportedOperationException("Unhandled generator in generatorToBEAST(): " + generator);
-            } else {
-                addToContext(generator, beastGenerator);
+            if (createGenerators) {
+                if (beastGenerator == null) {
+                    if (!Exclusion.isExcludedGenerator(generator))
+                        throw new UnsupportedOperationException("Unhandled generator in generatorToBEAST(): " + generator);
+                } else {
+                    addToContext(generator, beastGenerator);
+                }
             }
         }
     }

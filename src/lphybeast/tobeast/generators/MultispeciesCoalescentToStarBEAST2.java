@@ -15,6 +15,7 @@ import lphybeast.GeneratorToBEAST;
 import starbeast2.GeneTree;
 import starbeast2.PopulationModel;
 import starbeast2.SpeciesTree;
+import starbeast2.StarBeastTaxonSet;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,19 +33,8 @@ public class MultispeciesCoalescentToStarBEAST2 implements
 
         Tree geneTree = (Tree) value;
 
-        starbeast2.StarBeastTaxonSet starBeastTaxonSet = createStarBeastTaxonSet(
-                generator.getSpeciesTree().value().getTaxa(),
-                ((TimeTree) context.getGraphicalModelNode(geneTree).value()).getTaxa(), context);
-
-        Tree vanillaSpeciesTree =  (Tree) context.getBEASTObject(generator.getSpeciesTree());
-
-        TraitSet traitSet = createTraitSet(generator.getSpeciesTree().value(), starBeastTaxonSet);
-
-        SpeciesTree speciesTree = convertToStarBEASTSpeciesTree(vanillaSpeciesTree, traitSet, starBeastTaxonSet);
-        speciesTree.setID(vanillaSpeciesTree.getID());
-        // replace species tree in context with newly converted tree so that tree operators are attached to the correct tree.
-        context.removeBEASTObject(vanillaSpeciesTree);
-        context.putBEASTObject(generator.getSpeciesTree(), speciesTree);
+        SpeciesTree speciesTree = (SpeciesTree)context.getBEASTObject(generator.getSpeciesTree());
+        StarBeastTaxonSet starBeastTaxonSet = (StarBeastTaxonSet)speciesTree.getTaxonset();
 
         starbeast2.ConstantPopulations constantPopulations = new starbeast2.ConstantPopulations();
         constantPopulations.setInputValue("speciesTree", speciesTree);
@@ -76,6 +66,22 @@ public class MultispeciesCoalescentToStarBEAST2 implements
         addOperators(starBeastTaxonSet, speciesTree, geneTrees, geneTreeDists, context);
 
         return starbeast;
+    }
+
+    public void modifyBEASTValues(MultispeciesCoalescent generator, BEASTInterface value, BEASTContext context) {
+        Tree geneTree = (Tree) value;
+        Tree vanillaSpeciesTree =  (Tree) context.getBEASTObject(generator.getSpeciesTree());
+        starbeast2.StarBeastTaxonSet starBeastTaxonSet = createStarBeastTaxonSet(
+                generator.getSpeciesTree().value().getTaxa(),
+                ((TimeTree) context.getGraphicalModelNode(geneTree).value()).getTaxa(), context);
+
+        TraitSet traitSet = createTraitSet(generator.getSpeciesTree().value(), starBeastTaxonSet);
+
+        SpeciesTree speciesTree = convertToStarBEASTSpeciesTree(vanillaSpeciesTree, traitSet, starBeastTaxonSet);
+        speciesTree.setID(vanillaSpeciesTree.getID());
+        // replace species tree in context with newly converted tree so that tree operators are attached to the correct tree.
+        context.removeBEASTObject(vanillaSpeciesTree);
+        context.putBEASTObject(generator.getSpeciesTree(), speciesTree);
     }
 
     private starbeast2.StarBeastInitializer createStarBEASTInitializer(SpeciesTree tree, List<Tree> geneTree, PopulationModel populationModel) {
