@@ -17,7 +17,6 @@ import beast.util.XMLProducer;
 import lphy.core.LPhyParser;
 import lphy.core.distributions.Dirichlet;
 import lphy.core.distributions.RandomComposition;
-import lphy.evolution.alignment.Alignment;
 import lphy.graphicalModel.*;
 import lphybeast.tobeast.generators.*;
 import lphybeast.tobeast.values.*;
@@ -104,7 +103,6 @@ public class BEASTContext {
                 LocalBranchRatesToBEAST.class,
                 LogNormalMultiToBEAST.class,
                 LogNormalToBEAST.class,
-                //MultispeciesCoalescentToBEAST.class,
                 MultispeciesCoalescentToStarBEAST2.class,
                 NormalMultiToBEAST.class,
                 NormalToBEAST.class,
@@ -134,6 +132,17 @@ public class BEASTContext {
         return beastObjects.get(node);
     }
 
+    public BEASTInterface getBEASTObject(String id) {
+        for (BEASTInterface beastInterface : elements) {
+            if (id.equals(beastInterface.getID())) return beastInterface;
+        }
+
+        for (BEASTInterface beastInterface : beastObjects.values()) {
+            if (id.equals(beastInterface.getID().equals(id))) return beastInterface;
+        }
+        return null;
+    }
+
     public RealParameter getAsRealParameter(Value<Number> value) {
         Parameter param = (Parameter)beastObjects.get(value);
         if (param instanceof RealParameter) return (RealParameter)param;
@@ -151,6 +160,13 @@ public class BEASTContext {
 
     public void addBEASTObject(BEASTInterface newBEASTObject) {
         elements.add(newBEASTObject);
+    }
+
+    public void addStateNode(StateNode stateNode) {
+        if (!state.contains(stateNode)) {
+            elements.add(stateNode);
+            state.add(stateNode);
+        }
     }
 
     public void removeBEASTObject(BEASTInterface beastObject) {
@@ -192,15 +208,17 @@ public class BEASTContext {
         Set<Value<?>> sinks = parser.getModelSinks();
 
         for (Value<?> value : sinks) {
-            createBEASTObjects(value, true, false, false);
+            createBEASTValueObjects(value);
         }
 
+        Set<Generator> visited = new HashSet<>();
         for (Value<?> value : sinks) {
-            createBEASTObjects(value, false, true, false);
+            traverseBEASTGeneratorObjects(value, true, false, visited);
         }
 
+        visited.clear();
         for (Value<?> value : sinks) {
-            createBEASTObjects(value, false, false, true);
+            traverseBEASTGeneratorObjects(value, false, true, visited);
         }
     }
 
@@ -232,9 +250,9 @@ public class BEASTContext {
         return null;
     }
 
-    private void createBEASTObjects(Value<?> value, boolean createValues, boolean modifyValues, boolean createGenerators) {
+    private void createBEASTValueObjects(Value<?> value) {
 
-        if (beastObjects.get(value) == null && createValues) {
+        if (beastObjects.get(value) == null) {
             valueToBEAST(value);
         }
 
@@ -243,10 +261,26 @@ public class BEASTContext {
 
             for (Object inputObject : generator.getParams().values()) {
                 Value<?> input = (Value<?>) inputObject;
-                createBEASTObjects(input, createValues, modifyValues, createGenerators);
+                createBEASTValueObjects(input);
+            }
+        }
+    }
+
+
+    private void traverseBEASTGeneratorObjects(Value<?> value, boolean modifyValues, boolean createGenerators, Set<Generator> visited) {
+
+        Generator<?> generator = value.getGenerator();
+        if (generator != null) {
+
+            for (Object inputObject : generator.getParams().values()) {
+                Value<?> input = (Value<?>) inputObject;
+                traverseBEASTGeneratorObjects(input, modifyValues, createGenerators, visited);
             }
 
-            generatorToBEAST(value, generator, modifyValues, createGenerators);
+            if (!visited.contains(generator)) {
+                generatorToBEAST(value, generator, modifyValues, createGenerators);
+                visited.add(generator);
+            }
         }
     }
 
@@ -502,7 +536,7 @@ public class BEASTContext {
         RandomVariable<?> variable = (RandomVariable<?>) BEASTToLPHYMap.get(parameter);
 
         Operator operator;
-        if (variable.getGenerativeDistribution() instanceof Dirichlet) {
+        if (variable != null && variable.getGenerativeDistribution() instanceof Dirichlet) {
             Double[] value = (Double[]) variable.value();
             operator = new DeltaExchangeOperator();
             operator.setInputValue("parameter", parameter);
