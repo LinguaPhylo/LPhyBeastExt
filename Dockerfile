@@ -25,7 +25,6 @@ RUN cd /root/beast-outercore && ant build
 # Ant build fails if the repo dir isn't named LPhyBEAST
 RUN mkdir /root/LPhyBEAST
 WORKDIR /root/LPhyBEAST
-
 ADD . ./
 
 CMD ant travis
