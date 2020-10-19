@@ -47,22 +47,12 @@ public class LPhyBEAST implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception { // business logic goes here...
-
         BufferedReader reader = new BufferedReader(new FileReader(infile.toFile()));
-
-        //*** Parse LPhy file ***//
-        LPhyParser parser = new REPL();
-        parser.source(reader);
-
-        // If dataExchanger is null, then using simulated alignment
-        BEASTContext context = new BEASTContext(parser);
-
-        //*** Write BEAST 2 XML ***//
 //        String wkdir = infile.getParent().toString();
         String fileName = infile.getFileName().toString();
         String fileNameStem = fileName.substring(0, fileName.indexOf("."));
-        // avoid to add dir into fileNameStem passed into XML logger
-        String xml = context.toBEASTXML(fileNameStem);
+
+        String xml = toBEASTXML(reader, fileNameStem);
 
         if (outfile == null) {
             String outPath = infile.toString().substring(0, infile.toString().indexOf(".")) + ".xml";
@@ -78,6 +68,27 @@ public class LPhyBEAST implements Callable<Integer> {
         System.out.println("\nCreate BEAST 2 XML : " +
                 Paths.get(System.getProperty("user.dir"), outfile.toString()));
         return 0;
+    }
+
+
+    /**
+     * Potentially to give LPhy script not only from a file.
+     * @param reader
+     * @param fileNameStem
+     * @return
+     * @throws IOException
+     */
+    public String toBEASTXML(BufferedReader reader, String fileNameStem) throws IOException {
+        //*** Parse LPhy file ***//
+        LPhyParser parser = new REPL();
+        parser.source(reader);
+
+        // If dataExchanger is null, then using simulated alignment
+        BEASTContext context = new BEASTContext(parser);
+
+        //*** Write BEAST 2 XML ***//
+        // avoid to add dir into fileNameStem passed into XML logger
+        return context.toBEASTXML(fileNameStem);
     }
 
 //    private static void source(BufferedReader reader, LPhyParser parser)
