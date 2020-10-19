@@ -84,11 +84,14 @@
         <!-- lphybeast depends on lphy -->
         <jar jarfile="${pack}/${projName}.v${projVersion}.jar">
             <fileset dir="${build}"/>
+            <fileset dir="${outercore}/build"/>
+            <fileset dir="${lphy}/build"/>
             <!-- TODO main in dev -->
             <manifest>
                 <attribute name="Main-Class" value="lphybeast.LPhyBEAST"/>
             </manifest>
             <zipgroupfileset dir="${lphy}/lib" includes="*.jar"/>
+            <zipgroupfileset dir="${outercore}/lib" includes="*.jar"/>
             <zipgroupfileset dir="${lib}" includes="*.jar"/>
         </jar>
     </target>
