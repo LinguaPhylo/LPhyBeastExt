@@ -41,6 +41,7 @@
         <fileset dir="${outercore}/lib" includes="*.jar"/>
         <pathelement path="${classpath}"/>
         <fileset dir="${lib}" includes="*.jar"/>
+        <pathelement path="${build}"/>
     </path>
 
 
