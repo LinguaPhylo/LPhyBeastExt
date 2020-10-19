@@ -42,7 +42,7 @@ public class LPhyToBEASTTest {
 
         String xml = null;
         try {
-            xml = lPhyBEAST.toBEASTXML(reader, "simpleCoal");
+            xml = lPhyBEAST.toBEASTXML(reader, "simpleCoal", -1);
         } catch (IOException e) {
             e.printStackTrace();
         }
