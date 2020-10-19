@@ -58,7 +58,9 @@ public class MultispeciesCoalescentToStarBEAST2 implements
         List<Tree> geneTrees = asList(geneTree);
         List<GeneTree> geneTreeDists = asList(starbeast2GeneTree);
 
-        starbeast2.StarBeastInitializer starBeastInitializer = createStarBEASTInitializer(speciesTree, geneTrees, constantPopulations);
+        Value<TimeTree> timeTreeValue = generator.getSpeciesTree();
+
+        starbeast2.StarBeastInitializer starBeastInitializer = createStarBEASTInitializer(timeTreeValue.value(), speciesTree, geneTrees, constantPopulations);
         starBeastInitializer.setID("SBI");
 
         context.addInit(starBeastInitializer);
@@ -84,11 +86,12 @@ public class MultispeciesCoalescentToStarBEAST2 implements
         context.putBEASTObject(generator.getSpeciesTree(), speciesTree);
     }
 
-    private starbeast2.StarBeastInitializer createStarBEASTInitializer(SpeciesTree tree, List<Tree> geneTree, PopulationModel populationModel) {
+    private starbeast2.StarBeastInitializer createStarBEASTInitializer(TimeTree speciesTree, SpeciesTree tree, List<Tree> geneTree, PopulationModel populationModel) {
 
         starbeast2.StarBeastInitializer starBeastInitializer = new starbeast2.StarBeastInitializer();
         starBeastInitializer.setInputValue("speciesTree", tree);
         starBeastInitializer.setInputValue("geneTree", geneTree);
+        starBeastInitializer.setInputValue("newick", speciesTree.toNewick(false));
         starBeastInitializer.setInputValue("estimate", false);
         starBeastInitializer.setInputValue("populationModel", populationModel);
         starBeastInitializer.initAndValidate();
@@ -158,12 +161,9 @@ public class MultispeciesCoalescentToStarBEAST2 implements
         List<Taxon> spTaxonSets = new ArrayList<>();
         for (String speciesId : speciesTaxa.getTaxaNames()) {
 
-            System.out.println("Species " + speciesId);
-
             TaxonSet spTaxonSet = new TaxonSet();
             List<Taxon> geneTaxonList = new ArrayList<>();
             for (lphy.evolution.Taxon taxon : geneTaxa.getTaxonArray()) {
-                System.out.println("  gene taxon: " + taxon);
 
                 if (taxon.getSpecies().equals(speciesId)) {
                     Taxon geneTaxon = context.getTaxon(taxon.getName());

@@ -59,7 +59,13 @@ public class FossilBirthDeathTreeToBEAST implements
             throw new IllegalArgumentException("Expecting a lphy.evolution.tree.TimeTree with an origin node!");
         }
 
-        RealParameter originParameter = BEASTContext.createRealParameter(originID, timeTree.value().getRoot().getAge());
+        double origin = timeTree.value().getRoot().getAge();
+
+        // hack to ensure that origin is older than the root height for tree initializers like the SBI
+        // TODO remove this when sampled-ancestors have been fixed.
+        origin += timeTree.value().getTaxa().ntaxa();
+
+        RealParameter originParameter = BEASTContext.createRealParameter(originID, origin);
         context.addStateNode(originParameter);
     }
 
