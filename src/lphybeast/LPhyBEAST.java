@@ -2,6 +2,7 @@ package lphybeast;
 
 import lphy.core.LPhyParser;
 import lphy.parser.REPL;
+import lphy.utils.LoggerUtils;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -44,6 +45,9 @@ public class LPhyBEAST implements Callable<Integer> {
     public static void main(String[] args) throws IOException {
 
         int exitCode = new CommandLine(new LPhyBEAST()).execute(args);
+
+        if (exitCode != 0)
+            LoggerUtils.log.severe("LPhyBEAST does not exit normally !");
         System.exit(exitCode);
 
     }
