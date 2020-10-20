@@ -2,6 +2,7 @@ package lphybeast;
 
 import lphy.core.LPhyParser;
 import lphy.parser.REPL;
+import lphy.utils.LoggerUtils;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -44,13 +45,16 @@ public class LPhyBEAST implements Callable<Integer> {
     public static void main(String[] args) throws IOException {
 
         int exitCode = new CommandLine(new LPhyBEAST()).execute(args);
+
+        if (exitCode != 0)
+            LoggerUtils.log.severe("LPhyBEAST does not exit normally !");
         System.exit(exitCode);
 
     }
 
 
     @Override
-    public Integer call() throws Exception { // business logic goes here...
+    public Integer call() throws IOException { // business logic goes here...
         BufferedReader reader = new BufferedReader(new FileReader(infile.toFile()));
 //        String wkdir = infile.getParent().toString();
         String fileName = infile.getFileName().toString();
@@ -91,7 +95,7 @@ public class LPhyBEAST implements Callable<Integer> {
         LPhyParser parser = new REPL();
         parser.source(reader);
 
-        // If dataExchanger is null, then using simulated alignment
+        // register parser
         BEASTContext context = new BEASTContext(parser);
 
         //*** Write BEAST 2 XML ***//
