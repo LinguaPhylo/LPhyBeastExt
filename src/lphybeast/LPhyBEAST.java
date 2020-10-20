@@ -28,6 +28,10 @@ public class LPhyBEAST implements Callable<Integer> {
 
     @Option(names = {"-o", "--out"},     description = "BEAST 2 XML")  Path outfile;
 
+    //MCMC
+    @Option(names = {"-l", "--chainLength"}, defaultValue = "-1", description = "define the total chain length of MCMC")
+    int chainLength;
+
 //    @Option(names = {"-wd", "--workdir"}, description = "Working directory") Path wd;
 //    @Option(names = {"-n", "--nex"},    description = "BEAST 2 partitions defined in Nexus file")
 //    Path nexfile;
@@ -47,22 +51,12 @@ public class LPhyBEAST implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception { // business logic goes here...
-
         BufferedReader reader = new BufferedReader(new FileReader(infile.toFile()));
-
-        //*** Parse LPhy file ***//
-        LPhyParser parser = new REPL();
-        parser.source(reader);
-
-        // If dataExchanger is null, then using simulated alignment
-        BEASTContext context = new BEASTContext(parser);
-
-        //*** Write BEAST 2 XML ***//
 //        String wkdir = infile.getParent().toString();
         String fileName = infile.getFileName().toString();
         String fileNameStem = fileName.substring(0, fileName.indexOf("."));
-        // avoid to add dir into fileNameStem passed into XML logger
-        String xml = context.toBEASTXML(fileNameStem);
+
+        String xml = toBEASTXML(reader, fileNameStem, chainLength);
 
         if (outfile == null) {
             String outPath = infile.toString().substring(0, infile.toString().indexOf(".")) + ".xml";
@@ -78,6 +72,31 @@ public class LPhyBEAST implements Callable<Integer> {
         System.out.println("\nCreate BEAST 2 XML : " +
                 Paths.get(System.getProperty("user.dir"), outfile.toString()));
         return 0;
+    }
+
+
+    /**
+     * Alternative method to give LPhy script (e.g. from String), not only from a file.
+     * @param reader
+     * @param fileNameStem
+     * @param chainLength    if <=0, then use default 1,000,000.
+     *                       logEvery = chainLength / numOfSamples,
+     *                       where numOfSamples = 2000 as default.
+     * @return    BEAST 2 XML
+     * @see BEASTContext#toBEASTXML(String, int)
+     * @throws IOException
+     */
+    public String toBEASTXML(BufferedReader reader, String fileNameStem, int chainLength) throws IOException {
+        //*** Parse LPhy file ***//
+        LPhyParser parser = new REPL();
+        parser.source(reader);
+
+        // If dataExchanger is null, then using simulated alignment
+        BEASTContext context = new BEASTContext(parser);
+
+        //*** Write BEAST 2 XML ***//
+        // avoid to add dir into fileNameStem passed into XML logger
+        return context.toBEASTXML(fileNameStem, chainLength);
     }
 
 //    private static void source(BufferedReader reader, LPhyParser parser)

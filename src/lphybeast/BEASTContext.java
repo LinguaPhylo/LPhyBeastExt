@@ -20,6 +20,7 @@ import lphy.core.distributions.RandomComposition;
 import lphy.core.functions.ElementsAt;
 import lphy.evolution.coalescent.MultispeciesCoalescent;
 import lphy.graphicalModel.*;
+import lphy.utils.LoggerUtils;
 import lphybeast.tobeast.generators.*;
 import lphybeast.tobeast.values.*;
 import org.xml.sax.SAXException;
@@ -726,9 +727,26 @@ public class BEASTContext {
         }
     }
 
-    public String toBEASTXML(String fileNameStem) {
+    /**
+     * Create BEAST 2 XML from LPhy objects.
+     * @param fileNameStem
+     * @param chainLength    if <=0, then use default 1,000,000.
+     *                       logEvery = chainLength / numOfSamples,
+     *                       where numOfSamples = 2000 as default.
+     * @return   BEAST 2 XML in String
+     */
+    public String toBEASTXML(final String fileNameStem, int chainLength) {
 
-        MCMC mcmc = createMCMC(1000000, 1000, fileNameStem);
+        final int numOfSamples = 2000;
+        // default to 1M if not specified
+        if (chainLength <=0)
+            chainLength = 1000000;
+        int logEvery = chainLength / numOfSamples;
+
+        LoggerUtils.log.info("MCMC total chain length = " + chainLength +
+                ", log every = " + logEvery + ", samples = " + numOfSamples);
+
+        MCMC mcmc = createMCMC(chainLength, logEvery, fileNameStem);
 
         String xml = new XMLProducer().toXML(mcmc, elements);
 

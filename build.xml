@@ -9,15 +9,17 @@
     <!-- Ant build fails if the repo dir isn't named linguaPhylo -->
     <property name="repoName" value="LPhyBeast"/>
     <!-- source code dir separated from test   -->
-    <property name="src" location="../${repoName}/src" />
+    <property name="src" location="src" />
     <!-- source code dir of test   -->
-    <property name="lib" location="../${repoName}/lib" />
-    <property name="test" location="../${repoName}/test" />
+    <property name="lib" location="lib" />
+    <property name="test" location="test" />
     <!-- Names of temporary build/test directories, which are deleted before build -->
-    <property name="build" location="../${repoName}/build" />
-    <property name="dist" location="../${repoName}/dist" />
-    <property name="build-test" location="../${repoName}/build-test"/>
-    <property name="test-reports" location="../${repoName}/test-reports"/>
+    <property name="build" location="build" />
+    <property name="dist" location="dist" />
+    <property name="build-test" location="build-test"/>
+    <property name="test-reports" location="test-reports"/>
+    <!-- Note: if build involves calling another build.xml,  -->
+    <!-- these directories cannot use ../${repoName}/ because of Docker -->
 
     <property name="projName" value="LPhyBEAST"/>
     <property name="projVersion" value="0.0.1"/>
@@ -39,6 +41,7 @@
         <fileset dir="${outercore}/lib" includes="*.jar"/>
         <pathelement path="${classpath}"/>
         <fileset dir="${lib}" includes="*.jar"/>
+        <pathelement path="${build}"/>
     </path>
 
 
@@ -60,7 +63,7 @@
 
     <!-- Compile -->
     <target name="compile" depends="init">
-<!--        <pathconvert property="classpathproperty" refid="lphybe-path"/>-->
+<!--        <pathconvert property="classpathproperty" refid="lphybe-clspath"/>-->
 <!--        <echo>${repoName} classpath is ${classpathproperty}</echo>-->
 
         <javac target="${targetVersion}" source="${sourceVersion}" srcdir="src" destdir="${build}"
@@ -81,11 +84,14 @@
         <!-- lphybeast depends on lphy -->
         <jar jarfile="${pack}/${projName}.v${projVersion}.jar">
             <fileset dir="${build}"/>
+            <fileset dir="${outercore}/build"/>
+            <fileset dir="${lphy}/build"/>
             <!-- TODO main in dev -->
             <manifest>
                 <attribute name="Main-Class" value="lphybeast.LPhyBEAST"/>
             </manifest>
             <zipgroupfileset dir="${lphy}/lib" includes="*.jar"/>
+            <zipgroupfileset dir="${outercore}/lib" includes="*.jar"/>
             <zipgroupfileset dir="${lib}" includes="*.jar"/>
         </jar>
     </target>
@@ -133,7 +139,7 @@
 
     <!-- Compile unit tests -->
     <target name="compile-test" depends="init-test,compile">
-        <javac target="${targetVersion}" source="${sourceVersion}" srcdir="test" destdir="${build-test}"
+        <javac target="${targetVersion}" source="${sourceVersion}" srcdir="${test}" destdir="${build-test}"
                classpathref="lphybe-clspath"  includeantruntime="false">
         </javac>
         <echo message="Successfully compiled ${projName} tests."/>
@@ -148,7 +154,7 @@
                 <pathelement path="${build-test}"/>
             </classpath>
             <batchtest fork="yes" todir="${test-reports}">
-                <fileset dir="test">
+                <fileset dir="${test}">
                     <include name="**/*Test.java"/>
                 </fileset>
                 <formatter type="plain"/>
