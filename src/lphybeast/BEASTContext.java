@@ -17,6 +17,8 @@ import beast.util.XMLProducer;
 import lphy.core.LPhyParser;
 import lphy.core.distributions.Dirichlet;
 import lphy.core.distributions.RandomComposition;
+import lphy.core.functions.ElementsAt;
+import lphy.evolution.coalescent.MultispeciesCoalescent;
 import lphy.graphicalModel.*;
 import lphybeast.tobeast.generators.*;
 import lphybeast.tobeast.values.*;
@@ -359,13 +361,28 @@ public class BEASTContext {
         BEASTToLPHYMap.put(beastInterface, node);
         elements.add(beastInterface);
 
-        if (node instanceof RandomVariable) {
-            RandomVariable<?> var = (RandomVariable<?>) node;
+        if (isState(node)) {
+            Value var = (Value) node;
 
-            if (var.getOutputs().size() > 0 && !state.contains(beastInterface)) {
+            if (var.getOutputs().size() > 0 && beastInterface != null && !state.contains(beastInterface)) {
                 state.add((StateNode) beastInterface);
             }
         }
+    }
+
+    public boolean isState(GraphicalModelNode node) {
+        if (node instanceof RandomVariable) return true;
+        if (node instanceof Value) {
+            Value value = (Value)node;
+            if (value.isRandom() && (value.getGenerator() instanceof ElementsAt)) {
+                ElementsAt elementsAt = (ElementsAt)value.getGenerator();
+                if (elementsAt.array() instanceof RandomVariable) {
+                    BEASTInterface beastInterface = getBEASTObject(elementsAt.array());
+                    if (beastInterface == null) return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -771,5 +788,27 @@ public class BEASTContext {
             }
         }
         return alignments;
+    }
+
+    public Value getOutput(Generator generator) {
+
+        final Value[] outputValue = new Value[1];
+        for (Value value : parser.getModelSinks()) {
+
+            Value.traverseGraphicalModel(value, new GraphicalModelNodeVisitor() {
+                @Override
+                public void visitValue(Value value) {
+                    if (value.getGenerator() == generator) {
+                        outputValue[0] = value;
+                    }
+                }
+
+                @Override
+                public void visitGenerator(Generator g) {
+
+                }
+            }, true);
+        }
+        return outputValue[0];
     }
 }

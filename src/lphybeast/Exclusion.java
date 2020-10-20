@@ -3,10 +3,12 @@ package lphybeast;
 import lphy.core.functions.*;
 import lphy.evolution.Taxa;
 import lphy.evolution.alignment.Alignment;
+import lphy.evolution.tree.TimeTree;
 import lphy.graphicalModel.Generator;
 import lphy.graphicalModel.Value;
 import lphy.parser.functions.MapFunction;
 import lphy.parser.functions.MethodCall;
+import lphy.parser.functions.RangeList;
 
 import java.util.HashMap;
 import java.util.TreeMap;
@@ -26,7 +28,7 @@ public class Exclusion {
         return ob instanceof String || ob instanceof String[] || // ignore all String: d = nexus(file="Dengue4.nex");
                 ob instanceof HashMap || ob instanceof TreeMap ||
                 // exclude the value returned by taxa (and ages) functions
-                ( ob instanceof Taxa && !(ob instanceof Alignment) ) ;
+                ( ob instanceof Taxa && !(ob instanceof Alignment) ) || ob instanceof TimeTree[];
     }
 
     public static boolean isExcludedGenerator(Generator generator) {
@@ -36,6 +38,6 @@ public class Exclusion {
                 (generator instanceof Species) || (generator instanceof TaxaAgesFromFunction) ||
                 (generator instanceof ReadNexus) ||
                 (generator instanceof ARange) || (generator instanceof Range) ||
-                (generator instanceof MapFunction) || (generator instanceof MethodCall)  );
+                (generator instanceof MapFunction) || (generator instanceof MethodCall)  || generator instanceof RangeList || generator instanceof ElementsAt);
     }
 }

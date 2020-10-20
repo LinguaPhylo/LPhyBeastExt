@@ -4,9 +4,11 @@ import beast.evolution.alignment.Taxon;
 import beast.evolution.alignment.TaxonSet;
 import beast.evolution.tree.TraitSet;
 import beast.util.TreeParser;
+import lphy.core.functions.ElementsAt;
 import lphy.evolution.alignment.SimpleAlignment;
 import lphy.evolution.tree.TimeTree;
 import lphy.evolution.tree.TimeTreeNode;
+import lphy.graphicalModel.RandomVariable;
 import lphy.graphicalModel.Value;
 import lphybeast.BEASTContext;
 import lphybeast.ValueToBEAST;
@@ -36,7 +38,7 @@ public class TimeTreeToBEAST implements ValueToBEAST<TimeTree, TreeParser> {
         taxa.initAndValidate();
         tree.setInputValue("taxonset", taxa);
 
-        if (!timeTreeValue.value().isUltrametric()) {
+        if (!timeTree.isUltrametric()) {
 
             TraitSet traitSet = new TraitSet();
             traitSet.setInputValue("traitname", TraitSet.AGE_TRAIT);
@@ -49,6 +51,17 @@ public class TimeTreeToBEAST implements ValueToBEAST<TimeTree, TreeParser> {
 
         tree.initAndValidate();
         tree.setRoot(tree.parseNewick(tree.newickInput.get()));
+
+        // if this is an element of a TimeTree[] random variable
+        if (timeTreeValue.isAnonymous() &&
+                timeTreeValue.getGenerator() instanceof ElementsAt &&
+                ((ElementsAt<?>) timeTreeValue.getGenerator()).array() instanceof RandomVariable) {
+
+            ElementsAt elementsAt = (ElementsAt<?>) timeTreeValue.getGenerator();
+
+            tree.setID(elementsAt.array().getCanonicalId() + "." + ((Integer[])elementsAt.index().value())[0]);
+        }
+
         if (!timeTreeValue.isAnonymous()) tree.setID(timeTreeValue.getCanonicalId());
         return tree;
     }

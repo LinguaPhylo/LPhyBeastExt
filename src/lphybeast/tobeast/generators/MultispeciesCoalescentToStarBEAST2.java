@@ -8,6 +8,7 @@ import beast.evolution.tree.Tree;
 import lphy.evolution.Taxa;
 import lphy.evolution.alignment.Alignment;
 import lphy.evolution.coalescent.MultispeciesCoalescent;
+import lphy.evolution.likelihood.PhyloCTMC;
 import lphy.evolution.tree.TimeTree;
 import lphy.graphicalModel.Value;
 import lphybeast.BEASTContext;
@@ -19,7 +20,6 @@ import starbeast2.StarBeastTaxonSet;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import static java.util.Arrays.*;
@@ -31,7 +31,22 @@ public class MultispeciesCoalescentToStarBEAST2 implements
 
         starbeast2.MultispeciesCoalescent starbeast = new starbeast2.MultispeciesCoalescent();
 
-        Tree geneTree = (Tree) value;
+        List<Tree> geneTrees = new ArrayList<>();
+
+        if (value == null) {
+            // multiple tree scenario
+            Value v = context.getOutput(generator);
+            if (v.value() instanceof TimeTree[]) {
+
+                TimeTree[] timeTrees = (TimeTree[])v.value();
+                for (int i = 0; i < timeTrees.length; i++) {
+                    String id = v.getId() + "." + i;
+                    geneTrees.add((Tree)context.getBEASTObject(id));
+                }
+            }
+        } else if (value instanceof Tree) {
+            geneTrees.add((Tree)value);
+        } else throw new IllegalArgumentException();
 
         SpeciesTree speciesTree = (SpeciesTree)context.getBEASTObject(generator.getSpeciesTree());
         StarBeastTaxonSet starBeastTaxonSet = (StarBeastTaxonSet)speciesTree.getTaxonset();
@@ -46,18 +61,21 @@ public class MultispeciesCoalescentToStarBEAST2 implements
 //        populationModel.setInputValue("childModel", constantPopulations);
 //        populationModel.initAndValidate();
 
-        starbeast2.GeneTree starbeast2GeneTree = new starbeast2.GeneTree();
-        starbeast2GeneTree.setInputValue("speciesTree", speciesTree);
-        starbeast2GeneTree.setInputValue("tree", geneTree);
-        starbeast2GeneTree.setInputValue("populationModel", constantPopulations);
-        starbeast2GeneTree.initAndValidate();
+        List<GeneTree> geneTreeDists = new ArrayList<>();
 
-        starbeast.setInputValue("distribution", starbeast2GeneTree);
+        for (Tree geneTree : geneTrees) {
+
+            starbeast2.GeneTree starbeast2GeneTree = new starbeast2.GeneTree();
+            starbeast2GeneTree.setInputValue("speciesTree", speciesTree);
+            starbeast2GeneTree.setInputValue("tree", geneTree);
+            starbeast2GeneTree.setInputValue("populationModel", constantPopulations);
+            starbeast2GeneTree.initAndValidate();
+            geneTreeDists.add(starbeast2GeneTree);
+            starbeast.setInputValue("distribution", starbeast2GeneTree);
+        }
+
         starbeast.initAndValidate();
-
-        List<Tree> geneTrees = asList(geneTree);
-        List<GeneTree> geneTreeDists = asList(starbeast2GeneTree);
-
+        
         Value<TimeTree> timeTreeValue = generator.getSpeciesTree();
 
         starbeast2.StarBeastInitializer starBeastInitializer = createStarBEASTInitializer(timeTreeValue.value(), speciesTree, geneTrees, constantPopulations);
@@ -75,7 +93,7 @@ public class MultispeciesCoalescentToStarBEAST2 implements
         Tree vanillaSpeciesTree =  (Tree) context.getBEASTObject(generator.getSpeciesTree());
         starbeast2.StarBeastTaxonSet starBeastTaxonSet = createStarBeastTaxonSet(
                 generator.getSpeciesTree().value().getTaxa(),
-                ((TimeTree) context.getGraphicalModelNode(geneTree).value()).getTaxa(), context);
+                generator.getGeneTreeTaxa(), context);
 
         TraitSet traitSet = createTraitSet(generator.getSpeciesTree().value(), starBeastTaxonSet);
 
