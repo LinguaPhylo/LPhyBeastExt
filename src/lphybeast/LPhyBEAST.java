@@ -50,7 +50,7 @@ public class LPhyBEAST implements Callable<Integer> {
 
 
     @Override
-    public Integer call() throws Exception { // business logic goes here...
+    public Integer call() throws IOException { // business logic goes here...
         BufferedReader reader = new BufferedReader(new FileReader(infile.toFile()));
 //        String wkdir = infile.getParent().toString();
         String fileName = infile.getFileName().toString();
@@ -91,7 +91,7 @@ public class LPhyBEAST implements Callable<Integer> {
         LPhyParser parser = new REPL();
         parser.source(reader);
 
-        // If dataExchanger is null, then using simulated alignment
+        // register parser
         BEASTContext context = new BEASTContext(parser);
 
         //*** Write BEAST 2 XML ***//
