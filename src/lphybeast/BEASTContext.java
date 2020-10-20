@@ -18,7 +18,6 @@ import lphy.core.LPhyParser;
 import lphy.core.distributions.Dirichlet;
 import lphy.core.distributions.RandomComposition;
 import lphy.core.functions.ElementsAt;
-import lphy.evolution.coalescent.MultispeciesCoalescent;
 import lphy.graphicalModel.*;
 import lphy.utils.LoggerUtils;
 import lphybeast.tobeast.generators.*;
@@ -111,6 +110,7 @@ public class BEASTContext {
                 NormalToBEAST.class,
                 PhyloCTMCToBEAST.class,
                 PoissonToBEAST.class,
+                SliceDoubleArrayToBEAST.class,
                 SkylineToBSP.class,
                 SerialCoalescentToBEAST.class,
                 StructuredCoalescentToMascot.class,

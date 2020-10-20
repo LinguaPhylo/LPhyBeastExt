@@ -56,11 +56,6 @@ public class MultispeciesCoalescentToStarBEAST2 implements
         constantPopulations.setInputValue("populationSizes", context.getBEASTObject(generator.getPopulationSizes()));
         constantPopulations.initAndValidate();
 
-// PASSTHROUGH MODEL ONLY NEEDED FOR BEAUTI WORKAROUND
-//        starbeast2.PassthroughModel populationModel = new starbeast2.PassthroughModel();
-//        populationModel.setInputValue("childModel", constantPopulations);
-//        populationModel.initAndValidate();
-
         List<GeneTree> geneTreeDists = new ArrayList<>();
 
         for (Tree geneTree : geneTrees) {
