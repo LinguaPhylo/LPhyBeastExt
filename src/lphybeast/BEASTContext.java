@@ -30,6 +30,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static java.lang.Math.toIntExact;
+
 public class BEASTContext {
 
     List<StateNode> state = new ArrayList<>();
@@ -775,13 +777,14 @@ public class BEASTContext {
      *                       where numOfSamples = 2000 as default.
      * @return   BEAST 2 XML in String
      */
-    public String toBEASTXML(final String fileNameStem, int chainLength) {
+    public String toBEASTXML(final String fileNameStem, long chainLength) {
 
         final int numOfSamples = 2000;
         // default to 1M if not specified
         if (chainLength <=0)
             chainLength = 1000000;
-        int logEvery = chainLength / numOfSamples;
+        // Will throw an ArithmeticException in case of overflow.
+        int logEvery = toIntExact(chainLength / numOfSamples);
 
         LoggerUtils.log.info("MCMC total chain length = " + chainLength +
                 ", log every = " + logEvery + ", samples = " + numOfSamples);

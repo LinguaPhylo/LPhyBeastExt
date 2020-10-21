@@ -87,10 +87,10 @@ public class LPhyBEAST implements Callable<Integer> {
      *                       logEvery = chainLength / numOfSamples,
      *                       where numOfSamples = 2000 as default.
      * @return    BEAST 2 XML
-     * @see BEASTContext#toBEASTXML(String, int)
+     * @see BEASTContext#toBEASTXML(String, long)
      * @throws IOException
      */
-    public String toBEASTXML(BufferedReader reader, String fileNameStem, int chainLength) throws IOException {
+    public String toBEASTXML(BufferedReader reader, String fileNameStem, long chainLength) throws IOException {
         //*** Parse LPhy file ***//
         LPhyParser parser = new REPL();
         parser.source(reader);
@@ -112,7 +112,7 @@ public class LPhyBEAST implements Callable<Integer> {
      *                       logEvery = chainLength / numOfSamples,
      *                       where numOfSamples = 2000 as default.
      * @return   BEAST 2 XML
-     * @see #toBEASTXML(BufferedReader, String, int)
+     * @see #toBEASTXML(BufferedReader, String, long)
      * @throws IOException
      */
     public String lphyToXML (String lphy, String fileNameStem, int chainLength) throws IOException {
