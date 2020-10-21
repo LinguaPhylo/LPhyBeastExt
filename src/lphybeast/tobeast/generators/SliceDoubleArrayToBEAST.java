@@ -18,7 +18,7 @@ public class SliceDoubleArrayToBEAST implements GeneratorToBEAST<SliceDoubleArra
         Slice feastSlice = new Slice();
         feastSlice.setInputValue("arg", context.getBEASTObject(slice.array()));
         feastSlice.setInputValue("index", start);
-        feastSlice.setInputValue("count", count);
+        if (count != 1) feastSlice.setInputValue("count", count);
         feastSlice.initAndValidate();
         return feastSlice;
     }
