@@ -514,6 +514,9 @@ public class BEASTContext {
     private Operator createTreeScaleOperator(Tree tree) {
         ScaleOperator operator = new ScaleOperator();
         operator.setInputValue("tree", tree);
+        operator.setInputValue("scaleFactor", 0.75);
+        // set the upper of the scale factor
+        operator.setInputValue("upper", 0.975);
         operator.setInputValue("weight", getOperatorWeight(tree.getInternalNodeCount()));
         operator.initAndValidate();
         operator.setID(tree.getID() + "." + "scale");
@@ -526,6 +529,9 @@ public class BEASTContext {
         ScaleOperator operator = new ScaleOperator();
         operator.setInputValue("tree", tree);
         operator.setInputValue("rootOnly", true);
+        operator.setInputValue("scaleFactor", 0.75);
+        // set the upper of the scale factor
+        operator.setInputValue("upper", 0.975);
         operator.setInputValue("weight", getOperatorWeight(1));
         operator.initAndValidate();
         operator.setID(tree.getID() + "." + "rootAgeScale");
