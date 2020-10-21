@@ -103,6 +103,26 @@ public class LPhyBEAST implements Callable<Integer> {
         return context.toBEASTXML(fileNameStem, chainLength);
     }
 
+    /**
+     * parse LPhy script into BEAST 2 XML.
+     * @param lphy           LPhy script with <code>data{}<code/> <code>model{}<code/> blocks,
+     *                       and one line one command.
+     * @param fileNameStem
+     * @param chainLength    if <=0, then use default 1,000,000.
+     *                       logEvery = chainLength / numOfSamples,
+     *                       where numOfSamples = 2000 as default.
+     * @return   BEAST 2 XML
+     * @see #toBEASTXML(BufferedReader, String, int)
+     * @throws IOException
+     */
+    public String lphyToXML (String lphy, String fileNameStem, int chainLength) throws IOException {
+        Reader inputString = new StringReader(lphy);
+        BufferedReader reader = new BufferedReader(inputString);
+
+        return toBEASTXML(reader, fileNameStem, chainLength);
+    }
+
+
 //    private static void source(BufferedReader reader, LPhyParser parser)
 //            throws IOException {
 //        LPhyParser.Context mode = null;
