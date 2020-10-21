@@ -335,9 +335,10 @@ public class BEASTContext {
         ValueToBEAST toBEAST = valueToBEASTMap.get(val.value().getClass());
 
         if (toBEAST != null) {
-            // if *ToBEAST has not been initiated
+            // if *ToBEAST has been initiated the get the beast value
             beastValue = toBEAST.valueToBEAST(val, this);
         } else {
+            // else see if there is a compatible to beast
             for (Class c : valueToBEASTMap.keySet()) {
                 // if *ToBEAST exists
                 if (c.isAssignableFrom(val.value().getClass())) {
@@ -424,6 +425,7 @@ public class BEASTContext {
                 operators.add(createBEASTOperator((BooleanParameter) stateNode));
             } else if (stateNode instanceof Tree) {
                 operators.add(createTreeScaleOperator((Tree) stateNode));
+                operators.add(createRootHeightOperator((Tree) stateNode));
                 operators.add(createExchangeOperator((Tree) stateNode, true));
                 operators.add(createExchangeOperator((Tree) stateNode, false));
                 operators.add(createSubtreeSlideOperator((Tree) stateNode));
@@ -515,6 +517,18 @@ public class BEASTContext {
         operator.setInputValue("weight", getOperatorWeight(tree.getInternalNodeCount()));
         operator.initAndValidate();
         operator.setID(tree.getID() + "." + "scale");
+        elements.add(operator);
+
+        return operator;
+    }
+
+    private Operator createRootHeightOperator(Tree tree) {
+        ScaleOperator operator = new ScaleOperator();
+        operator.setInputValue("tree", tree);
+        operator.setInputValue("rootOnly", true);
+        operator.setInputValue("weight", getOperatorWeight(1));
+        operator.initAndValidate();
+        operator.setID(tree.getID() + "." + "rootAgeScale");
         elements.add(operator);
 
         return operator;
