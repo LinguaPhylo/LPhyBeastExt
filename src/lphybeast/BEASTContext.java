@@ -11,6 +11,7 @@ import beast.evolution.alignment.Taxon;
 import beast.evolution.operators.*;
 import beast.evolution.substitutionmodel.Frequencies;
 import beast.evolution.tree.Tree;
+import beast.evolution.tree.TreeInterface;
 import beast.math.distributions.ParametricDistribution;
 import beast.math.distributions.Prior;
 import beast.util.XMLProducer;
@@ -720,8 +721,22 @@ public class BEASTContext {
 
         if (inits.size() > 0) mcmc.setInputValue("init", inits);
 
+        int preBurnin = getAllStatesSize(this.state) * 5;
+        mcmc.setInputValue("preBurnin", preBurnin);
+
         mcmc.initAndValidate();
         return mcmc;
+    }
+
+    protected int getAllStatesSize(List<StateNode> stateNodes) {
+        int size = 0;
+        for (StateNode stateNode : stateNodes) {
+            if (stateNode instanceof TreeInterface)
+                size += ((TreeInterface) stateNode).getInternalNodeCount();
+            else
+                size += stateNode.getDimension();
+        }
+        return size;
     }
 
     public void clear() {
