@@ -727,7 +727,7 @@ public class BEASTContext {
 
         if (inits.size() > 0) mcmc.setInputValue("init", inits);
 
-        int preBurnin = getAllStatesSize(this.state) * 5;
+        int preBurnin = getAllStatesSize(this.state) * 10;
         mcmc.setInputValue("preBurnin", preBurnin);
 
         mcmc.initAndValidate();
