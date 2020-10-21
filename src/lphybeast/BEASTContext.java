@@ -762,6 +762,10 @@ public class BEASTContext {
         extraOperators.add(operator);
     }
 
+    public boolean hasExtraOperator(String opID) {
+        return extraOperators.stream().anyMatch(op -> op.getID().equals(opID));
+    }
+
     public void addTaxon(String taxonID) {
         if (!allTaxa.containsKey(taxonID)) {
             allTaxa.put(taxonID, new Taxon(taxonID));

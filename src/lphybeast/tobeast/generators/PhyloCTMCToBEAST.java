@@ -4,7 +4,8 @@ import beast.core.BEASTInterface;
 import beast.core.parameter.RealParameter;
 import beast.evolution.branchratemodel.StrictClockModel;
 import beast.evolution.branchratemodel.UCRelaxedClockModel;
-import beast.evolution.likelihood.TreeLikelihood;
+import beast.evolution.likelihood.ThreadedTreeLikelihood;
+import beast.evolution.operators.UpDownOperator;
 import beast.evolution.sitemodel.SiteModel;
 import beast.evolution.substitutionmodel.SubstitutionModel;
 import beast.evolution.tree.Tree;
@@ -16,22 +17,25 @@ import consoperators.SmallPulley;
 import lphy.core.distributions.LogNormalMulti;
 import lphy.evolution.branchrates.LocalBranchRates;
 import lphy.evolution.likelihood.PhyloCTMC;
+import lphy.evolution.tree.TimeTree;
 import lphy.graphicalModel.Generator;
+import lphy.graphicalModel.RandomVariable;
 import lphy.graphicalModel.Value;
 import lphybeast.BEASTContext;
 import lphybeast.GeneratorToBEAST;
 
-public class PhyloCTMCToBEAST implements GeneratorToBEAST<PhyloCTMC, TreeLikelihood> {
+public class PhyloCTMCToBEAST implements GeneratorToBEAST<PhyloCTMC, ThreadedTreeLikelihood> {
 
-    public TreeLikelihood generatorToBEAST(PhyloCTMC phyloCTMC, BEASTInterface value, BEASTContext context) {
+    public ThreadedTreeLikelihood generatorToBEAST(PhyloCTMC phyloCTMC, BEASTInterface value, BEASTContext context) {
 
-        TreeLikelihood treeLikelihood = new TreeLikelihood();
+        ThreadedTreeLikelihood treeLikelihood = new ThreadedTreeLikelihood();
 
         assert value instanceof beast.evolution.alignment.Alignment;
         beast.evolution.alignment.Alignment alignment = (beast.evolution.alignment.Alignment)value;
         treeLikelihood.setInputValue("data", alignment);
 
-        Tree tree = (Tree) context.getBEASTObject(phyloCTMC.getTree());
+        Value<TimeTree> timeTreeValue = phyloCTMC.getTree();
+        Tree tree = (Tree) context.getBEASTObject(timeTreeValue);
         //tree.setInputValue("taxa", value);
         //tree.initAndValidate();
 
@@ -63,15 +67,27 @@ public class PhyloCTMCToBEAST implements GeneratorToBEAST<PhyloCTMC, TreeLikelih
                 throw new RuntimeException("Only localBranchRates and lognormally distributed branchRates currently supported for BEAST2 conversion");
             }
 
+            if (branchRates instanceof RandomVariable && timeTreeValue instanceof RandomVariable) {
+//TODO
+            }
+
         } else {
             StrictClockModel clockModel = new StrictClockModel();
             Value<Double> clockRate = phyloCTMC.getClockRate();
+
+            RealParameter clockRatePara;
             if (clockRate != null) {
-                clockModel.setInputValue("clock.rate", context.getBEASTObject(clockRate));
+                clockRatePara = (RealParameter) context.getBEASTObject(clockRate);
+
             } else {
-                clockModel.setInputValue("clock.rate", BEASTContext.createRealParameter(1.0));
+                clockRatePara =  BEASTContext.createRealParameter(1.0);
             }
+            clockModel.setInputValue("clock.rate", clockRatePara);
             treeLikelihood.setInputValue("branchRateModel", clockModel);
+
+            if (clockRate instanceof RandomVariable && timeTreeValue instanceof RandomVariable) {
+                addUpDownOperator(tree, clockRatePara, context);
+            }
         }
 
         Generator qGenerator = phyloCTMC.getQ().getGenerator();
@@ -136,13 +152,28 @@ public class PhyloCTMCToBEAST implements GeneratorToBEAST<PhyloCTMC, TreeLikelih
         context.addExtraOperator(smallPulley);
     }
 
+    // when both mu and tree are random var
+    private void addUpDownOperator(Tree tree, RealParameter clockRate, BEASTContext context) {
+        String idStr = clockRate.getID() + "Up" + tree.getID() + "DownOperator";
+        // avoid to duplicate updown ops from the same pair of rate and tree
+        if (!context.hasExtraOperator(idStr)) {
+            UpDownOperator upDownOperator = new UpDownOperator();
+            upDownOperator.setID(idStr);
+            upDownOperator.setInputValue("up", clockRate);
+            upDownOperator.setInputValue("down", tree);
+            upDownOperator.setInputValue("scaleFactor", 0.9);
+            upDownOperator.setInputValue("weight", BEASTContext.getOperatorWeight(tree.getInternalNodeCount()+1));
+            context.addExtraOperator(upDownOperator);
+        }
+    }
+
     @Override
     public Class<PhyloCTMC> getGeneratorClass() {
         return PhyloCTMC.class;
     }
 
     @Override
-    public Class<TreeLikelihood> getBEASTClass() {
-        return TreeLikelihood.class;
+    public Class<ThreadedTreeLikelihood> getBEASTClass() {
+        return ThreadedTreeLikelihood.class;
     }
 }
