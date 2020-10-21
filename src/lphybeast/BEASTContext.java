@@ -453,6 +453,11 @@ public class BEASTContext {
                 .filter(stateNode -> !(stateNode instanceof Tree))
                 .collect(Collectors.toList());
 
+        CompoundDistribution[] compDist = elements.stream().
+                filter(b -> b instanceof CompoundDistribution).toArray(CompoundDistribution[]::new);
+        // seems only posterior prior likelihood
+        nonTrees.addAll(Arrays.asList(compDist));
+
         nonTrees.addAll(extraLoggables);
 
         Logger logger = new Logger();
