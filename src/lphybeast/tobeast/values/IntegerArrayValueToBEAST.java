@@ -2,6 +2,7 @@ package lphybeast.tobeast.values;
 
 import beast.core.parameter.IntegerParameter;
 import lphy.core.distributions.RandomComposition;
+import lphy.graphicalModel.RandomVariable;
 import lphy.graphicalModel.Value;
 import lphybeast.BEASTContext;
 import lphybeast.ValueToBEAST;
@@ -18,6 +19,7 @@ public class IntegerArrayValueToBEAST implements ValueToBEAST<Integer[], Integer
         List<Integer> values = Arrays.asList(value.value());
         parameter.setInputValue("value", values);
         parameter.setInputValue("dimension", values.size());
+        if (!(value instanceof RandomVariable)) parameter.setInputValue("estimate", false);
 
         // check domain
         if (value.getGenerator() instanceof RandomComposition) {

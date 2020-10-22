@@ -17,6 +17,7 @@ import consoperators.SmallPulley;
 import lphy.core.distributions.LogNormalMulti;
 import lphy.evolution.branchrates.LocalBranchRates;
 import lphy.evolution.likelihood.PhyloCTMC;
+import lphy.evolution.substitutionmodel.RateMatrix;
 import lphy.evolution.tree.TimeTree;
 import lphy.graphicalModel.Generator;
 import lphy.graphicalModel.RandomVariable;
@@ -91,15 +92,20 @@ public class PhyloCTMCToBEAST implements GeneratorToBEAST<PhyloCTMC, ThreadedTre
         }
 
         Generator qGenerator = phyloCTMC.getQ().getGenerator();
-        if (qGenerator == null) {
-            throw new RuntimeException("BEAST2 does not support a fixed Q matrix.");
+        if (qGenerator == null || !(qGenerator instanceof RateMatrix)) {
+            throw new RuntimeException("BEAST2 only supports Q matrices constructed by a RateMatrix function (e.g. hky, gtr, jukeCantor et cetera).");
         } else {
+            RateMatrix rateMatrix = (RateMatrix)qGenerator;
+
+            BEASTInterface mutationRate = context.getBEASTObject(rateMatrix.getMeanRate());
+
             SubstitutionModel substitutionModel = (SubstitutionModel) context.getBEASTObject(qGenerator);
 
             if (substitutionModel == null) throw new IllegalArgumentException("Substitution Model was null!");
 
-            SiteModel siteModel = new SiteModel();
+            outercore.evolution.sitemodel.SiteModel siteModel = new outercore.evolution.sitemodel.SiteModel();
             siteModel.setInputValue("substModel", substitutionModel);
+            if (mutationRate != null) siteModel.setInputValue("mutationRate", mutationRate);
             siteModel.initAndValidate();
 
             treeLikelihood.setInputValue("siteModel", siteModel);
