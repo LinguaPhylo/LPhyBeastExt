@@ -1,6 +1,7 @@
 package lphybeast.tobeast.generators;
 
 import beast.core.BEASTInterface;
+import beast.core.parameter.CompoundRealParameter;
 import feast.function.Slice;
 import lphy.core.functions.SliceDoubleArray;
 import lphy.graphicalModel.Value;
@@ -27,8 +28,18 @@ public class SliceDoubleArrayToBEAST implements GeneratorToBEAST<SliceDoubleArra
     public void modifyBEASTValues(SliceDoubleArray generator, BEASTInterface value, BEASTContext context) {
 
         Value lphyValue = (Value)context.getGraphicalModelNode(value);
-        context.removeBEASTObject(value);
-        context.putBEASTObject(lphyValue, generatorToBEAST(generator, value, context));
+        BEASTInterface slicedParameter = context.getBEASTObject(generator.array());
+
+        if (slicedParameter instanceof CompoundRealParameter && generator.size() == 1) {
+            CompoundRealParameter compoundRealParameter = (CompoundRealParameter)slicedParameter;
+
+            context.removeBEASTObject(value);
+            context.putBEASTObject(lphyValue, compoundRealParameter.parameterListInput.get().get(generator.start().value()));
+        } else {
+
+            context.removeBEASTObject(value);
+            context.putBEASTObject(lphyValue, generatorToBEAST(generator, value, context));
+        }
     }
 
     @Override

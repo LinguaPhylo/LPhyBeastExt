@@ -151,16 +151,24 @@ public class BEASTContext {
         return null;
     }
 
-    public RealParameter getAsRealParameter(Value<Number> value) {
+    /**
+     * This function will retrieve the beast object for this value and return it if it is a RealParameter,
+     * or convert it to a RealParameter if it is an IntegerParameter and replace the original integer parameter in the relevant stores.
+     * @param value
+     * @return the RealParameter associated with this value if it exists, or can be coerced. Has a side-effect if coercion occurs.
+     */
+    public RealParameter getAsRealParameter(Value value) {
         Parameter param = (Parameter)beastObjects.get(value);
         if (param instanceof RealParameter) return (RealParameter)param;
         if (param instanceof IntegerParameter) {
             RealParameter newParam = createRealParameter(param.getID(), ((IntegerParameter) param).getValue());
-            beastObjects.put(value, newParam);
+            removeBEASTObject((BEASTInterface)param);
+            addToContext(value, newParam);
             return newParam;
         }
         throw new RuntimeException("No coercable parameter found.");
     }
+
 
     public GraphicalModelNode getGraphicalModelNode(BEASTInterface beastInterface) {
         return BEASTToLPHYMap.get(beastInterface);
@@ -258,12 +266,13 @@ public class BEASTContext {
         return null;
     }
 
+    /**
+     * Creates the beast value objects in a post-order traversal, so that inputs are always created before outputs.
+     * @param value the value to convert to a beast value (after doing so for the inputs of its generator, recursively)
+     */
     private void createBEASTValueObjects(Value<?> value) {
 
-        if (beastObjects.get(value) == null) {
-            valueToBEAST(value);
-        }
-
+        // do values of inputs recursively first
         Generator<?> generator = value.getGenerator();
         if (generator != null) {
 
@@ -272,6 +281,12 @@ public class BEASTContext {
                 createBEASTValueObjects(input);
             }
         }
+
+        // now that the inputs are done we can do this one.
+        if (beastObjects.get(value) == null) {
+            valueToBEAST(value);
+        }
+
     }
 
 
