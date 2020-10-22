@@ -33,7 +33,7 @@ public class Exclusion {
 
     public static boolean isExcludedGenerator(Generator generator) {
 
-        return ((generator instanceof NTaxaFunction) || (generator instanceof NCharFunction) ||
+        return ((generator instanceof IntegerArray) || (generator instanceof NTaxaFunction) || (generator instanceof NCharFunction) ||
                 (generator instanceof CreateTaxa) || (generator instanceof TaxaFunction) ||
                 (generator instanceof Species) || (generator instanceof TaxaAgesFromFunction) ||
                 (generator instanceof ReadNexus) ||
