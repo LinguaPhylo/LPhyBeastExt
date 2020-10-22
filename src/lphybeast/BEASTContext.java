@@ -18,6 +18,7 @@ import beast.util.XMLProducer;
 import lphy.core.LPhyParser;
 import lphy.core.distributions.Dirichlet;
 import lphy.core.distributions.RandomComposition;
+import lphy.core.distributions.WeightedDirichlet;
 import lphy.core.functions.ElementsAt;
 import lphy.graphicalModel.*;
 import lphy.utils.LoggerUtils;
@@ -111,9 +112,10 @@ public class BEASTContext {
                 NormalToBEAST.class,
                 PhyloCTMCToBEAST.class,
                 PoissonToBEAST.class,
-                SliceDoubleArrayToBEAST.class,
-                SkylineToBSP.class,
+                WeightedDirichletToBEAST.class,
                 SerialCoalescentToBEAST.class,
+                SkylineToBSP.class,
+                SliceDoubleArrayToBEAST.class,
                 StructuredCoalescentToMascot.class,
                 TreeLengthToBEAST.class,
                 TN93ToBEAST.class,
@@ -585,6 +587,18 @@ public class BEASTContext {
             operator = new DeltaExchangeOperator();
             operator.setInputValue("parameter", parameter);
             operator.setInputValue("weight", getOperatorWeight(parameter.getDimension() - 1));
+            operator.setInputValue("delta", 1.0 / value.length);
+            operator.initAndValidate();
+            operator.setID(parameter.getID() + ".deltaExchange");
+        } else if (variable != null && variable.getGenerativeDistribution() instanceof WeightedDirichlet) {
+
+            WeightedDirichlet weightedDirichlet = (WeightedDirichlet)variable.getGenerativeDistribution();
+
+            Double[] value = (Double[]) variable.value();
+            operator = new DeltaExchangeOperator();
+            operator.setInputValue("parameter", parameter);
+            operator.setInputValue("weight", getOperatorWeight(parameter.getDimension() - 1));
+            operator.setInputValue("weightvector", beastObjects.get(weightedDirichlet.getWeights()));
             operator.setInputValue("delta", 1.0 / value.length);
             operator.initAndValidate();
             operator.setID(parameter.getID() + ".deltaExchange");
