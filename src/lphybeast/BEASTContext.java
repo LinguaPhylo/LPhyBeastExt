@@ -31,6 +31,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static java.lang.Math.toIntExact;
+
 public class BEASTContext {
 
     List<StateNode> state = new ArrayList<>();
@@ -444,8 +446,8 @@ public class BEASTContext {
 
     private List<Logger> createLoggers(int logEvery, String fileName) {
         List<Logger> loggers = new ArrayList<>();
-
-        loggers.add(createScreenLogger(logEvery));
+        // reduce screen logging
+        loggers.add(createScreenLogger(logEvery * 100));
         loggers.add(createLogger(logEvery, fileName + ".log"));
         loggers.addAll(createTreeLoggers(logEvery, fileName));
 
@@ -741,7 +743,7 @@ public class BEASTContext {
 
         if (inits.size() > 0) mcmc.setInputValue("init", inits);
 
-        int preBurnin = getAllStatesSize(this.state) * 5;
+        int preBurnin = getAllStatesSize(this.state) * 10;
         mcmc.setInputValue("preBurnin", preBurnin);
 
         mcmc.initAndValidate();
@@ -789,13 +791,14 @@ public class BEASTContext {
      *                       where numOfSamples = 2000 as default.
      * @return   BEAST 2 XML in String
      */
-    public String toBEASTXML(final String fileNameStem, int chainLength) {
+    public String toBEASTXML(final String fileNameStem, long chainLength) {
 
         final int numOfSamples = 2000;
         // default to 1M if not specified
         if (chainLength <=0)
             chainLength = 1000000;
-        int logEvery = chainLength / numOfSamples;
+        // Will throw an ArithmeticException in case of overflow.
+        int logEvery = toIntExact(chainLength / numOfSamples);
 
         LoggerUtils.log.info("MCMC total chain length = " + chainLength +
                 ", log every = " + logEvery + ", samples = " + numOfSamples);

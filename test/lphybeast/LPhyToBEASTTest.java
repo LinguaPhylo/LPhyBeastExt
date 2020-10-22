@@ -3,12 +3,9 @@ package lphybeast;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 
 /**
@@ -37,29 +34,20 @@ public class LPhyToBEASTTest {
 
     @Test
     public void testSimpleCoalescent() {
-        Reader inputString = new StringReader(simpleCoal);
-        BufferedReader reader = new BufferedReader(inputString);
-
         String xml = null;
         try {
-            xml = lPhyBEAST.toBEASTXML(reader, "simpleCoal", -1);
+            xml = lPhyBEAST.lphyToXML(simpleCoal, "simpleCoal", -1);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        assertNotNull("IOException readLine()", xml); // IOException
-
-        assertTrue("<beast></beast>",  xml.contains("<beast") && xml.contains("</beast>"));
-
-        assertTrue("alignment tag",  xml.contains("<data") && xml.contains("id=\"D\""));
-
-        String temp = xml.replace("<sequence", "");
-        int occ = (xml.length() - temp.length()) / "<sequence".length();
-        assertEquals(ntaxa,  occ);
+        TestUtils.assertXML(xml, ntaxa);
 
         assertTrue("Theta prior",  xml.contains("<distribution id=\"Theta.prior\"") &&
                 xml.contains("spec=\"beast.math.distributions.LogNormalDistributionModel\"") &&
                 xml.contains("name=\"M\">3.0</parameter>") && xml.contains("name=\"S\">1.0</parameter>") );
 
     }
+
+
 }
