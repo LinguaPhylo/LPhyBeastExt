@@ -25,28 +25,28 @@ public class WeightedDirichletToBEAST implements GeneratorToBEAST<WeightedDirich
 
     }
 
-    @Override
-    public void modifyBEASTValues(WeightedDirichlet generator, BEASTInterface value, BEASTContext context) {
-
-        CompoundRealParameter compoundRealParameter = new CompoundRealParameter();
-        List<RealParameter> parameters = new ArrayList<>();
-
-        RealParameter output = (RealParameter) value;
-        Double[] values = output.getValues();
-
-        for (int i = 0; i < values.length; i++) {
-            parameters.add(context.createRealParameter(output.getID() + "." + i, values[i]));
-        }
-        compoundRealParameter.setInputValue("parameter", parameters);
-        compoundRealParameter.initAndValidate();
-
-        Value lphyValue = (Value) context.getGraphicalModelNode(value);
-
-        ValueToParameter.setID(compoundRealParameter, lphyValue);
-
-        context.removeBEASTObject(value);
-        context.putBEASTObject(lphyValue, compoundRealParameter);
-    }
+//    @Override
+//    public void modifyBEASTValues(WeightedDirichlet generator, BEASTInterface value, BEASTContext context) {
+//
+//        CompoundRealParameter compoundRealParameter = new CompoundRealParameter();
+//        List<RealParameter> parameters = new ArrayList<>();
+//
+//        RealParameter output = (RealParameter) value;
+//        Double[] values = output.getValues();
+//
+//        for (int i = 0; i < values.length; i++) {
+//            parameters.add(context.createRealParameter(output.getID() + "." + i, values[i]));
+//        }
+//        compoundRealParameter.setInputValue("parameter", parameters);
+//        compoundRealParameter.initAndValidate();
+//
+//        Value lphyValue = (Value) context.getGraphicalModelNode(value);
+//
+//        ValueToParameter.setID(compoundRealParameter, lphyValue);
+//
+//        context.removeBEASTObject(value);
+//        context.putBEASTObject(lphyValue, compoundRealParameter);
+//    }
 
     @Override
     public Class<WeightedDirichlet> getGeneratorClass() {
