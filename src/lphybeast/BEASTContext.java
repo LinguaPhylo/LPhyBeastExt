@@ -444,8 +444,8 @@ public class BEASTContext {
 
     private List<Logger> createLoggers(int logEvery, String fileName) {
         List<Logger> loggers = new ArrayList<>();
-
-        loggers.add(createScreenLogger(logEvery));
+        // reduce screen logging
+        loggers.add(createScreenLogger(logEvery * 100));
         loggers.add(createLogger(logEvery, fileName + ".log"));
         loggers.addAll(createTreeLoggers(logEvery, fileName));
 
