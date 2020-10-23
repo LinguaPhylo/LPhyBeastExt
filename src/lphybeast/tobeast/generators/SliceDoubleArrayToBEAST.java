@@ -1,7 +1,8 @@
 package lphybeast.tobeast.generators;
 
 import beast.core.BEASTInterface;
-import beast.core.parameter.CompoundRealParameter;
+import beast.core.Function;
+import feast.function.Concatenate;
 import feast.function.Slice;
 import lphy.core.functions.SliceDoubleArray;
 import lphy.graphicalModel.Value;
@@ -30,11 +31,15 @@ public class SliceDoubleArrayToBEAST implements GeneratorToBEAST<SliceDoubleArra
         Value lphyValue = (Value)context.getGraphicalModelNode(value);
         BEASTInterface slicedParameter = context.getBEASTObject(generator.array());
 
-        if (slicedParameter instanceof CompoundRealParameter && generator.size() == 1) {
-            CompoundRealParameter compoundRealParameter = (CompoundRealParameter)slicedParameter;
+        if (slicedParameter instanceof Concatenate && generator.size() == 1) {
+            Concatenate concatenate = (Concatenate)slicedParameter;
 
-            context.removeBEASTObject(value);
-            context.putBEASTObject(lphyValue, compoundRealParameter.parameterListInput.get().get(generator.start().value()));
+            Function element = concatenate.functionsInput.get().get(generator.start().value());
+
+            if (element instanceof BEASTInterface) {
+                context.removeBEASTObject(value);
+                context.putBEASTObject(lphyValue, (BEASTInterface)element);
+            }
         } else {
 
             context.removeBEASTObject(value);

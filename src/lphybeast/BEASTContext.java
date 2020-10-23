@@ -15,6 +15,7 @@ import beast.evolution.tree.TreeInterface;
 import beast.math.distributions.ParametricDistribution;
 import beast.math.distributions.Prior;
 import beast.util.XMLProducer;
+import feast.function.Concatenate;
 import lphy.core.LPhyParser;
 import lphy.core.distributions.Dirichlet;
 import lphy.core.distributions.RandomComposition;
@@ -67,7 +68,6 @@ public class BEASTContext {
         final Class[] valuesToBEASTs = {
                 AlignmentToBEAST.class, // simulated alignment
                 TimeTreeToBEAST.class,
-//                MapValueToBEAST.class,
                 DoubleValueToBEAST.class,
                 DoubleArrayValueToBEAST.class,
                 NumberArrayValueToBEAST.class,
@@ -114,7 +114,6 @@ public class BEASTContext {
                 NormalToBEAST.class,
                 PhyloCTMCToBEAST.class,
                 PoissonToBEAST.class,
-                WeightedDirichletToBEAST.class,
                 SerialCoalescentToBEAST.class,
                 SkylineToBSP.class,
                 SliceDoubleArrayToBEAST.class,
@@ -208,11 +207,12 @@ public class BEASTContext {
         return createRealParameter(null, value);
     }
 
-    public static RealParameter createRealParameter(String id, double value) {
+    public static  RealParameter createRealParameter(String id, double value) {
         RealParameter parameter = new RealParameter();
         parameter.setInputValue("value", value);
         parameter.initAndValidate();
         if (id != null) parameter.setID(id);
+
         return parameter;
     }
 
@@ -339,8 +339,9 @@ public class BEASTContext {
 
             if (createGenerators) {
                 if (beastGenerator == null) {
-                    if (!Exclusion.isExcludedGenerator(generator))
+                    if (!Exclusion.isExcludedGenerator(generator)) {
                         throw new UnsupportedOperationException("Unhandled generator in generatorToBEAST(): " + generator);
+                    }
                 } else {
                     addToContext(generator, beastGenerator);
                 }
@@ -387,7 +388,18 @@ public class BEASTContext {
             Value var = (Value) node;
 
             if (var.getOutputs().size() > 0 && beastInterface != null && !state.contains(beastInterface)) {
-                state.add((StateNode) beastInterface);
+                if (beastInterface instanceof StateNode) {
+                    state.add((StateNode) beastInterface);
+                } else if (beastInterface instanceof Concatenate) {
+                    Concatenate concatenate = (Concatenate)beastInterface;
+                    for (Function function : concatenate.functionsInput.get()) {
+                        if (function instanceof StateNode && !state.contains(function)) {
+                            state.add((StateNode)function);
+                        }
+                    }
+                } else {
+                    throw new RuntimeException("Unexpected beastInterface returned true for isState() but can't be added to state");
+                }
             }
         }
     }
@@ -438,7 +450,8 @@ public class BEASTContext {
         for (StateNode stateNode : state) {
             System.out.println("State node" + stateNode);
             if (stateNode instanceof RealParameter) {
-                operators.add(createBEASTOperator((RealParameter) stateNode));
+                Operator operator = createBEASTOperator((RealParameter) stateNode);
+                if (operator != null) operators.add(operator);
             } else if (stateNode instanceof IntegerParameter) {
                 operators.add(createBEASTOperator((IntegerParameter) stateNode));
             } else if (stateNode instanceof BooleanParameter) {
@@ -596,40 +609,35 @@ public class BEASTContext {
     }
 
     private Operator createBEASTOperator(RealParameter parameter) {
-        RandomVariable<?> variable = (RandomVariable<?>) BEASTToLPHYMap.get(parameter);
 
-        Operator operator;
-        if (variable != null && variable.getGenerativeDistribution() instanceof Dirichlet) {
-            Double[] value = (Double[]) variable.value();
-            operator = new DeltaExchangeOperator();
-            operator.setInputValue("parameter", parameter);
-            operator.setInputValue("weight", getOperatorWeight(parameter.getDimension() - 1));
-            operator.setInputValue("delta", 1.0 / value.length);
-            operator.initAndValidate();
-            operator.setID(parameter.getID() + ".deltaExchange");
-        } else if (variable != null && variable.getGenerativeDistribution() instanceof WeightedDirichlet) {
+        GraphicalModelNode graphicalModelNode = BEASTToLPHYMap.get(parameter);
 
-            WeightedDirichlet weightedDirichlet = (WeightedDirichlet)variable.getGenerativeDistribution();
+        if (graphicalModelNode instanceof RandomVariable) {
+            RandomVariable<?> variable = (RandomVariable<?>)graphicalModelNode;
 
-            Double[] value = (Double[]) variable.value();
-            operator = new DeltaExchangeOperator();
-            operator.setInputValue("parameter", parameter);
-            operator.setInputValue("weight", getOperatorWeight(parameter.getDimension() - 1));
-            operator.setInputValue("weightvector", beastObjects.get(weightedDirichlet.getWeights()));
-            operator.setInputValue("delta", 1.0 / value.length);
-            operator.initAndValidate();
-            operator.setID(parameter.getID() + ".deltaExchange");
+            Operator operator;
+            if (variable.getGenerativeDistribution() instanceof Dirichlet) {
+                Double[] value = (Double[]) variable.value();
+                operator = new DeltaExchangeOperator();
+                operator.setInputValue("parameter", parameter);
+                operator.setInputValue("weight", getOperatorWeight(parameter.getDimension() - 1));
+                operator.setInputValue("delta", 1.0 / value.length);
+                operator.initAndValidate();
+                operator.setID(parameter.getID() + ".deltaExchange");
+            } else {
+                operator = new ScaleOperator();
+                operator.setInputValue("parameter", parameter);
+                operator.setInputValue("weight", getOperatorWeight(parameter.getDimension()));
+                operator.setInputValue("scaleFactor", 0.75);
+                operator.initAndValidate();
+                operator.setID(parameter.getID() + ".scale");
+            }
+            elements.add(operator);
+            return operator;
         } else {
-            operator = new ScaleOperator();
-            operator.setInputValue("parameter", parameter);
-            operator.setInputValue("weight", getOperatorWeight(parameter.getDimension()));
-            operator.setInputValue("scaleFactor", 0.75);
-            operator.initAndValidate();
-            operator.setID(parameter.getID() + ".scale");
+            LoggerUtils.log.severe("Didn't create operator for unexpected parameter " + parameter.getID());
+            return null;
         }
-        elements.add(operator);
-
-        return operator;
     }
 
     private Operator createBEASTOperator(BooleanParameter parameter) {

@@ -103,7 +103,7 @@ public class PhyloCTMCToBEAST implements GeneratorToBEAST<PhyloCTMC, ThreadedTre
 
             if (substitutionModel == null) throw new IllegalArgumentException("Substitution Model was null!");
 
-            outercore.evolution.sitemodel.SiteModel siteModel = new outercore.evolution.sitemodel.SiteModel();
+            SiteModel siteModel = new SiteModel();
             siteModel.setInputValue("substModel", substitutionModel);
             if (mutationRate != null) siteModel.setInputValue("mutationRate", mutationRate);
             siteModel.initAndValidate();

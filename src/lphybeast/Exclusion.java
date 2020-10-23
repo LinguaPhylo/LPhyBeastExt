@@ -1,5 +1,6 @@
 package lphybeast;
 
+import lphy.core.distributions.WeightedDirichlet;
 import lphy.core.functions.*;
 import lphy.evolution.Taxa;
 import lphy.evolution.alignment.Alignment;
@@ -33,7 +34,7 @@ public class Exclusion {
 
     public static boolean isExcludedGenerator(Generator generator) {
 
-        return ((generator instanceof IntegerArray) || (generator instanceof NTaxaFunction) || (generator instanceof NCharFunction) ||
+        return ((generator instanceof WeightedDirichlet) || (generator instanceof IntegerArray) || (generator instanceof NTaxaFunction) || (generator instanceof NCharFunction) ||
                 (generator instanceof CreateTaxa) || (generator instanceof TaxaFunction) ||
                 (generator instanceof Species) || (generator instanceof TaxaAgesFromFunction) ||
                 (generator instanceof ReadNexus) ||
