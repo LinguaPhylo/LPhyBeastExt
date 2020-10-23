@@ -119,7 +119,7 @@ public class LPhyBEAST implements Callable<Integer> {
      * @see #toBEASTXML(BufferedReader, String, long)
      * @throws IOException
      */
-    public String lphyToXML (String lphy, String fileNameStem, int chainLength) throws IOException {
+    public String lphyToXML (String lphy, String fileNameStem, long chainLength) throws IOException {
         Reader inputString = new StringReader(lphy);
         BufferedReader reader = new BufferedReader(inputString);
 
