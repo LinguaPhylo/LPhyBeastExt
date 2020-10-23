@@ -58,15 +58,19 @@ public class LPhyBEAST implements Callable<Integer> {
         BufferedReader reader = new BufferedReader(new FileReader(infile.toFile()));
 //        String wkdir = infile.getParent().toString();
         String fileName = infile.getFileName().toString();
-        String fileNameStem = fileName.substring(0, fileName.indexOf("."));
+        String fileNameStem = fileName.substring(0, fileName.lastIndexOf("."));
 
-        String xml = toBEASTXML(reader, fileNameStem, chainLength);
-
+        // if outfile is given, it will prefer to extract the fileNameStem from outfile
         if (outfile == null) {
-            String outPath = infile.toString().substring(0, infile.toString().indexOf(".")) + ".xml";
+            String outPath = fileNameStem + ".xml";
             // create outfile in the same dir of infile as default
             outfile = Paths.get(outPath);
+        } else {
+            fileName = outfile.getFileName().toString();
+            fileNameStem = fileName.substring(0, fileName.lastIndexOf("."));
         }
+
+        String xml = toBEASTXML(reader, fileNameStem, chainLength);
 
         PrintWriter writer = new PrintWriter(new FileWriter(outfile.toFile()));
         writer.println(xml);
