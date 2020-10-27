@@ -10,12 +10,12 @@ import lphybeast.GeneratorToBEAST;
 public class DirichletToBEAST implements GeneratorToBEAST<Dirichlet, Prior> {
     @Override
     public Prior generatorToBEAST(Dirichlet generator, BEASTInterface value, BEASTContext context) {
-            beast.math.distributions.Dirichlet beastDirichlet = new beast.math.distributions.Dirichlet();
-            beastDirichlet.setInputValue("alpha", context.getBEASTObject(generator.getConcentration()));
-            beastDirichlet.initAndValidate();
+        beast.math.distributions.Dirichlet beastDirichlet = new beast.math.distributions.Dirichlet();
+        beastDirichlet.setInputValue("alpha", context.getAsRealParameter(generator.getConcentration()));
+        beastDirichlet.initAndValidate();
 
-            return BEASTContext.createPrior(beastDirichlet, (RealParameter)value);
-        }
+        return BEASTContext.createPrior(beastDirichlet, (RealParameter) value);
+    }
 
     @Override
     public Class<Dirichlet> getGeneratorClass() {
