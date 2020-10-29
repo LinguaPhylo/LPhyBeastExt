@@ -8,6 +8,7 @@ import beast.core.parameter.Parameter;
 import beast.core.parameter.RealParameter;
 import beast.core.util.CompoundDistribution;
 import beast.evolution.alignment.Taxon;
+import beast.evolution.likelihood.ThreadedTreeLikelihood;
 import beast.evolution.operators.*;
 import beast.evolution.substitutionmodel.Frequencies;
 import beast.evolution.tree.Tree;
@@ -19,7 +20,6 @@ import feast.function.Concatenate;
 import lphy.core.LPhyParser;
 import lphy.core.distributions.Dirichlet;
 import lphy.core.distributions.RandomComposition;
-import lphy.core.distributions.WeightedDirichlet;
 import lphy.core.functions.ElementsAt;
 import lphy.graphicalModel.*;
 import lphy.utils.LoggerUtils;
@@ -394,8 +394,8 @@ public class BEASTContext {
         if (beastValue == null) {
             // ignore all String: d = nexus(file="Dengue4.nex");
             if (! Exclusion.isExcludedValue(val) )
-                 throw new UnsupportedOperationException("Unhandled value in valueToBEAST(): \"" +
-                    val + "\" of type " + val.value().getClass());
+                throw new UnsupportedOperationException("Unhandled value in valueToBEAST(): \"" +
+                        val + "\" of type " + val.value().getClass());
         } else {
             addToContext(val, beastValue);
         }
@@ -511,13 +511,23 @@ public class BEASTContext {
                 .filter(stateNode -> !(stateNode instanceof Tree))
                 .collect(Collectors.toList());
 
+        if (fileName != null) { // not screen logger
+            // treeLikelihood
+            ThreadedTreeLikelihood[] treeLikelihood = elements.stream().
+                    filter(b -> b instanceof ThreadedTreeLikelihood).toArray(ThreadedTreeLikelihood[]::new);
+            nonTrees.addAll(Arrays.asList(treeLikelihood));
+        }
+        // seems only posterior prior likelihood
         CompoundDistribution[] compDist = elements.stream().
                 filter(b -> b instanceof CompoundDistribution).toArray(CompoundDistribution[]::new);
-        // seems only posterior prior likelihood
         nonTrees.addAll(Arrays.asList(compDist));
 
-        nonTrees.addAll(extraLoggables);
+        if (fileName != null) { // not screen logger
+            // extra
+            nonTrees.addAll(extraLoggables);
+        }
 
+        // basic parameters
         Logger logger = new Logger();
         logger.setInputValue("logEvery", logEvery);
         logger.setInputValue("log", nonTrees);
