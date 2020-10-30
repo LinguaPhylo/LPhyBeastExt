@@ -19,6 +19,7 @@ import feast.function.Concatenate;
 import lphy.core.LPhyParser;
 import lphy.core.distributions.Dirichlet;
 import lphy.core.distributions.RandomComposition;
+import lphy.core.distributions.WeightedDirichlet;
 import lphy.core.functions.ElementsAt;
 import lphy.graphicalModel.*;
 import lphy.utils.LoggerUtils;
@@ -71,7 +72,6 @@ public class BEASTContext {
                 DoubleArrayValueToBEAST.class,
                 NumberArrayValueToBEAST.class,
                 DoubleArray2DValueToBEAST.class,
-                DoubleArray3DValueToBEAST.class,
                 IntegerValueToBEAST.class,
                 IntegerArrayValueToBEAST.class,
                 BooleanArrayValueToBEAST.class,
@@ -153,13 +153,12 @@ public class BEASTContext {
     /**
      * This function will retrieve the beast object for this value and return it if it is a RealParameter,
      * or convert it to a RealParameter if it is an IntegerParameter and replace the original integer parameter in the relevant stores.
-     *
      * @param value
      * @return the RealParameter associated with this value if it exists, or can be coerced. Has a side-effect if coercion occurs.
      */
     public RealParameter getAsRealParameter(Value value) {
-        Parameter param = (Parameter) beastObjects.get(value);
-        if (param instanceof RealParameter) return (RealParameter) param;
+        Parameter param = (Parameter)beastObjects.get(value);
+        if (param instanceof RealParameter) return (RealParameter)param;
         if (param instanceof IntegerParameter) {
             if (param.getDimension() == 1) {
 
@@ -170,7 +169,7 @@ public class BEASTContext {
             } else {
                 Double[] values = new Double[param.getDimension()];
                 for (int i = 0; i < values.length; i++) {
-                    values[i] = ((IntegerParameter) param).getValue(i).doubleValue();
+                    values[i] = ((IntegerParameter)param).getValue(i).doubleValue();
                 }
 
                 RealParameter newParam = createRealParameter(param.getID(), values);
@@ -222,7 +221,7 @@ public class BEASTContext {
         return createRealParameter(null, value);
     }
 
-    public static RealParameter createRealParameter(String id, double value) {
+    public static  RealParameter createRealParameter(String id, double value) {
         RealParameter parameter = new RealParameter();
         parameter.setInputValue("value", value);
         parameter.initAndValidate();
@@ -285,14 +284,13 @@ public class BEASTContext {
             if (clampedValue != null) {
                 return clampedValue;
             }
-            return parser.getValue(id, LPhyParser.Context.model);
+            return  parser.getValue(id, LPhyParser.Context.model);
         }
         return null;
     }
 
     /**
      * Creates the beast value objects in a post-order traversal, so that inputs are always created before outputs.
-     *
      * @param value the value to convert to a beast value (after doing so for the inputs of its generator, recursively)
      */
     private void createBEASTValueObjects(Value<?> value) {
@@ -342,32 +340,34 @@ public class BEASTContext {
     private void generatorToBEAST(Value value, Generator generator, boolean modifyValues, boolean createGenerators) {
 
         if (getBEASTObject(generator) == null) {
+
+            BEASTInterface beastGenerator = null;
+
             GeneratorToBEAST toBEAST = generatorToBEASTMap.get(generator.getClass());
 
             if (toBEAST != null) {
-                generatorToBEAST(toBEAST, value, generator, modifyValues, createGenerators);
-            } else {
-                throw new UnsupportedOperationException("Unsupported generator in generatorToBEAST(): " + generator);
+                BEASTInterface beastValue = beastObjects.get(value);
+                // If this is a generative distribution then swap to the clamped value if it exists
+                if (generator instanceof GenerativeDistribution && isClamped(value.getId())) {
+                    beastValue = getBEASTObject(getClampedValue(value.getId()));
+                }
+
+                if (modifyValues) {
+                    toBEAST.modifyBEASTValues(generator, beastValue, this);
+                }
+                if (createGenerators) {
+                    beastGenerator = toBEAST.generatorToBEAST(generator, beastValue, this);
+                }
             }
-        }
-    }
 
-    private void generatorToBEAST(GeneratorToBEAST toBEAST, Value value, Generator generator, boolean modifyValues, boolean createGenerators) {
-        BEASTInterface beastValue = beastObjects.get(value);
-        // If this is a generative distribution then swap to the clamped value if it exists
-        if (generator instanceof GenerativeDistribution && isClamped(value.getId())) {
-            beastValue = getBEASTObject(getClampedValue(value.getId()));
-        }
-
-        if (modifyValues) {
-            toBEAST.modifyBEASTValues(generator, beastValue, this);
-        }
-        if (createGenerators) {
-            BEASTInterface beastGenerator = toBEAST.generatorToBEAST(generator, beastValue, this);
-            if (beastGenerator != null) {
-                addToContext(generator, beastGenerator);
-            } else {
-                throw new UnsupportedOperationException("ToBEAST delegate return null in generatorToBEAST() for generator " + generator);
+            if (createGenerators) {
+                if (beastGenerator == null) {
+                    if (!Exclusion.isExcludedGenerator(generator)) {
+                        throw new UnsupportedOperationException("Unhandled generator in generatorToBEAST(): " + generator);
+                    }
+                } else {
+                    addToContext(generator, beastGenerator);
+                }
             }
         }
     }
@@ -414,10 +414,10 @@ public class BEASTContext {
                 if (beastInterface instanceof StateNode) {
                     state.add((StateNode) beastInterface);
                 } else if (beastInterface instanceof Concatenate) {
-                    Concatenate concatenate = (Concatenate) beastInterface;
+                    Concatenate concatenate = (Concatenate)beastInterface;
                     for (Function function : concatenate.functionsInput.get()) {
                         if (function instanceof StateNode && !state.contains(function)) {
-                            state.add((StateNode) function);
+                            state.add((StateNode)function);
                         }
                     }
                 } else {
@@ -430,9 +430,9 @@ public class BEASTContext {
     public boolean isState(GraphicalModelNode node) {
         if (node instanceof RandomVariable) return true;
         if (node instanceof Value) {
-            Value value = (Value) node;
+            Value value = (Value)node;
             if (value.isRandom() && (value.getGenerator() instanceof ElementsAt)) {
-                ElementsAt elementsAt = (ElementsAt) value.getGenerator();
+                ElementsAt elementsAt = (ElementsAt)value.getGenerator();
                 if (elementsAt.array() instanceof RandomVariable) {
                     BEASTInterface beastInterface = getBEASTObject(elementsAt.array());
                     if (beastInterface == null) return true;
@@ -636,7 +636,7 @@ public class BEASTContext {
         GraphicalModelNode graphicalModelNode = BEASTToLPHYMap.get(parameter);
 
         if (graphicalModelNode instanceof RandomVariable) {
-            RandomVariable<?> variable = (RandomVariable<?>) graphicalModelNode;
+            RandomVariable<?> variable = (RandomVariable<?>)graphicalModelNode;
 
             Operator operator;
             if (variable.getGenerativeDistribution() instanceof Dirichlet) {
@@ -831,18 +831,17 @@ public class BEASTContext {
 
     /**
      * Create BEAST 2 XML from LPhy objects.
-     *
      * @param fileNameStem
-     * @param chainLength  if <=0, then use default 1,000,000.
-     *                     logEvery = chainLength / numOfSamples,
-     *                     where numOfSamples = 2000 as default.
-     * @return BEAST 2 XML in String
+     * @param chainLength    if <=0, then use default 1,000,000.
+     *                       logEvery = chainLength / numOfSamples,
+     *                       where numOfSamples = 2000 as default.
+     * @return   BEAST 2 XML in String
      */
     public String toBEASTXML(final String fileNameStem, long chainLength) {
 
         final int numOfSamples = 2000;
         // default to 1M if not specified
-        if (chainLength <= 0)
+        if (chainLength <=0)
             chainLength = 1000000;
         // Will throw an ArithmeticException in case of overflow.
         int logEvery = toIntExact(chainLength / numOfSamples);
@@ -895,7 +894,7 @@ public class BEASTContext {
     }
 
     public void putBEASTObject(GraphicalModelNode node, BEASTInterface beastInterface) {
-        addToContext(node, beastInterface);
+        addToContext(node,beastInterface);
     }
 
     public void addExtraLogger(Loggable loggable) {
@@ -910,7 +909,7 @@ public class BEASTContext {
         ArrayList<Value<lphy.evolution.alignment.Alignment>> alignments = new ArrayList<>();
         for (GraphicalModelNode node : beastObjects.keySet()) {
             if (node instanceof Value && node.value() instanceof lphy.evolution.alignment.Alignment) {
-                alignments.add((Value<lphy.evolution.alignment.Alignment>) node);
+                alignments.add((Value<lphy.evolution.alignment.Alignment>)node);
             }
         }
         return alignments;
