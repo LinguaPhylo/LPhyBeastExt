@@ -74,7 +74,7 @@ public class PhyloCTMCToBEAST implements GeneratorToBEAST<PhyloCTMC, ThreadedTre
 
         } else {
             StrictClockModel clockModel = new StrictClockModel();
-            Value<Double> clockRate = phyloCTMC.getClockRate();
+            Value<Number> clockRate = phyloCTMC.getClockRate();
 
             RealParameter clockRatePara;
             if (clockRate != null) {
