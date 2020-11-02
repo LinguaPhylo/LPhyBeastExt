@@ -36,7 +36,7 @@ public class LPhyToBEASTTest {
     public void testSimpleCoalescent() {
         String xml = null;
         try {
-            xml = lPhyBEAST.lphyToXML(simpleCoal, "simpleCoal", -1);
+            xml = lPhyBEAST.lphyToXML(simpleCoal, "simpleCoal", -1, 0);
         } catch (IOException e) {
             e.printStackTrace();
         }

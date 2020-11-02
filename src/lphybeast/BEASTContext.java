@@ -19,7 +19,6 @@ import feast.function.Concatenate;
 import lphy.core.LPhyParser;
 import lphy.core.distributions.Dirichlet;
 import lphy.core.distributions.RandomComposition;
-import lphy.core.distributions.WeightedDirichlet;
 import lphy.core.functions.ElementsAt;
 import lphy.graphicalModel.*;
 import lphy.utils.LoggerUtils;
@@ -761,7 +760,7 @@ public class BEASTContext {
         return false;
     }
 
-    public MCMC createMCMC(long chainLength, int logEvery, String fileName) {
+    public MCMC createMCMC(long chainLength, int logEvery, String fileName, int preBurnin) {
 
         createBEASTObjects();
 
@@ -789,7 +788,9 @@ public class BEASTContext {
 
         if (inits.size() > 0) mcmc.setInputValue("init", inits);
 
-        int preBurnin = getAllStatesSize(this.state) * 10;
+        // if not given, preBurnin == 0, then will be defined by all state nodes size
+        if (preBurnin < 1)
+            preBurnin = getAllStatesSize(this.state) * 10;
         mcmc.setInputValue("preBurnin", preBurnin);
 
         mcmc.initAndValidate();
@@ -816,7 +817,7 @@ public class BEASTContext {
 
     public void runBEAST(String fileNameStem) {
 
-        MCMC mcmc = createMCMC(1000000, 1000, fileNameStem);
+        MCMC mcmc = createMCMC(1000000, 1000, fileNameStem, 0);
 
         try {
             mcmc.run();
@@ -835,9 +836,10 @@ public class BEASTContext {
      * @param chainLength    if <=0, then use default 1,000,000.
      *                       logEvery = chainLength / numOfSamples,
      *                       where numOfSamples = 2000 as default.
+     * @param preBurnin      preBurnin for BEAST MCMC, default to 0.
      * @return   BEAST 2 XML in String
      */
-    public String toBEASTXML(final String fileNameStem, long chainLength) {
+    public String toBEASTXML(final String fileNameStem, long chainLength, int preBurnin) {
 
         final int numOfSamples = 2000;
         // default to 1M if not specified
@@ -849,7 +851,7 @@ public class BEASTContext {
         LoggerUtils.log.info("MCMC total chain length = " + chainLength +
                 ", log every = " + logEvery + ", samples = " + numOfSamples);
 
-        MCMC mcmc = createMCMC(chainLength, logEvery, fileNameStem);
+        MCMC mcmc = createMCMC(chainLength, logEvery, fileNameStem, preBurnin);
 
         String xml = new XMLProducer().toXML(mcmc, elements);
 

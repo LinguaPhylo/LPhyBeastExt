@@ -32,6 +32,8 @@ public class LPhyBEAST implements Callable<Integer> {
     //MCMC
     @Option(names = {"-l", "--chainLength"}, defaultValue = "-1", description = "define the total chain length of MCMC")
     int chainLength;
+    @Option(names = {"-b", "--preBurnin"}, defaultValue = "0", description = "define the number of burn in samples taken before entering the main loop of MCMC")
+    int preBurnin;
 
 //    @Option(names = {"-wd", "--workdir"}, description = "Working directory") Path wd;
 //    @Option(names = {"-n", "--nex"},    description = "BEAST 2 partitions defined in Nexus file")
@@ -70,7 +72,7 @@ public class LPhyBEAST implements Callable<Integer> {
             fileNameStem = fileName.substring(0, fileName.lastIndexOf("."));
         }
 
-        String xml = toBEASTXML(reader, fileNameStem, chainLength);
+        String xml = toBEASTXML(reader, fileNameStem, chainLength, preBurnin);
 
         PrintWriter writer = new PrintWriter(new FileWriter(outfile.toFile()));
         writer.println(xml);
@@ -90,11 +92,12 @@ public class LPhyBEAST implements Callable<Integer> {
      * @param chainLength    if <=0, then use default 1,000,000.
      *                       logEvery = chainLength / numOfSamples,
      *                       where numOfSamples = 2000 as default.
+     * @param preBurnin      preBurnin for BEAST MCMC, default to 0.
      * @return    BEAST 2 XML
-     * @see BEASTContext#toBEASTXML(String, long)
+     * @see BEASTContext#toBEASTXML(String, long, int)
      * @throws IOException
      */
-    public String toBEASTXML(BufferedReader reader, String fileNameStem, long chainLength) throws IOException {
+    public String toBEASTXML(BufferedReader reader, String fileNameStem, long chainLength, int preBurnin) throws IOException {
         //*** Parse LPhy file ***//
         LPhyParser parser = new REPL();
         parser.source(reader);
@@ -104,26 +107,21 @@ public class LPhyBEAST implements Callable<Integer> {
 
         //*** Write BEAST 2 XML ***//
         // avoid to add dir into fileNameStem passed into XML logger
-        return context.toBEASTXML(fileNameStem, chainLength);
+        return context.toBEASTXML(fileNameStem, chainLength, preBurnin);
     }
 
     /**
      * parse LPhy script into BEAST 2 XML.
      * @param lphy           LPhy script with <code>data{}<code/> <code>model{}<code/> blocks,
      *                       and one line one command.
-     * @param fileNameStem
-     * @param chainLength    if <=0, then use default 1,000,000.
-     *                       logEvery = chainLength / numOfSamples,
-     *                       where numOfSamples = 2000 as default.
-     * @return   BEAST 2 XML
-     * @see #toBEASTXML(BufferedReader, String, long)
+     * @see #toBEASTXML(BufferedReader, String, long, int)
      * @throws IOException
      */
-    public String lphyToXML (String lphy, String fileNameStem, long chainLength) throws IOException {
+    public String lphyToXML (String lphy, String fileNameStem, long chainLength, int preBurnin) throws IOException {
         Reader inputString = new StringReader(lphy);
         BufferedReader reader = new BufferedReader(inputString);
 
-        return toBEASTXML(reader, fileNameStem, chainLength);
+        return toBEASTXML(reader, fileNameStem, chainLength, preBurnin);
     }
 
 
