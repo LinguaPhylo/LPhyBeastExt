@@ -485,6 +485,7 @@ public class BEASTContext {
                 operators.add(createExchangeOperator((Tree) stateNode, false));
                 operators.add(createSubtreeSlideOperator((Tree) stateNode));
                 operators.add(createTreeUniformOperator((Tree) stateNode));
+                operators.add(createWilsonBaldingOperator((Tree) stateNode));
             }
         }
 
@@ -616,6 +617,17 @@ public class BEASTContext {
         elements.add(subtreeSlide);
 
         return subtreeSlide;
+    }
+
+    private Operator createWilsonBaldingOperator(Tree tree) {
+        WilsonBalding wilsonBalding = new WilsonBalding();
+        wilsonBalding.setInputValue("tree", tree);
+        wilsonBalding.setInputValue("weight", getOperatorWeight(tree.getInternalNodeCount()));
+        wilsonBalding.initAndValidate();
+        wilsonBalding.setID(tree.getID() + "." + "wilsonBalding");
+        elements.add(wilsonBalding);
+
+        return wilsonBalding;
     }
 
     private Operator createExchangeOperator(Tree tree, boolean isNarrow) {
