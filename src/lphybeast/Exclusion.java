@@ -1,5 +1,6 @@
 package lphybeast;
 
+import lphy.core.distributions.RandomComposition;
 import lphy.core.distributions.WeightedDirichlet;
 import lphy.core.functions.*;
 import lphy.evolution.Taxa;
@@ -7,6 +8,7 @@ import lphy.evolution.alignment.Alignment;
 import lphy.evolution.tree.TimeTree;
 import lphy.graphicalModel.Generator;
 import lphy.graphicalModel.Value;
+import lphy.parser.functions.ExpressionNode;
 import lphy.parser.functions.MapFunction;
 import lphy.parser.functions.MethodCall;
 import lphy.parser.functions.RangeList;
@@ -34,11 +36,14 @@ public class Exclusion {
 
     public static boolean isExcludedGenerator(Generator generator) {
 
-        return ((generator instanceof WeightedDirichlet) || (generator instanceof IntegerArray) || (generator instanceof NTaxaFunction) || (generator instanceof NCharFunction) ||
+        return ((generator instanceof WeightedDirichlet) || (generator instanceof IntegerArray) ||
+                (generator instanceof ExpressionNode) || (generator instanceof RandomComposition) ||
+                (generator instanceof NTaxaFunction) || (generator instanceof NCharFunction) ||
                 (generator instanceof CreateTaxa) || (generator instanceof TaxaFunction) ||
                 (generator instanceof Species) || (generator instanceof TaxaAgesFromFunction) ||
                 (generator instanceof ReadNexus) ||
                 (generator instanceof ARange) || (generator instanceof Range) ||
-                (generator instanceof MapFunction) || (generator instanceof MethodCall)  || generator instanceof RangeList || generator instanceof ElementsAt);
+                (generator instanceof MapFunction) || (generator instanceof MethodCall)  ||
+                generator instanceof RangeList || generator instanceof ElementsAt);
     }
 }
