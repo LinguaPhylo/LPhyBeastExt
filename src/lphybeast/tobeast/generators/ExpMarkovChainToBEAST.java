@@ -1,10 +1,10 @@
 package lphybeast.tobeast.generators;
 
 import beast.core.BEASTInterface;
-import beast.math.distributions.MarkovChainDistribution;
 import lphy.core.distributions.ExpMarkovChain;
 import lphybeast.BEASTContext;
 import lphybeast.GeneratorToBEAST;
+import outercore.math.distributions.MarkovChainDistribution;
 
 public class ExpMarkovChainToBEAST implements GeneratorToBEAST<ExpMarkovChain, MarkovChainDistribution> {
     @Override
