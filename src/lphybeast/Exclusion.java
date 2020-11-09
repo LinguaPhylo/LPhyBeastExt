@@ -44,6 +44,6 @@ public class Exclusion {
                 (generator instanceof ReadNexus) ||
                 (generator instanceof ARange) || (generator instanceof Range) ||
                 (generator instanceof MapFunction) || (generator instanceof MethodCall)  ||
-                generator instanceof RangeList || generator instanceof ElementsAt);
+                generator instanceof RangeList || generator instanceof ElementsAt) || generator instanceof Rep;
     }
 }

@@ -13,6 +13,7 @@ import lphy.evolution.tree.TimeTree;
 import lphy.graphicalModel.Value;
 import lphybeast.BEASTContext;
 import lphybeast.GeneratorToBEAST;
+import outercore.util.BEASTVector;
 import starbeast2.GeneTree;
 import starbeast2.PopulationModel;
 import starbeast2.SpeciesTree;
@@ -38,18 +39,18 @@ public class MultispeciesCoalescentToStarBEAST2 implements
             Value v = context.getOutput(generator);
             if (v.value() instanceof TimeTree[]) {
 
-                TimeTree[] timeTrees = (TimeTree[])v.value();
+                TimeTree[] timeTrees = (TimeTree[]) v.value();
                 for (int i = 0; i < timeTrees.length; i++) {
                     String id = v.getId() + "." + i;
-                    geneTrees.add((Tree)context.getBEASTObject(id));
+                    geneTrees.add((Tree) context.getBEASTObject(id));
                 }
             }
         } else if (value instanceof Tree) {
-            geneTrees.add((Tree)value);
+            geneTrees.add((Tree) value);
         } else throw new IllegalArgumentException();
 
-        SpeciesTree speciesTree = (SpeciesTree)context.getBEASTObject(generator.getSpeciesTree());
-        StarBeastTaxonSet starBeastTaxonSet = (StarBeastTaxonSet)speciesTree.getTaxonset();
+        SpeciesTree speciesTree = (SpeciesTree) context.getBEASTObject(generator.getSpeciesTree());
+        StarBeastTaxonSet starBeastTaxonSet = (StarBeastTaxonSet) speciesTree.getTaxonset();
 
         starbeast2.ConstantPopulations constantPopulations = new starbeast2.ConstantPopulations();
         constantPopulations.setInputValue("speciesTree", speciesTree);
@@ -70,7 +71,7 @@ public class MultispeciesCoalescentToStarBEAST2 implements
         }
 
         starbeast.initAndValidate();
-        
+
         Value<TimeTree> timeTreeValue = generator.getSpeciesTree();
 
         starbeast2.StarBeastInitializer starBeastInitializer = createStarBEASTInitializer(timeTreeValue.value(), speciesTree, geneTrees, constantPopulations);
@@ -84,8 +85,7 @@ public class MultispeciesCoalescentToStarBEAST2 implements
     }
 
     public void modifyBEASTValues(MultispeciesCoalescent generator, BEASTInterface value, BEASTContext context) {
-        Tree geneTree = (Tree) value;
-        Tree vanillaSpeciesTree =  (Tree) context.getBEASTObject(generator.getSpeciesTree());
+        Tree vanillaSpeciesTree = (Tree) context.getBEASTObject(generator.getSpeciesTree());
         starbeast2.StarBeastTaxonSet starBeastTaxonSet = createStarBeastTaxonSet(
                 generator.getSpeciesTree().value().getTaxa(),
                 generator.getGeneTreeTaxa(), context);
@@ -98,7 +98,7 @@ public class MultispeciesCoalescentToStarBEAST2 implements
         context.removeBEASTObject(vanillaSpeciesTree);
         context.putBEASTObject(generator.getSpeciesTree(), speciesTree);
     }
-
+    
     private starbeast2.StarBeastInitializer createStarBEASTInitializer(TimeTree speciesTree, SpeciesTree tree, List<Tree> geneTree, PopulationModel populationModel) {
 
         starbeast2.StarBeastInitializer starBeastInitializer = new starbeast2.StarBeastInitializer();
@@ -126,7 +126,7 @@ public class MultispeciesCoalescentToStarBEAST2 implements
         nodeReheight2.setInputValue("geneTree", geneTreeDists);
         nodeReheight2.setInputValue("weight", BEASTContext.getOperatorWeight(totalNodeCount));
         nodeReheight2.initAndValidate();
-        nodeReheight2.setID(tree.getID()+".nodeReheight2");
+        nodeReheight2.setID(tree.getID() + ".nodeReheight2");
 
         context.addExtraOperator(nodeReheight2);
 
@@ -135,7 +135,7 @@ public class MultispeciesCoalescentToStarBEAST2 implements
         coordinatedUniform.setInputValue("geneTree", geneTree);
         coordinatedUniform.setInputValue("weight", BEASTContext.getOperatorWeight(totalNodeCount));
         coordinatedUniform.initAndValidate();
-        coordinatedUniform.setID(tree.getID()+".coordinatedUniform");
+        coordinatedUniform.setID(tree.getID() + ".coordinatedUniform");
 
         context.addExtraOperator(coordinatedUniform);
 

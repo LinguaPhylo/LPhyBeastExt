@@ -2,6 +2,7 @@ package lphybeast.tobeast.generators;
 
 import beast.core.BEASTInterface;
 import beast.core.BEASTObject;
+import beast.core.parameter.IntegerParameter;
 import beast.core.parameter.RealParameter;
 import beast.math.distributions.Prior;
 import lphy.core.distributions.Normal;
@@ -24,12 +25,16 @@ public class UniformToBEAST implements GeneratorToBEAST<Uniform, Prior> {
 
         if (lowerB instanceof RealParameter) {
             lower = ((RealParameter)lowerB).getValue();
+        } else if (lowerB instanceof IntegerParameter) {
+            lower = ((IntegerParameter)lowerB).getValue().doubleValue();
         } else {
             throw new IllegalArgumentException("BEAST2 can only have constants for lower and upper of Uniform distribution.");
         }
 
         if (upperB instanceof RealParameter) {
             upper = ((RealParameter)upperB).getValue();
+        } else if (upperB instanceof IntegerParameter) {
+            upper = ((IntegerParameter)upperB).getValue().doubleValue();
         } else {
             throw new IllegalArgumentException("BEAST2 can only have constants for lower and upper of Uniform distribution.");
         }

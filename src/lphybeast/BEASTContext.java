@@ -25,6 +25,7 @@ import lphy.utils.LoggerUtils;
 import lphybeast.tobeast.generators.*;
 import lphybeast.tobeast.values.*;
 import org.xml.sax.SAXException;
+import outercore.util.BEASTVector;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
@@ -74,7 +75,8 @@ public class BEASTContext {
                 IntegerValueToBEAST.class,
                 IntegerArrayValueToBEAST.class,
                 BooleanArrayValueToBEAST.class,
-                BooleanValueToBEAST.class
+                BooleanValueToBEAST.class,
+                VectorToBEAST.class,
         };
 
         for (Class c : valuesToBEASTs) {
@@ -114,12 +116,14 @@ public class BEASTContext {
                 PhyloCTMCToBEAST.class,
                 PoissonToBEAST.class,
                 SerialCoalescentToBEAST.class,
+                SimFBDAgeToBEAST.class,
                 SkylineToBSP.class,
                 SliceDoubleArrayToBEAST.class,
                 StructuredCoalescentToMascot.class,
                 TreeLengthToBEAST.class,
                 TN93ToBEAST.class,
                 UniformToBEAST.class,
+                VectorizedDistributionToBEAST.class,
                 YuleToBEAST.class,
                 ExpMarkovChainToBEAST.class
         };
@@ -288,6 +292,36 @@ public class BEASTContext {
         return null;
     }
 
+    public GeneratorToBEAST getGeneratorToBEAST(Generator generator) {
+        GeneratorToBEAST toBEAST = generatorToBEASTMap.get(generator.getClass());
+
+        if (toBEAST == null) {
+            // else see if there is a compatible to beast
+            for (Class c : generatorToBEASTMap.keySet()) {
+                // if *ToBEAST exists
+                if (c.isAssignableFrom(generator.getClass())) {
+                    toBEAST = generatorToBEASTMap.get(c);
+                }
+            }
+        }
+        return toBEAST;
+    }
+
+    public ValueToBEAST getValueToBEAST(Object rawValue) {
+        ValueToBEAST toBEAST = valueToBEASTMap.get(rawValue.getClass());
+
+        if (toBEAST == null) {
+            // else see if there is a compatible to beast
+            for (ValueToBEAST possibleToBEAST : valueToBEASTMap.values()) {
+                // if *ToBEAST exists
+                if (possibleToBEAST.match(rawValue)) {
+                    return possibleToBEAST;
+                }
+            }
+        }
+        return toBEAST;
+    }
+
     /**
      * Creates the beast value objects in a post-order traversal, so that inputs are always created before outputs.
      * @param value the value to convert to a beast value (after doing so for the inputs of its generator, recursively)
@@ -342,7 +376,7 @@ public class BEASTContext {
 
             BEASTInterface beastGenerator = null;
 
-            GeneratorToBEAST toBEAST = generatorToBEASTMap.get(generator.getClass());
+            GeneratorToBEAST toBEAST = getGeneratorToBEAST(generator);
 
             if (toBEAST != null) {
                 BEASTInterface beastValue = beastObjects.get(value);
@@ -378,20 +412,18 @@ public class BEASTContext {
         ValueToBEAST toBEAST = valueToBEASTMap.get(val.value().getClass());
 
         if (toBEAST != null) {
-            // if *ToBEAST has been initiated the get the beast value
             beastValue = toBEAST.valueToBEAST(val, this);
         } else {
             // else see if there is a compatible to beast
-            for (Class c : valueToBEASTMap.keySet()) {
+            for (ValueToBEAST possibleToBEAST : valueToBEASTMap.values()) {
                 // if *ToBEAST exists
-                if (c.isAssignableFrom(val.value().getClass())) {
-                    toBEAST = valueToBEASTMap.get(c);
+                if (possibleToBEAST.match(val)) {
+                    toBEAST = possibleToBEAST;
                     beastValue = toBEAST.valueToBEAST(val, this);
                 }
             }
         }
         if (beastValue == null) {
-            // ignore all String: d = nexus(file="Dengue4.nex");
             if (!Exclusion.isExcludedValue(val))
                 throw new UnsupportedOperationException("Unhandled value" + (!val.isAnonymous() ? " named " + val.getId() : "") + " in valueToBEAST(): \"" +
                         val + "\" of type " + val.value().getClass());
@@ -417,6 +449,12 @@ public class BEASTContext {
                     for (Function function : concatenate.functionsInput.get()) {
                         if (function instanceof StateNode && !state.contains(function)) {
                             state.add((StateNode)function);
+                        }
+                    }
+                } else if (beastInterface instanceof BEASTVector) {
+                    for (BEASTInterface beastElement : ((BEASTVector) beastInterface).getObjectList()) {
+                        if (beastElement instanceof StateNode) {
+                            state.add((StateNode)beastElement);
                         }
                     }
                 } else {

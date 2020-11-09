@@ -3,6 +3,9 @@ package lphybeast;
 import beast.core.BEASTInterface;
 import lphy.graphicalModel.Generator;
 
+import javax.naming.OperationNotSupportedException;
+import java.util.List;
+
 public interface GeneratorToBEAST<T extends Generator,S extends BEASTInterface> {
 
     /**
@@ -13,6 +16,20 @@ public interface GeneratorToBEAST<T extends Generator,S extends BEASTInterface> 
      * @return a new BEAST object representing this generator
      */
     S generatorToBEAST(T generator, BEASTInterface value, BEASTContext context);
+
+    /**
+     * converts a generator to an equivalent BEAST object
+     * @param generator the generator to be converted
+     * @param value the list of already-converted values that this generator produced for the conversion
+     * @param context the BEASTContext object holding other Beast objects already converted
+     * @return a new BEAST object representing this generator
+     */
+    default S generatorToBEAST(T generator, List<BEASTInterface> value, BEASTContext context) {
+
+        if (value.size() > 1) throw new IllegalArgumentException("A multi value version of this generator is not supported!");
+
+        return generatorToBEAST(generator,value.get(0), context);
+    }
 
     /**
      * provides a hook to allow generators that need to, to modify/replace the values that represent their

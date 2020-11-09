@@ -13,10 +13,26 @@ public interface ValueToBEAST<T, S extends BEASTInterface> {
     S valueToBEAST(Value<T> value, BEASTContext context);
 
     /**
-     * The type of value that will be produced by valueToBEAST method.
-     * @return a class representing the type of value that will be produced.
+     * The type of value that can be consumed but this ValueToBEAST.
+     * @return a class representing the type of value that can be consumed.
      */
     Class getValueClass();
+
+    /**
+     * @param value a value to be tested for consumption by this ValueToBEAST
+     * @return true if this value can be converted by this ValueToBEAST class, false otherwise.
+     */
+    default boolean match(Value value) {
+        return getValueClass().isAssignableFrom(value.value().getClass());
+    }
+
+    /**
+     * @param rawValue a raw value to be tested for consumption by this ValueToBEAST
+     * @return true if this value can be converted by this ValueToBEAST class, false otherwise.
+     */
+    default boolean match(Object rawValue) {
+        return getValueClass().isAssignableFrom(rawValue.getClass());
+    }
 
     /**
      * The BEAST class to be converted. It is only used for summarising at the moment.
