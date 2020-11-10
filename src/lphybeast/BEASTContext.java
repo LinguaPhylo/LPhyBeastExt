@@ -67,7 +67,9 @@ public class BEASTContext {
     }
 
     private void registerValues() {
+        // the first matching converter is used.
         final Class[] valuesToBEASTs = {
+                VectorToBEAST.class,
                 AlignmentToBEAST.class, // simulated alignment
                 TimeTreeToBEAST.class,
                 DoubleValueToBEAST.class,
@@ -77,8 +79,7 @@ public class BEASTContext {
                 IntegerValueToBEAST.class,
                 IntegerArrayValueToBEAST.class,
                 BooleanArrayValueToBEAST.class,
-                BooleanValueToBEAST.class,
-                VectorToBEAST.class,
+                BooleanValueToBEAST.class
         };
 
         for (Class c : valuesToBEASTs) {
@@ -98,6 +99,7 @@ public class BEASTContext {
                 BirthDeathSerialSamplingToBEAST.class,
                 BirthDeathSampleTreeDTToBEAST.class,
                 DirichletToBEAST.class,
+                DirichletMultiToBEAST.class,
                 ExpToBEAST.class,
                 F81ToBEAST.class,
                 FossilBirthDeathTreeToBEAST.class,
@@ -126,6 +128,7 @@ public class BEASTContext {
                 TN93ToBEAST.class,
                 UniformToBEAST.class,
                 VectorizedDistributionToBEAST.class,
+                VectorizedFunctionToBEAST.class,
                 YuleToBEAST.class,
                 ExpMarkovChainToBEAST.class
         };
@@ -158,12 +161,13 @@ public class BEASTContext {
     /**
      * This function will retrieve the beast object for this value and return it if it is a RealParameter,
      * or convert it to a RealParameter if it is an IntegerParameter and replace the original integer parameter in the relevant stores.
+     *
      * @param value
      * @return the RealParameter associated with this value if it exists, or can be coerced. Has a side-effect if coercion occurs.
      */
     public RealParameter getAsRealParameter(Value value) {
-        Parameter param = (Parameter)beastObjects.get(value);
-        if (param instanceof RealParameter) return (RealParameter)param;
+        Parameter param = (Parameter) beastObjects.get(value);
+        if (param instanceof RealParameter) return (RealParameter) param;
         if (param instanceof IntegerParameter) {
             if (param.getDimension() == 1) {
 
@@ -174,7 +178,7 @@ public class BEASTContext {
             } else {
                 Double[] values = new Double[param.getDimension()];
                 for (int i = 0; i < values.length; i++) {
-                    values[i] = ((IntegerParameter)param).getValue(i).doubleValue();
+                    values[i] = ((IntegerParameter) param).getValue(i).doubleValue();
                 }
 
                 RealParameter newParam = createRealParameter(param.getID(), values);
@@ -226,7 +230,7 @@ public class BEASTContext {
         return createRealParameter(null, value);
     }
 
-    public static  RealParameter createRealParameter(String id, double value) {
+    public static RealParameter createRealParameter(String id, double value) {
         RealParameter parameter = new RealParameter();
         parameter.setInputValue("value", value);
         parameter.initAndValidate();
@@ -289,7 +293,7 @@ public class BEASTContext {
             if (clampedValue != null) {
                 return clampedValue;
             }
-            return  parser.getValue(id, LPhyParser.Context.model);
+            return parser.getValue(id, LPhyParser.Context.model);
         }
         return null;
     }
@@ -309,6 +313,16 @@ public class BEASTContext {
         return toBEAST;
     }
 
+    public ValueToBEAST getMatchingValueToBEAST(Value value) {
+
+        for (ValueToBEAST possibleToBEAST : valueToBEASTMap.values()) {
+            if (possibleToBEAST.match(value)) {
+                return possibleToBEAST;
+            }
+        }
+        return null;
+    }
+
     public ValueToBEAST getValueToBEAST(Object rawValue) {
         ValueToBEAST toBEAST = valueToBEASTMap.get(rawValue.getClass());
 
@@ -326,6 +340,7 @@ public class BEASTContext {
 
     /**
      * Creates the beast value objects in a post-order traversal, so that inputs are always created before outputs.
+     *
      * @param value the value to convert to a beast value (after doing so for the inputs of its generator, recursively)
      */
     private void createBEASTValueObjects(Value<?> value) {
@@ -411,19 +426,10 @@ public class BEASTContext {
 
         BEASTInterface beastValue = null;
 
-        ValueToBEAST toBEAST = valueToBEASTMap.get(val.value().getClass());
+        ValueToBEAST toBEAST = getMatchingValueToBEAST(val);
 
         if (toBEAST != null) {
             beastValue = toBEAST.valueToBEAST(val, this);
-        } else {
-            // else see if there is a compatible to beast
-            for (ValueToBEAST possibleToBEAST : valueToBEASTMap.values()) {
-                // if *ToBEAST exists
-                if (possibleToBEAST.match(val)) {
-                    toBEAST = possibleToBEAST;
-                    beastValue = toBEAST.valueToBEAST(val, this);
-                }
-            }
         }
         if (beastValue == null) {
             if (!Exclusion.isExcludedValue(val))
@@ -447,16 +453,16 @@ public class BEASTContext {
                 if (beastInterface instanceof StateNode) {
                     state.add((StateNode) beastInterface);
                 } else if (beastInterface instanceof Concatenate) {
-                    Concatenate concatenate = (Concatenate)beastInterface;
+                    Concatenate concatenate = (Concatenate) beastInterface;
                     for (Function function : concatenate.functionsInput.get()) {
                         if (function instanceof StateNode && !state.contains(function)) {
-                            state.add((StateNode)function);
+                            state.add((StateNode) function);
                         }
                     }
                 } else if (beastInterface instanceof BEASTVector) {
                     for (BEASTInterface beastElement : ((BEASTVector) beastInterface).getObjectList()) {
                         if (beastElement instanceof StateNode) {
-                            state.add((StateNode)beastElement);
+                            state.add((StateNode) beastElement);
                         }
                     }
                 } else {
@@ -469,9 +475,9 @@ public class BEASTContext {
     public boolean isState(GraphicalModelNode node) {
         if (node instanceof RandomVariable) return true;
         if (node instanceof Value) {
-            Value value = (Value)node;
+            Value value = (Value) node;
             if (value.isRandom() && (value.getGenerator() instanceof ElementsAt)) {
-                ElementsAt elementsAt = (ElementsAt)value.getGenerator();
+                ElementsAt elementsAt = (ElementsAt) value.getGenerator();
                 if (elementsAt.array() instanceof RandomVariable) {
                     BEASTInterface beastInterface = getBEASTObject(elementsAt.array());
                     if (beastInterface == null) return true;
@@ -495,12 +501,12 @@ public class BEASTContext {
         return frequencies;
     }
 
-    public static Prior createPrior(ParametricDistribution distr, Parameter parameter) {
+    public static Prior createPrior(ParametricDistribution distr, Function function) {
         Prior prior = new Prior();
         prior.setInputValue("distr", distr);
-        prior.setInputValue("x", parameter);
+        prior.setInputValue("x", function);
         prior.initAndValidate();
-        prior.setID(parameter.getID() + ".prior");
+        if (function instanceof BEASTInterface) prior.setID(((BEASTInterface) function).getID() + ".prior");
         return prior;
     }
 
@@ -697,7 +703,7 @@ public class BEASTContext {
         GraphicalModelNode graphicalModelNode = BEASTToLPHYMap.get(parameter);
 
         if (graphicalModelNode instanceof RandomVariable) {
-            RandomVariable<?> variable = (RandomVariable<?>)graphicalModelNode;
+            RandomVariable<?> variable = (RandomVariable<?>) graphicalModelNode;
 
             Operator operator;
             if (variable.getGenerativeDistribution() instanceof Dirichlet) {
@@ -894,18 +900,19 @@ public class BEASTContext {
 
     /**
      * Create BEAST 2 XML from LPhy objects.
+     *
      * @param fileNameStem
-     * @param chainLength    if <=0, then use default 1,000,000.
-     *                       logEvery = chainLength / numOfSamples,
-     *                       where numOfSamples = 2000 as default.
-     * @param preBurnin      preBurnin for BEAST MCMC, default to 0.
-     * @return   BEAST 2 XML in String
+     * @param chainLength  if <=0, then use default 1,000,000.
+     *                     logEvery = chainLength / numOfSamples,
+     *                     where numOfSamples = 2000 as default.
+     * @param preBurnin    preBurnin for BEAST MCMC, default to 0.
+     * @return BEAST 2 XML in String
      */
     public String toBEASTXML(final String fileNameStem, long chainLength, int preBurnin) {
 
         final int numOfSamples = 2000;
         // default to 1M if not specified
-        if (chainLength <=0)
+        if (chainLength <= 0)
             chainLength = 1000000;
         // Will throw an ArithmeticException in case of overflow.
         int logEvery = toIntExact(chainLength / numOfSamples);
@@ -958,7 +965,7 @@ public class BEASTContext {
     }
 
     public void putBEASTObject(GraphicalModelNode node, BEASTInterface beastInterface) {
-        addToContext(node,beastInterface);
+        addToContext(node, beastInterface);
     }
 
     public void addExtraLogger(Loggable loggable) {
@@ -973,7 +980,7 @@ public class BEASTContext {
         ArrayList<Value<lphy.evolution.alignment.Alignment>> alignments = new ArrayList<>();
         for (GraphicalModelNode node : beastObjects.keySet()) {
             if (node instanceof Value && node.value() instanceof lphy.evolution.alignment.Alignment) {
-                alignments.add((Value<lphy.evolution.alignment.Alignment>)node);
+                alignments.add((Value<lphy.evolution.alignment.Alignment>) node);
             }
         }
         return alignments;

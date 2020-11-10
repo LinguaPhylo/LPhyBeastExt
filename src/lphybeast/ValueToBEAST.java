@@ -16,6 +16,7 @@ public interface ValueToBEAST<T, S extends BEASTInterface> {
      * The type of value that can be consumed but this ValueToBEAST.
      * @return a class representing the type of value that can be consumed.
      */
+    @Deprecated
     Class getValueClass();
 
     /**

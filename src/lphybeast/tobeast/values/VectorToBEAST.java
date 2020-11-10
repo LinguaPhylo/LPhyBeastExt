@@ -1,10 +1,10 @@
 package lphybeast.tobeast.values;
 
 import beast.core.BEASTInterface;
+import lphy.core.distributions.VectorizedDistribution;
+import lphy.core.functions.VectorizedFunction;
 import lphy.graphicalModel.Value;
 import lphy.graphicalModel.Vector;
-import lphy.graphicalModel.VectorizedRandomVariable;
-import lphy.graphicalModel.types.VectorValue;
 import lphybeast.BEASTContext;
 import lphybeast.ValueToBEAST;
 import outercore.util.BEASTVector;
@@ -38,7 +38,7 @@ public class VectorToBEAST implements ValueToBEAST<Object, BEASTVector> {
     }
 
     public boolean match(Value value) {
-        return (value instanceof Vector);
+        return (value instanceof Vector && (value.getGenerator() instanceof VectorizedFunction || value.getGenerator() instanceof VectorizedDistribution));
     }
 
     @Override

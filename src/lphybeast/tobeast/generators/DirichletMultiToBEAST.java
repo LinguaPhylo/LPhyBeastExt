@@ -1,24 +1,50 @@
 package lphybeast.tobeast.generators;
 
 import beast.core.BEASTInterface;
+import beast.core.Distribution;
 import beast.core.parameter.RealParameter;
+import beast.core.util.CompoundDistribution;
 import beast.math.distributions.Prior;
+import feast.function.Slice;
 import lphy.core.distributions.Dirichlet;
 import lphy.core.distributions.DirichletMulti;
+import lphy.graphicalModel.Value;
 import lphybeast.BEASTContext;
 import lphybeast.GeneratorToBEAST;
 
-public class DirichletMultiToBEAST implements GeneratorToBEAST<DirichletMulti, Prior> {
+import java.util.ArrayList;
+import java.util.List;
+
+public class DirichletMultiToBEAST implements GeneratorToBEAST<DirichletMulti, CompoundDistribution> {
 
     @Override
-    public Prior generatorToBEAST(DirichletMulti generator, BEASTInterface value, BEASTContext context) {
-        beast.math.distributions.Dirichlet beastDirichlet = new beast.math.distributions.Dirichlet();
-        beastDirichlet.setInputValue("alpha", context.getAsRealParameter(generator.getConcentration()));
-        beastDirichlet.initAndValidate();
+    public CompoundDistribution generatorToBEAST(DirichletMulti generator, BEASTInterface beastValue, BEASTContext context) {
 
-        //TODO
+        Value<Double[][]> value = (Value<Double[][]>)context.getGraphicalModelNode(beastValue);
 
-        return BEASTContext.createPrior(beastDirichlet, (RealParameter) value);
+        CompoundDistribution compoundDistribution = new CompoundDistribution();
+
+        RealParameter concentration = context.getAsRealParameter(generator.getConcentration());
+        int size = concentration.getDimension();
+
+        List<Prior> priorList = new ArrayList<>();
+        for (int i = 0; i < value.value().length; i++) {
+            beast.math.distributions.Dirichlet beastDirichlet = new beast.math.distributions.Dirichlet();
+            beastDirichlet.setInputValue("alpha", concentration);
+            beastDirichlet.initAndValidate();
+
+            Slice slice = new Slice();
+            slice.setInputValue("arg", beastValue);
+            slice.setInputValue("index", i*size);
+            slice.setInputValue("count", size);
+            slice.initAndValidate();
+
+            priorList.add(BEASTContext.createPrior(beastDirichlet, slice));
+        }
+        compoundDistribution.setInputValue("distribution", priorList);
+        compoundDistribution.initAndValidate();
+
+        return compoundDistribution;
     }
 
     @Override
@@ -27,7 +53,7 @@ public class DirichletMultiToBEAST implements GeneratorToBEAST<DirichletMulti, P
     }
 
     @Override
-    public Class<Prior> getBEASTClass() {
-        return Prior.class;
+    public Class<CompoundDistribution> getBEASTClass() {
+        return CompoundDistribution.class;
     }
 }
