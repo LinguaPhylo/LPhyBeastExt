@@ -1,7 +1,10 @@
 package lphybeast.tobeast.generators;
 
 import beast.core.BEASTInterface;
+import feast.function.Slice;
 import lphy.core.distributions.ExpMarkovChain;
+import lphy.graphicalModel.Generator;
+import lphy.graphicalModel.Value;
 import lphybeast.BEASTContext;
 import lphybeast.GeneratorToBEAST;
 import outercore.math.distributions.MarkovChainDistribution;
@@ -13,7 +16,28 @@ public class ExpMarkovChainToBEAST implements GeneratorToBEAST<ExpMarkovChain, M
         MarkovChainDistribution mcd = new MarkovChainDistribution();
         mcd.setInputValue("shape", 1.0);
         mcd.setInputValue("parameter", value);
-        mcd.setInputValue("initialMean", context.getBEASTObject(generator.getInitialMean()));
+
+        Value<Double> firstValue = generator.getFirstValue();
+        if (firstValue != null) {
+            BEASTInterface firstV = context.getBEASTObject(firstValue);
+            // rm firstValue from maps
+            context.removeBEASTObject(firstV);
+
+            // create theta[0]
+            Slice feastSlice = new Slice();
+            feastSlice.setInputValue("arg", value);
+            feastSlice.setInputValue("index", 0);
+            feastSlice.initAndValidate();
+
+            // replace Prior x = theta[0]
+            Generator dist = firstValue.getGenerator();
+            BEASTInterface prior = context.getBEASTObject(dist);
+            prior.setInputValue("x", feastSlice);
+            context.putBEASTObject(dist, prior);
+
+        } else {
+            mcd.setInputValue("initialMean", context.getBEASTObject(generator.getInitialMean()));
+        }
         mcd.initAndValidate();
 
 //        Value<Double> initialMean = generator.getInitialMean();
