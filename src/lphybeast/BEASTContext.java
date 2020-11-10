@@ -12,6 +12,7 @@ import beast.evolution.operators.*;
 import beast.evolution.substitutionmodel.Frequencies;
 import beast.evolution.tree.Tree;
 import beast.evolution.tree.TreeInterface;
+import beast.evolution.tree.TreeWithMetaDataLogger;
 import beast.math.distributions.ParametricDistribution;
 import beast.math.distributions.Prior;
 import beast.util.XMLProducer;
@@ -20,6 +21,7 @@ import lphy.core.LPhyParser;
 import lphy.core.distributions.Dirichlet;
 import lphy.core.distributions.RandomComposition;
 import lphy.core.functions.ElementsAt;
+import lphy.evolution.coalescent.SkylineCoalescent;
 import lphy.graphicalModel.*;
 import lphy.utils.LoggerUtils;
 import lphybeast.tobeast.generators.*;
@@ -578,9 +580,19 @@ public class BEASTContext {
         List<Logger> treeLoggers = new ArrayList<>();
 
         for (Tree tree : trees) {
+            // TODO generalise
+            GraphicalModelNode graphicalModelNode = BEASTToLPHYMap.get(tree);
+            Generator generator = ((RandomVariable) graphicalModelNode).getGenerator();
+            boolean logMetaData = generator instanceof SkylineCoalescent;
+
             Logger logger = new Logger();
             logger.setInputValue("logEvery", logEvery);
-            logger.setInputValue("log", tree);
+            if (logMetaData) {
+                TreeWithMetaDataLogger treeWithMetaDataLogger = new TreeWithMetaDataLogger();
+                treeWithMetaDataLogger.setInputValue("tree", tree);
+                logger.setInputValue("log", treeWithMetaDataLogger);
+            } else
+                logger.setInputValue("log", tree);
 
             String fileName = fileNameStem + ".trees";
 
