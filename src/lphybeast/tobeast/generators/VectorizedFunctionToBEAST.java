@@ -32,6 +32,7 @@ public class VectorizedFunctionToBEAST implements GeneratorToBEAST<VectorizedFun
 
             BEASTInterface beastGenerator = toBEAST.generatorToBEAST(function, values.get(i), context);
             beastGenerators.add(beastGenerator);
+            context.putBEASTObject(function, beastGenerator);
         }
 
         return new BEASTVector(beastGenerators);

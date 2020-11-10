@@ -1,0 +1,50 @@
+package lphybeast.tobeast.values;
+
+import beast.core.BEASTInterface;
+import lphy.core.distributions.VectorizedDistribution;
+import lphy.core.functions.VectorizedFunction;
+import lphy.graphicalModel.CompoundVector;
+import lphy.graphicalModel.Value;
+import lphy.graphicalModel.Vector;
+import lphybeast.BEASTContext;
+import lphybeast.ValueToBEAST;
+import outercore.util.BEASTVector;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class CompoundVectorToBEAST implements ValueToBEAST<Object, BEASTVector> {
+
+    @Override
+    public BEASTVector valueToBEAST(Value<Object> value, BEASTContext context) {
+
+        if (!(value instanceof CompoundVector)) throw new IllegalArgumentException("Expecting a compound vector value!");
+        CompoundVector vectorValue = (CompoundVector)value;
+
+        List<BEASTInterface> beastValues = new ArrayList<>();
+        for (int i = 0; i < vectorValue.size(); i++)  {
+            Value componentValue = vectorValue.getComponentValue(i);
+            ValueToBEAST toBEAST = context.getMatchingValueToBEAST(componentValue);
+
+            BEASTInterface beastValue = toBEAST.valueToBEAST(componentValue, context);
+            beastValues.add(beastValue);
+            context.putBEASTObject(componentValue, beastValue);
+        }
+
+        return new BEASTVector(beastValues, value.getId());
+    }
+
+    @Override
+    public Class getValueClass() {
+        return Object.class;
+    }
+
+    public boolean match(Value value) {
+        return (value instanceof CompoundVector);
+    }
+
+    @Override
+    public Class<BEASTVector> getBEASTClass() {
+        return BEASTVector.class;
+    }
+}

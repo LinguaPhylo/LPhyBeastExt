@@ -47,6 +47,12 @@ public class MultispeciesCoalescentToStarBEAST2 implements
             }
         } else if (value instanceof Tree) {
             geneTrees.add((Tree) value);
+        } else if (value instanceof BEASTVector) {
+            for (BEASTInterface beastInterface : ((BEASTVector)value).getObjectList()) {
+                if (beastInterface instanceof Tree) {
+                    geneTrees.add((Tree)beastInterface);
+                }
+            }
         } else throw new IllegalArgumentException();
 
         SpeciesTree speciesTree = (SpeciesTree) context.getBEASTObject(generator.getSpeciesTree());

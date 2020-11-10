@@ -48,7 +48,7 @@ public class DoubleArrayValueToBEAST implements ValueToBEAST<Double[], BEASTInte
             Operator operator = new DeltaExchangeOperator();
             operator.setInputValue("parameter", args);
             operator.setInputValue("weight", getOperatorWeight(args.size() - 1));
-            operator.setInputValue("weightvector", context.getBEASTObject(weightedDirichlet.getWeights()));
+            operator.setInputValue("weightvector", context.getAsIntegerParameter(weightedDirichlet.getWeights()));
             operator.setInputValue("delta", 1.0 / value.value().length);
             operator.initAndValidate();
             operator.setID(value.getCanonicalId() + ".deltaExchange");

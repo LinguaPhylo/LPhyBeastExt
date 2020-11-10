@@ -21,7 +21,7 @@ public class VectorizedDistributionToBEAST implements GeneratorToBEAST<Vectorize
             throw new IllegalArgumentException("Expecting BEASTVector value from VectorizedDistribution");
         }
 
-        List<GenerativeDistribution> generativeDistributionList = generator.getBaseDistributions();
+        List<GenerativeDistribution> generativeDistributionList = generator.getComponentDistributions();
 
         if (generativeDistributionList.size() != values.size()) throw new IllegalArgumentException("Expecting value and base distribution list sizes to match!");
 
@@ -32,6 +32,7 @@ public class VectorizedDistributionToBEAST implements GeneratorToBEAST<Vectorize
 
             BEASTInterface beastGenerator = toBEAST.generatorToBEAST(generativeDistribution, values.get(i), context);
             beastGenerators.add(beastGenerator);
+            context.putBEASTObject(generativeDistribution, beastGenerator);
         }
 
         return new BEASTVector(beastGenerators);

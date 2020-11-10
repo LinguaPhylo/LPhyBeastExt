@@ -17,6 +17,7 @@ import beast.math.distributions.ParametricDistribution;
 import beast.math.distributions.Prior;
 import beast.util.XMLProducer;
 import feast.function.Concatenate;
+import feast.function.Slice;
 import lphy.core.LPhyParser;
 import lphy.core.distributions.Dirichlet;
 import lphy.core.distributions.RandomComposition;
@@ -69,7 +70,7 @@ public class BEASTContext {
     private void registerValues() {
         // the first matching converter is used.
         final Class[] valuesToBEASTs = {
-                VectorToBEAST.class,
+                CompoundVectorToBEAST.class,
                 AlignmentToBEAST.class, // simulated alignment
                 TimeTreeToBEAST.class,
                 DoubleValueToBEAST.class,
@@ -144,8 +145,52 @@ public class BEASTContext {
     }
 
     public BEASTInterface getBEASTObject(GraphicalModelNode<?> node) {
-        return beastObjects.get(node);
+
+        BEASTInterface beastInterface = beastObjects.get(node);
+
+        if (beastInterface != null) {
+            return beastInterface;
+        }
+
+        if (node instanceof SliceValue) {
+            SliceValue sliceValue = (SliceValue) node;
+            return handleSliceRequest(sliceValue);
+        }
+        return null;
     }
+
+    boolean byslice = false;
+
+    /**
+     * returns a logical slice based on the given slice value, as long as the value to be sliced is already available.
+     *
+     * @param sliceValue the slice value that needs a beast equivalent
+     * @return
+     */
+    public BEASTInterface handleSliceRequest(SliceValue sliceValue) {
+
+        BEASTInterface slicedBEASTValue = beastObjects.get(sliceValue.getSlicedValue());
+
+
+        if (slicedBEASTValue != null) {
+            if (!(slicedBEASTValue instanceof Concatenate)) {
+                Slice slice = new Slice();
+                slice.setInputValue("arg", slicedBEASTValue);
+                slice.setInputValue("index", sliceValue.getIndex());
+                slice.initAndValidate();
+                slice.setID(sliceValue.getId());
+                addToContext(sliceValue, slice);
+                return slice;
+            } else {
+                // handle by concatenating
+                List<Function> parts = ((Concatenate) slicedBEASTValue).functionsInput.get();
+                Function slice = parts.get(sliceValue.getIndex());
+                addToContext(sliceValue, (BEASTInterface) slice);
+                return (BEASTInterface) slice;
+            }
+        } else return null;
+    }
+
 
     public BEASTInterface getBEASTObject(String id) {
         for (BEASTInterface beastInterface : elements) {
@@ -182,6 +227,32 @@ public class BEASTContext {
                 }
 
                 RealParameter newParam = createRealParameter(param.getID(), values);
+                removeBEASTObject((BEASTInterface) param);
+                addToContext(value, newParam);
+                return newParam;
+
+            }
+        }
+        throw new RuntimeException("No coercable parameter found.");
+    }
+
+    public IntegerParameter getAsIntegerParameter(Value value) {
+        Parameter param = (Parameter) beastObjects.get(value);
+        if (param instanceof IntegerParameter) return (IntegerParameter) param;
+        if (param instanceof RealParameter) {
+            if (param.getDimension() == 1) {
+
+                IntegerParameter newParam = createIntegerParameter(param.getID(), (int) Math.round(((RealParameter) param).getValue()));
+                removeBEASTObject((BEASTInterface) param);
+                addToContext(value, newParam);
+                return newParam;
+            } else {
+                Integer[] values = new Integer[param.getDimension()];
+                for (int i = 0; i < values.length; i++) {
+                    values[i] = ((RealParameter) param).getValue(i).intValue();
+                }
+
+                IntegerParameter newParam = createIntegerParameter(param.getID(), values);
                 removeBEASTObject((BEASTInterface) param);
                 addToContext(value, newParam);
                 return newParam;
@@ -229,6 +300,25 @@ public class BEASTContext {
     public static RealParameter createRealParameter(double value) {
         return createRealParameter(null, value);
     }
+
+    public static IntegerParameter createIntegerParameter(String id, int value) {
+        IntegerParameter parameter = new IntegerParameter();
+        parameter.setInputValue("value", value);
+        parameter.initAndValidate();
+        if (id != null) parameter.setID(id);
+
+        return parameter;
+    }
+
+    public static IntegerParameter createIntegerParameter(String id, Integer[] value) {
+        IntegerParameter parameter = new IntegerParameter();
+        parameter.setInputValue("value", Arrays.asList(value));
+        parameter.initAndValidate();
+        if (id != null) parameter.setID(id);
+
+        return parameter;
+    }
+
 
     public static RealParameter createRealParameter(String id, double value) {
         RealParameter parameter = new RealParameter();
@@ -1007,4 +1097,6 @@ public class BEASTContext {
         }
         return outputValue[0];
     }
+
+
 }

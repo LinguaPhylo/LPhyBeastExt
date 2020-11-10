@@ -11,6 +11,7 @@ import lphy.core.distributions.DirichletMulti;
 import lphy.graphicalModel.Value;
 import lphybeast.BEASTContext;
 import lphybeast.GeneratorToBEAST;
+import outercore.util.BEASTVector;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +21,9 @@ public class DirichletMultiToBEAST implements GeneratorToBEAST<DirichletMulti, C
     @Override
     public CompoundDistribution generatorToBEAST(DirichletMulti generator, BEASTInterface beastValue, BEASTContext context) {
 
+        if (!(beastValue instanceof BEASTVector)) throw new IllegalArgumentException("Expecting a beast vector!");
+        BEASTVector vector = (BEASTVector)beastValue;
+
         Value<Double[][]> value = (Value<Double[][]>)context.getGraphicalModelNode(beastValue);
 
         CompoundDistribution compoundDistribution = new CompoundDistribution();
@@ -27,19 +31,15 @@ public class DirichletMultiToBEAST implements GeneratorToBEAST<DirichletMulti, C
         RealParameter concentration = context.getAsRealParameter(generator.getConcentration());
         int size = concentration.getDimension();
 
+
+
         List<Prior> priorList = new ArrayList<>();
         for (int i = 0; i < value.value().length; i++) {
             beast.math.distributions.Dirichlet beastDirichlet = new beast.math.distributions.Dirichlet();
             beastDirichlet.setInputValue("alpha", concentration);
             beastDirichlet.initAndValidate();
 
-            Slice slice = new Slice();
-            slice.setInputValue("arg", beastValue);
-            slice.setInputValue("index", i*size);
-            slice.setInputValue("count", size);
-            slice.initAndValidate();
-
-            priorList.add(BEASTContext.createPrior(beastDirichlet, slice));
+            priorList.add(BEASTContext.createPrior(beastDirichlet, (RealParameter)vector.vectorInput.get().get(i)));
         }
         compoundDistribution.setInputValue("distribution", priorList);
         compoundDistribution.initAndValidate();
