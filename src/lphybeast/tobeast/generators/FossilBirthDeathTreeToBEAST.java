@@ -33,6 +33,7 @@ public class FossilBirthDeathTreeToBEAST implements
         if (originParameter.getValue() < beastTree.getRoot().getHeight()) {
             originParameter.setValue(beastTree.getRoot().getHeight() + 1.0);
         }
+        context.addStateNode(originParameter, timeTree);
 
         SABirthDeathModel saBirthDeathModel = new SABirthDeathModel();
         saBirthDeathModel.setInputValue("birthRate", context.getAsRealParameter(generator.getBirthRate()));
@@ -66,7 +67,7 @@ public class FossilBirthDeathTreeToBEAST implements
         origin += timeTree.value().getTaxa().ntaxa();
 
         RealParameter originParameter = BEASTContext.createRealParameter(originID, origin);
-        context.addStateNode(originParameter);
+        context.addStateNode(originParameter, timeTree);
     }
 
     @Override

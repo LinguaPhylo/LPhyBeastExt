@@ -38,7 +38,7 @@ public class BirthDeathSampleTreeDTToBEAST implements
             prior.setInputValue("tree", tree);
             prior.setInputValue("taxonset", ((Tree) tree).getTaxonset());
             prior.initAndValidate();
-            context.addBEASTObject(prior);
+            context.addBEASTObject(prior,generator.getRootAge().getGenerator());
             context.removeBEASTObject(beastRootAge);
             context.removeBEASTObject(beastRootAgeGenerator);
         } else {

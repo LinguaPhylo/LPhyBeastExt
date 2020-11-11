@@ -16,6 +16,8 @@ import beast.evolution.tree.TreeWithMetaDataLogger;
 import beast.math.distributions.ParametricDistribution;
 import beast.math.distributions.Prior;
 import beast.util.XMLProducer;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import feast.function.Concatenate;
 import feast.function.Slice;
 import lphy.core.LPhyParser;
@@ -44,14 +46,15 @@ public class BEASTContext {
 
     List<StateNode> state = new ArrayList<>();
 
-    Set<BEASTInterface> elements = new HashSet<>();
+    // a list of extra beast elements in the keys, with a pointer to the graphical model node that caused their production
+    private Multimap<BEASTInterface, GraphicalModelNode<?>> elements = HashMultimap.create();
     List<StateNodeInitialiser> inits = new ArrayList<>();
 
-    // a map of graphical model nodes to equivalent BEASTInterface objects
+    // a map of graphical model nodes to a list of equivalent BEASTInterface objects
     private Map<GraphicalModelNode<?>, BEASTInterface> beastObjects = new HashMap<>();
 
     // a map of BEASTInterface to graphical model nodes that they represent
-    Map<BEASTInterface, GraphicalModelNode<?>> BEASTToLPHYMap = new HashMap<>();
+    private Map<BEASTInterface, GraphicalModelNode<?>> BEASTToLPHYMap = new HashMap<>();
 
     List<ValueToBEAST> valueToBEASTList = new ArrayList<>();
     Map<Class, GeneratorToBEAST> generatorToBEASTMap = new HashMap<>();
@@ -78,10 +81,10 @@ public class BEASTContext {
                 TimeTreeToBEAST.class,
                 DoubleValueToBEAST.class,
                 DoubleArrayValueToBEAST.class,
+                IntegerArrayValueToBEAST.class,
                 NumberArrayValueToBEAST.class,
                 DoubleArray2DValueToBEAST.class,
                 IntegerValueToBEAST.class,
-                IntegerArrayValueToBEAST.class,
                 BooleanArrayValueToBEAST.class,
                 BooleanValueToBEAST.class
         };
@@ -196,7 +199,7 @@ public class BEASTContext {
 
 
     public BEASTInterface getBEASTObject(String id) {
-        for (BEASTInterface beastInterface : elements) {
+        for (BEASTInterface beastInterface : elements.keySet()) {
             if (id.equals(beastInterface.getID())) return beastInterface;
         }
 
@@ -270,19 +273,19 @@ public class BEASTContext {
         return BEASTToLPHYMap.get(beastInterface);
     }
 
-    public void addBEASTObject(BEASTInterface newBEASTObject) {
-        elements.add(newBEASTObject);
+    public void addBEASTObject(BEASTInterface newBEASTObject, GraphicalModelNode graphicalModelNode) {
+        elements.put(newBEASTObject, graphicalModelNode);
     }
 
-    public void addStateNode(StateNode stateNode) {
+    public void addStateNode(StateNode stateNode, GraphicalModelNode graphicalModelNode) {
         if (!state.contains(stateNode)) {
-            elements.add(stateNode);
+            elements.put(stateNode, graphicalModelNode);
             state.add(stateNode);
         }
     }
 
     public void removeBEASTObject(BEASTInterface beastObject) {
-        elements.remove(beastObject);
+        elements.removeAll(beastObject);
         state.remove(beastObject);
         BEASTToLPHYMap.remove(beastObject);
 
@@ -532,7 +535,7 @@ public class BEASTContext {
     private void addToContext(GraphicalModelNode node, BEASTInterface beastInterface) {
         beastObjects.put(node, beastInterface);
         BEASTToLPHYMap.put(beastInterface, node);
-        elements.add(beastInterface);
+        elements.put(beastInterface, node);
 
         if (isState(node)) {
             Value var = (Value) node;
@@ -622,7 +625,7 @@ public class BEASTContext {
                 operators.add(createExchangeOperator(tree, false));
                 if (!isSampledAncestor(tree)) operators.add(createSubtreeSlideOperator((Tree) stateNode));
                 operators.add(createTreeUniformOperator(tree));
-                operators.add(createWilsonBaldingOperator(tree));
+                if (!isSampledAncestor(tree)) operators.add(createWilsonBaldingOperator(tree));
             }
         }
 
@@ -648,7 +651,7 @@ public class BEASTContext {
                 .filter(stateNode -> !(stateNode instanceof Tree))
                 .collect(Collectors.toList());
 
-        CompoundDistribution[] compDist = elements.stream().
+        CompoundDistribution[] compDist = elements.keySet().stream().
                 filter(b -> b instanceof CompoundDistribution).toArray(CompoundDistribution[]::new);
         // seems only posterior prior likelihood
         nonTrees.addAll(Arrays.asList(compDist));
@@ -660,7 +663,7 @@ public class BEASTContext {
         logger.setInputValue("log", nonTrees);
         if (fileName != null) logger.setInputValue("fileName", fileName);
         logger.initAndValidate();
-        elements.add(logger);
+        elements.put(logger, null);
         return logger;
     }
 
@@ -701,7 +704,7 @@ public class BEASTContext {
             logger.initAndValidate();
             logger.setID(tree.getID() + ".treeLogger");
             treeLoggers.add(logger);
-            elements.add(logger);
+            elements.put(logger, null);
         }
         return treeLoggers;
     }
@@ -729,7 +732,7 @@ public class BEASTContext {
         operator.setInputValue("weight", getOperatorWeight(tree.getInternalNodeCount()));
         operator.initAndValidate();
         operator.setID(tree.getID() + "." + "scale");
-        elements.add(operator);
+        elements.put(operator, null);
 
         return operator;
     }
@@ -744,7 +747,7 @@ public class BEASTContext {
         operator.setInputValue("weight", getOperatorWeight(1));
         operator.initAndValidate();
         operator.setID(tree.getID() + "." + "rootAgeScale");
-        elements.add(operator);
+        elements.put(operator, null);
 
         return operator;
     }
@@ -755,7 +758,7 @@ public class BEASTContext {
         uniform.setInputValue("weight", getOperatorWeight(tree.getInternalNodeCount()));
         uniform.initAndValidate();
         uniform.setID(tree.getID() + "." + "uniform");
-        elements.add(uniform);
+        elements.put(uniform, null);
 
         return uniform;
     }
@@ -767,7 +770,7 @@ public class BEASTContext {
         subtreeSlide.setInputValue("size", tree.getRoot().getHeight() / 10.0);
         subtreeSlide.initAndValidate();
         subtreeSlide.setID(tree.getID() + "." + "subtreeSlide");
-        elements.add(subtreeSlide);
+        elements.put(subtreeSlide, null);
 
         return subtreeSlide;
     }
@@ -778,7 +781,7 @@ public class BEASTContext {
         wilsonBalding.setInputValue("weight", getOperatorWeight(tree.getInternalNodeCount()));
         wilsonBalding.initAndValidate();
         wilsonBalding.setID(tree.getID() + "." + "wilsonBalding");
-        elements.add(wilsonBalding);
+        elements.put(wilsonBalding, null);
 
         return wilsonBalding;
     }
@@ -790,16 +793,19 @@ public class BEASTContext {
         exchange.setInputValue("isNarrow", isNarrow);
         exchange.initAndValidate();
         exchange.setID(tree.getID() + "." + ((isNarrow) ? "narrow" : "wide") + "Exchange");
-        elements.add(exchange);
+        elements.put(exchange, null);
 
         return exchange;
     }
 
     private Operator createBEASTOperator(RealParameter parameter) {
 
-        GraphicalModelNode graphicalModelNode = BEASTToLPHYMap.get(parameter);
+        Collection<GraphicalModelNode<?>> nodes = elements.get(parameter);
 
-        if (graphicalModelNode instanceof RandomVariable) {
+        if (nodes.stream().anyMatch(node -> node instanceof RandomVariable)) {
+
+            GraphicalModelNode graphicalModelNode = (GraphicalModelNode)nodes.stream().filter(node -> node instanceof RandomVariable).toArray()[0];
+
             RandomVariable<?> variable = (RandomVariable<?>) graphicalModelNode;
 
             Operator operator;
@@ -821,10 +827,10 @@ public class BEASTContext {
                 operator.initAndValidate();
                 operator.setID(parameter.getID() + ".scale");
             }
-            elements.add(operator);
+            elements.put(operator, null);
             return operator;
         } else {
-            LoggerUtils.log.severe("Didn't create operator for unexpected parameter " + parameter.getID());
+            LoggerUtils.log.severe("No LPhy random variable associated with beast state node " + parameter.getID());
             return null;
         }
     }
@@ -862,7 +868,7 @@ public class BEASTContext {
             operator.initAndValidate();
             operator.setID(parameter.getID() + ".randomWalk");
         }
-        elements.add(operator);
+        elements.put(operator, null);
         return operator;
     }
 
@@ -884,7 +890,7 @@ public class BEASTContext {
             }
         }
 
-        for (BEASTInterface beastInterface : elements) {
+        for (BEASTInterface beastInterface : elements.keySet()) {
             if (beastInterface instanceof Distribution && !likelihoodList.contains(beastInterface) && !priorList.contains(beastInterface)) {
                 priorList.add((Distribution) beastInterface);
             }
@@ -897,13 +903,13 @@ public class BEASTContext {
         priors.setInputValue("distribution", priorList);
         priors.initAndValidate();
         priors.setID("prior");
-        elements.add(priors);
+        elements.put(priors, null);
 
         CompoundDistribution likelihoods = new CompoundDistribution();
         likelihoods.setInputValue("distribution", likelihoodList);
         likelihoods.initAndValidate();
         likelihoods.setID("likelihood");
-        elements.add(likelihoods);
+        elements.put(likelihoods, null);
 
         List<Distribution> posteriorList = new ArrayList<>();
         posteriorList.add(priors);
@@ -913,7 +919,7 @@ public class BEASTContext {
         posterior.setInputValue("distribution", posteriorList);
         posterior.initAndValidate();
         posterior.setID("posterior");
-        elements.add(posterior);
+        elements.put(posterior, null);
 
         return posterior;
     }
@@ -948,7 +954,7 @@ public class BEASTContext {
         State state = new State();
         state.setInputValue("stateNode", this.state);
         state.initAndValidate();
-        elements.add(state);
+        elements.put(state, null);
 
         // TODO make sure the stateNode list is being correctly populated
         mcmc.setInputValue("state", state);
@@ -1021,7 +1027,7 @@ public class BEASTContext {
 
         MCMC mcmc = createMCMC(chainLength, logEvery, fileNameStem, preBurnin);
 
-        String xml = new XMLProducer().toXML(mcmc, elements);
+        String xml = new XMLProducer().toXML(mcmc, elements.keySet());
 
         return xml;
     }
