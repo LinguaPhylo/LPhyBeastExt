@@ -113,6 +113,8 @@ public class PhyloCTMCToBEAST implements GeneratorToBEAST<PhyloCTMC, ThreadedTre
 
         treeLikelihood.initAndValidate();
         treeLikelihood.setID(alignment.getID() + ".treeLikelihood");
+        // logging
+        context.addExtraLogger(treeLikelihood);
 
         return treeLikelihood;
     }
