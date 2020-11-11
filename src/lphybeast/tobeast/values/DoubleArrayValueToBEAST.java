@@ -37,7 +37,6 @@ public class DoubleArrayValueToBEAST implements ValueToBEAST<Double[], BEASTInte
             for (int i = 0; i < values.length; i++) {
                 RealParameter parameter = context.createRealParameter(value.getCanonicalId() + "." + i, values[i]);
                 context.addBEASTObject(parameter);
-
                 args.add(parameter);
             }
             concatenatedParameters.setInputValue("arg", args);

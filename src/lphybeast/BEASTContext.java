@@ -20,9 +20,12 @@ import feast.function.Concatenate;
 import feast.function.Slice;
 import lphy.core.LPhyParser;
 import lphy.core.distributions.Dirichlet;
+import lphy.core.distributions.DirichletMulti;
 import lphy.core.distributions.RandomComposition;
 import lphy.core.functions.ElementsAt;
+import lphy.evolution.birthdeath.SimFBDAge;
 import lphy.evolution.coalescent.SkylineCoalescent;
+import lphy.evolution.tree.TimeTree;
 import lphy.graphicalModel.*;
 import lphy.utils.LoggerUtils;
 import lphybeast.tobeast.generators.*;
@@ -50,7 +53,7 @@ public class BEASTContext {
     // a map of BEASTInterface to graphical model nodes that they represent
     Map<BEASTInterface, GraphicalModelNode<?>> BEASTToLPHYMap = new HashMap<>();
 
-    Map<Class, ValueToBEAST> valueToBEASTMap = new HashMap<>();
+    List<ValueToBEAST> valueToBEASTList = new ArrayList<>();
     Map<Class, GeneratorToBEAST> generatorToBEASTMap = new HashMap<>();
 
     private List<Operator> extraOperators = new ArrayList<>();
@@ -86,7 +89,7 @@ public class BEASTContext {
         for (Class c : valuesToBEASTs) {
             try {
                 ValueToBEAST valueToBEAST = (ValueToBEAST) c.newInstance();
-                valueToBEASTMap.put(valueToBEAST.getValueClass(), valueToBEAST);
+                valueToBEASTList.add(valueToBEAST);
             } catch (InstantiationException | IllegalAccessException e) {
                 e.printStackTrace();
             }
@@ -405,7 +408,7 @@ public class BEASTContext {
 
     public ValueToBEAST getMatchingValueToBEAST(Value value) {
 
-        for (ValueToBEAST possibleToBEAST : valueToBEASTMap.values()) {
+        for (ValueToBEAST possibleToBEAST : valueToBEASTList) {
             if (possibleToBEAST.match(value)) {
                 return possibleToBEAST;
             }
@@ -414,18 +417,13 @@ public class BEASTContext {
     }
 
     public ValueToBEAST getValueToBEAST(Object rawValue) {
-        ValueToBEAST toBEAST = valueToBEASTMap.get(rawValue.getClass());
-
-        if (toBEAST == null) {
-            // else see if there is a compatible to beast
-            for (ValueToBEAST possibleToBEAST : valueToBEASTMap.values()) {
-                // if *ToBEAST exists
-                if (possibleToBEAST.match(rawValue)) {
-                    return possibleToBEAST;
-                }
+        for (ValueToBEAST possibleToBEAST : valueToBEASTList) {
+            // if *ToBEAST exists
+            if (possibleToBEAST.match(rawValue)) {
+                return possibleToBEAST;
             }
         }
-        return toBEAST;
+        return null;
     }
 
     /**
@@ -615,13 +613,16 @@ public class BEASTContext {
             } else if (stateNode instanceof BooleanParameter) {
                 operators.add(createBEASTOperator((BooleanParameter) stateNode));
             } else if (stateNode instanceof Tree) {
-                operators.add(createTreeScaleOperator((Tree) stateNode));
-                operators.add(createRootHeightOperator((Tree) stateNode));
-                operators.add(createExchangeOperator((Tree) stateNode, true));
-                operators.add(createExchangeOperator((Tree) stateNode, false));
-                operators.add(createSubtreeSlideOperator((Tree) stateNode));
-                operators.add(createTreeUniformOperator((Tree) stateNode));
-                operators.add(createWilsonBaldingOperator((Tree) stateNode));
+                Tree tree = (Tree)stateNode;
+
+
+                operators.add(createTreeScaleOperator(tree));
+                operators.add(createRootHeightOperator(tree));
+                operators.add(createExchangeOperator(tree, true));
+                operators.add(createExchangeOperator(tree, false));
+                if (!isSampledAncestor(tree)) operators.add(createSubtreeSlideOperator((Tree) stateNode));
+                operators.add(createTreeUniformOperator(tree));
+                operators.add(createWilsonBaldingOperator(tree));
             }
         }
 
@@ -713,8 +714,14 @@ public class BEASTContext {
         return Math.pow(size, 0.7);
     }
 
+    private boolean isSampledAncestor(Tree tree) {
+       return (((Value<TimeTree>)BEASTToLPHYMap.get(tree)).getGenerator() instanceof SimFBDAge);
+    }
+
     private Operator createTreeScaleOperator(Tree tree) {
-        ScaleOperator operator = new ScaleOperator();
+
+        ScaleOperator operator = isSampledAncestor(tree) ? new SAScaleOperator() : new ScaleOperator();
+
         operator.setInputValue("tree", tree);
         operator.setInputValue("scaleFactor", 0.75);
         // set the upper of the scale factor
@@ -728,7 +735,7 @@ public class BEASTContext {
     }
 
     private Operator createRootHeightOperator(Tree tree) {
-        ScaleOperator operator = new ScaleOperator();
+        ScaleOperator operator = isSampledAncestor(tree) ? new SAScaleOperator() : new ScaleOperator();
         operator.setInputValue("tree", tree);
         operator.setInputValue("rootOnly", true);
         operator.setInputValue("scaleFactor", 0.75);
@@ -743,7 +750,7 @@ public class BEASTContext {
     }
 
     private Operator createTreeUniformOperator(Tree tree) {
-        Uniform uniform = new Uniform();
+        Operator uniform = isSampledAncestor(tree) ? new SAUniform() : new Uniform();
         uniform.setInputValue("tree", tree);
         uniform.setInputValue("weight", getOperatorWeight(tree.getInternalNodeCount()));
         uniform.initAndValidate();
@@ -766,7 +773,7 @@ public class BEASTContext {
     }
 
     private Operator createWilsonBaldingOperator(Tree tree) {
-        WilsonBalding wilsonBalding = new WilsonBalding();
+        Operator wilsonBalding = isSampledAncestor(tree) ? new SAWilsonBalding() : new WilsonBalding();
         wilsonBalding.setInputValue("tree", tree);
         wilsonBalding.setInputValue("weight", getOperatorWeight(tree.getInternalNodeCount()));
         wilsonBalding.initAndValidate();
@@ -777,7 +784,7 @@ public class BEASTContext {
     }
 
     private Operator createExchangeOperator(Tree tree, boolean isNarrow) {
-        Exchange exchange = new Exchange();
+        Exchange exchange = isSampledAncestor(tree) ? new SAExchange() : new Exchange();
         exchange.setInputValue("tree", tree);
         exchange.setInputValue("weight", getOperatorWeight(tree.getInternalNodeCount()));
         exchange.setInputValue("isNarrow", isNarrow);
@@ -796,7 +803,9 @@ public class BEASTContext {
             RandomVariable<?> variable = (RandomVariable<?>) graphicalModelNode;
 
             Operator operator;
-            if (variable.getGenerativeDistribution() instanceof Dirichlet) {
+            GenerativeDistribution generativeDistribution = variable.getGenerativeDistribution();
+
+            if (generativeDistribution instanceof Dirichlet || generativeDistribution instanceof DirichletMulti) {
                 Double[] value = (Double[]) variable.value();
                 operator = new DeltaExchangeOperator();
                 operator.setInputValue("parameter", parameter);

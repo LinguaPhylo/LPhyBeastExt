@@ -4,7 +4,6 @@ import beast.core.BEASTInterface;
 import beast.core.parameter.RealParameter;
 import beast.evolution.speciation.SABirthDeathModel;
 import beast.evolution.tree.Tree;
-import lphy.evolution.birthdeath.FossilBirthDeathTree;
 import lphy.evolution.birthdeath.SimFBDAge;
 import lphy.evolution.tree.TimeTree;
 import lphy.graphicalModel.Value;
@@ -41,7 +40,7 @@ public class SimFBDAgeToBEAST implements
         saBirthDeathModel.setInputValue("rho", context.getAsRealParameter(generator.getRho()));
         saBirthDeathModel.setInputValue("samplingRate", context.getAsRealParameter(generator.getPsi()));
         saBirthDeathModel.setInputValue("removalProbability", BEASTContext.createRealParameter(0.0));
-        saBirthDeathModel.setInputValue("origin", originParameter );
+        saBirthDeathModel.setInputValue("origin", originParameter);
         saBirthDeathModel.setInputValue("tree", tree);
         saBirthDeathModel.setInputValue("conditionOnSampling", true);
         saBirthDeathModel.initAndValidate();
