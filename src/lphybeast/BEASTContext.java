@@ -12,6 +12,7 @@ import beast.evolution.operators.*;
 import beast.evolution.substitutionmodel.Frequencies;
 import beast.evolution.tree.Tree;
 import beast.evolution.tree.TreeInterface;
+import beast.evolution.tree.TreeStatLogger;
 import beast.evolution.tree.TreeWithMetaDataLogger;
 import beast.math.distributions.ParametricDistribution;
 import beast.math.distributions.Prior;
@@ -653,7 +654,20 @@ public class BEASTContext {
         // seems only posterior prior likelihood
         nonTrees.addAll(Arrays.asList(compDist));
 
-        nonTrees.addAll(extraLoggables);
+        // tree height, but not in screen logging
+        if (fileName != null) {
+            List<Tree> trees = getTrees();
+            for (Tree tree : trees) {
+// <log id="TreeHeight" spec="beast.evolution.tree.TreeStatLogger" tree="@Tree"/>
+                TreeStatLogger treeStatLogger = new TreeStatLogger();
+                treeStatLogger.initByName("tree", tree, "logLength", false);
+                nonTrees.add(treeStatLogger);
+            }
+        }
+
+        // not in screen logging
+        if (fileName != null)
+            nonTrees.addAll(extraLoggables);
 
         Logger logger = new Logger();
         logger.setInputValue("logEvery", logEvery);
@@ -664,13 +678,17 @@ public class BEASTContext {
         return logger;
     }
 
-    private List<Logger> createTreeLoggers(int logEvery, String fileNameStem) {
-
-        List<Tree> trees = state.stream()
+    public List<Tree> getTrees() {
+        return state.stream()
                 .filter(stateNode -> stateNode instanceof Tree)
                 .map(stateNode -> (Tree) stateNode)
                 .sorted(Comparator.comparing(BEASTObject::getID))
                 .collect(Collectors.toList());
+    }
+
+    private List<Logger> createTreeLoggers(int logEvery, String fileNameStem) {
+
+        List<Tree> trees = getTrees();
 
         boolean multipleTrees = trees.size() > 1;
 
