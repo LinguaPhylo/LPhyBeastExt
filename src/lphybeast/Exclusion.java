@@ -1,5 +1,6 @@
 package lphybeast;
 
+import lphy.core.distributions.DiscretizedGamma;
 import lphy.core.distributions.RandomComposition;
 import lphy.core.distributions.WeightedDirichlet;
 import lphy.core.functions.*;
@@ -36,14 +37,15 @@ public class Exclusion {
 
     public static boolean isExcludedGenerator(Generator generator) {
 
-        return ((generator instanceof WeightedDirichlet) || (generator instanceof IntegerArray) ||
-                (generator instanceof ExpressionNode) || (generator instanceof RandomComposition) ||
-                (generator instanceof NTaxaFunction) || (generator instanceof NCharFunction) ||
-                (generator instanceof CreateTaxa) || (generator instanceof TaxaFunction) ||
-                (generator instanceof Species) || (generator instanceof TaxaAgesFromFunction) ||
-                (generator instanceof ReadNexus) ||
-                (generator instanceof ARange) || (generator instanceof Range) ||
-                (generator instanceof MapFunction) || (generator instanceof MethodCall)  ||
-                generator instanceof RangeList || generator instanceof ElementsAt) || generator instanceof Rep;
+        return generator instanceof WeightedDirichlet || generator instanceof IntegerArray ||
+                generator instanceof ExpressionNode || generator instanceof RandomComposition ||
+                generator instanceof NTaxaFunction || generator instanceof NCharFunction ||
+                generator instanceof CreateTaxa || generator instanceof TaxaFunction ||
+                generator instanceof Species || generator instanceof TaxaAgesFromFunction ||
+                generator instanceof ReadNexus ||
+                generator instanceof ARange || generator instanceof Range ||
+                generator instanceof MapFunction || generator instanceof MethodCall  ||
+                generator instanceof RangeList || generator instanceof ElementsAt || generator instanceof Rep ||
+                generator instanceof DiscretizedGamma;
     }
 }

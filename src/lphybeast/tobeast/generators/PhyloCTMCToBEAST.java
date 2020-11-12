@@ -2,7 +2,6 @@ package lphybeast.tobeast.generators;
 
 import beast.core.BEASTInterface;
 import beast.core.parameter.RealParameter;
-import beast.evolution.alignment.Alignment;
 import beast.evolution.branchratemodel.StrictClockModel;
 import beast.evolution.branchratemodel.UCRelaxedClockModel;
 import beast.evolution.likelihood.ThreadedTreeLikelihood;
@@ -21,7 +20,6 @@ import lphy.evolution.branchrates.LocalBranchRates;
 import lphy.evolution.likelihood.PhyloCTMC;
 import lphy.evolution.substitutionmodel.RateMatrix;
 import lphy.evolution.tree.TimeTree;
-import lphy.graphicalModel.GenerativeDistribution;
 import lphy.graphicalModel.Generator;
 import lphy.graphicalModel.RandomVariable;
 import lphy.graphicalModel.Value;
@@ -122,6 +120,9 @@ public class PhyloCTMCToBEAST implements GeneratorToBEAST<PhyloCTMC, ThreadedTre
                 DiscretizedGamma discretizedGamma = (DiscretizedGamma)generator;
                 siteModel.setInputValue("shape", context.getAsRealParameter(discretizedGamma.getShape()));
                 siteModel.setInputValue("gammaCategoryCount", discretizedGamma.getNcat().value());
+
+                //TODO need a better solution than rm RandomVariable siteRates
+                context.removeBEASTObject(context.getBEASTObject(siteRates));
             } else {
                 throw new RuntimeException("Only discretized gamma site rates are supported by LPhyBEAST");
             }
