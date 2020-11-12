@@ -51,6 +51,9 @@ public class BEASTContext {
     private Multimap<BEASTInterface, GraphicalModelNode<?>> elements = HashMultimap.create();
     List<StateNodeInitialiser> inits = new ArrayList<>();
 
+    // a list of beast state nodes to skip the automatic operator creation for.
+    private Set<StateNode> skipOperators = new HashSet<>();
+
     // a map of graphical model nodes to a list of equivalent BEASTInterface objects
     private Map<GraphicalModelNode<?>, BEASTInterface> beastObjects = new HashMap<>();
 
@@ -278,17 +281,23 @@ public class BEASTContext {
         elements.put(newBEASTObject, graphicalModelNode);
     }
 
-    public void addStateNode(StateNode stateNode, GraphicalModelNode graphicalModelNode) {
+    /**
+     * @param stateNode the state node to be added
+     * @param graphicalModelNode the graphical model node that this state node corresponds to, or represents a part of
+     */
+    public void addStateNode(StateNode stateNode, GraphicalModelNode graphicalModelNode, boolean createOperators) {
         if (!state.contains(stateNode)) {
             elements.put(stateNode, graphicalModelNode);
             state.add(stateNode);
         }
+        if (!createOperators) skipOperators.add(stateNode);
     }
 
     public void removeBEASTObject(BEASTInterface beastObject) {
         elements.removeAll(beastObject);
-        state.remove(beastObject);
         BEASTToLPHYMap.remove(beastObject);
+        if (beastObject instanceof StateNode) state.remove(beastObject);
+        if (beastObject instanceof StateNode) skipOperators.remove(beastObject);
 
         GraphicalModelNode matchingKey = null;
         for (GraphicalModelNode key : beastObjects.keySet()) {
@@ -608,25 +617,24 @@ public class BEASTContext {
         List<Operator> operators = new ArrayList<>();
 
         for (StateNode stateNode : state) {
-            System.out.println("State node" + stateNode);
-            if (stateNode instanceof RealParameter) {
-                Operator operator = createBEASTOperator((RealParameter) stateNode);
-                if (operator != null) operators.add(operator);
-            } else if (stateNode instanceof IntegerParameter) {
-                operators.add(createBEASTOperator((IntegerParameter) stateNode));
-            } else if (stateNode instanceof BooleanParameter) {
-                operators.add(createBEASTOperator((BooleanParameter) stateNode));
-            } else if (stateNode instanceof Tree) {
-                Tree tree = (Tree)stateNode;
-
-
-                operators.add(createTreeScaleOperator(tree));
-                operators.add(createRootHeightOperator(tree));
-                operators.add(createExchangeOperator(tree, true));
-                operators.add(createExchangeOperator(tree, false));
-                if (!isSampledAncestor(tree)) operators.add(createSubtreeSlideOperator((Tree) stateNode));
-                operators.add(createTreeUniformOperator(tree));
-                if (!isSampledAncestor(tree)) operators.add(createWilsonBaldingOperator(tree));
+            if (!skipOperators.contains(stateNode)) {
+                if (stateNode instanceof RealParameter) {
+                    Operator operator = createBEASTOperator((RealParameter) stateNode);
+                    if (operator != null) operators.add(operator);
+                } else if (stateNode instanceof IntegerParameter) {
+                    operators.add(createBEASTOperator((IntegerParameter) stateNode));
+                } else if (stateNode instanceof BooleanParameter) {
+                    operators.add(createBEASTOperator((BooleanParameter) stateNode));
+                } else if (stateNode instanceof Tree) {
+                    Tree tree = (Tree) stateNode;
+                    operators.add(createTreeScaleOperator(tree));
+                    operators.add(createRootHeightOperator(tree));
+                    operators.add(createExchangeOperator(tree, true));
+                    operators.add(createExchangeOperator(tree, false));
+                    if (!isSampledAncestor(tree)) operators.add(createSubtreeSlideOperator((Tree) stateNode));
+                    operators.add(createTreeUniformOperator(tree));
+                    if (!isSampledAncestor(tree)) operators.add(createWilsonBaldingOperator(tree));
+                }
             }
         }
 
@@ -1004,6 +1012,7 @@ public class BEASTContext {
         elements.clear();
         beastObjects.clear();
         extraOperators.clear();
+        skipOperators.clear();
     }
 
     public void runBEAST(String fileNameStem) {
