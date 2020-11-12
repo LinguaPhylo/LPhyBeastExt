@@ -2,6 +2,7 @@ package lphybeast.tobeast.generators;
 
 import beast.core.BEASTInterface;
 import beast.core.parameter.RealParameter;
+import beast.evolution.alignment.Alignment;
 import beast.evolution.branchratemodel.StrictClockModel;
 import beast.evolution.branchratemodel.UCRelaxedClockModel;
 import beast.evolution.likelihood.ThreadedTreeLikelihood;
@@ -14,11 +15,13 @@ import consoperators.BigPulley;
 import consoperators.InConstantDistanceOperator;
 import consoperators.SimpleDistance;
 import consoperators.SmallPulley;
+import lphy.core.distributions.DiscretizedGamma;
 import lphy.core.distributions.LogNormalMulti;
 import lphy.evolution.branchrates.LocalBranchRates;
 import lphy.evolution.likelihood.PhyloCTMC;
 import lphy.evolution.substitutionmodel.RateMatrix;
 import lphy.evolution.tree.TimeTree;
+import lphy.graphicalModel.GenerativeDistribution;
 import lphy.graphicalModel.Generator;
 import lphy.graphicalModel.RandomVariable;
 import lphy.graphicalModel.Value;
@@ -91,6 +94,39 @@ public class PhyloCTMCToBEAST implements GeneratorToBEAST<PhyloCTMC, ThreadedTre
             }
         }
 
+        SiteModel siteModel = constructSiteModel(phyloCTMC, context);
+        treeLikelihood.setInputValue("siteModel", siteModel);
+
+        treeLikelihood.initAndValidate();
+        treeLikelihood.setID(alignment.getID() + ".treeLikelihood");
+        // logging
+        context.addExtraLogger(treeLikelihood);
+
+        return treeLikelihood;
+    }
+
+    /**
+     * @param phyloCTMC the phyloCTMC object
+     * @param context the beast context
+     * @return a BEAST SiteModel representing the site model of this LPHY PhyloCTMC
+     */
+    private SiteModel constructSiteModel(PhyloCTMC phyloCTMC, BEASTContext context) {
+
+        SiteModel siteModel = new SiteModel();
+
+        Value<Double[]> siteRates = phyloCTMC.getSiteRates();
+
+        if (siteRates != null) {
+            Generator generator = siteRates.getGenerator();
+            if (generator instanceof DiscretizedGamma) {
+                DiscretizedGamma discretizedGamma = (DiscretizedGamma)generator;
+                siteModel.setInputValue("shape", context.getAsRealParameter(discretizedGamma.getShape()));
+                siteModel.setInputValue("gammaCategoryCount", discretizedGamma.getNcat().value());
+            } else {
+                throw new RuntimeException("Only discretized gamma site rates are supported by LPhyBEAST");
+            }
+        }
+
         Generator qGenerator = phyloCTMC.getQ().getGenerator();
         if (qGenerator == null || !(qGenerator instanceof RateMatrix)) {
             throw new RuntimeException("BEAST2 only supports Q matrices constructed by a RateMatrix function (e.g. hky, gtr, jukeCantor et cetera).");
@@ -103,20 +139,11 @@ public class PhyloCTMCToBEAST implements GeneratorToBEAST<PhyloCTMC, ThreadedTre
 
             if (substitutionModel == null) throw new IllegalArgumentException("Substitution Model was null!");
 
-            SiteModel siteModel = new SiteModel();
             siteModel.setInputValue("substModel", substitutionModel);
             if (mutationRate != null) siteModel.setInputValue("mutationRate", mutationRate);
             siteModel.initAndValidate();
-
-            treeLikelihood.setInputValue("siteModel", siteModel);
         }
-
-        treeLikelihood.initAndValidate();
-        treeLikelihood.setID(alignment.getID() + ".treeLikelihood");
-        // logging
-        context.addExtraLogger(treeLikelihood);
-
-        return treeLikelihood;
+        return siteModel;
     }
 
     private void addRelaxedClockOperators(Tree tree, UCRelaxedClockModel relaxedClockModel, RealParameter rates, BEASTContext context) {
