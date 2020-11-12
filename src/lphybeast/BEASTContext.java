@@ -727,6 +727,7 @@ public class BEASTContext {
             }
 
             if (fileNameStem != null) logger.setInputValue("fileName", fileName);
+            logger.setInputValue("mode", "tree");
             logger.initAndValidate();
             logger.setID(tree.getID() + ".treeLogger");
             treeLoggers.add(logger);
