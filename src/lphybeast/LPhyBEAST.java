@@ -1,6 +1,11 @@
 package lphybeast;
 
+import lphy.app.GraphicalLPhyParser;
 import lphy.core.LPhyParser;
+import lphy.core.Sampler;
+import lphy.core.TreeFileLogger;
+import lphy.core.VarFileLogger;
+import lphy.graphicalModel.RandomValueLogger;
 import lphy.parser.REPL;
 import lphy.utils.LoggerUtils;
 import picocli.CommandLine;
@@ -11,6 +16,8 @@ import picocli.CommandLine.Parameters;
 import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 @Command(name = "lphybeast", version = "LPhyBEAST " + LPhyBEAST.VERSION, footer = "Copyright(c) 2020",
@@ -34,6 +41,10 @@ public class LPhyBEAST implements Callable<Integer> {
     int chainLength;
     @Option(names = {"-b", "--preBurnin"}, defaultValue = "0", description = "define the number of burn in samples taken before entering the main loop of MCMC")
     int preBurnin;
+
+    //well calibrated study
+    @Option(names = {"-r", "--replicates"},    description = "the number of replicates (XML) given one LPhy script.")
+    int rep;
 
 //    @Option(names = {"-wd", "--workdir"}, description = "Working directory") Path wd;
 //    @Option(names = {"-n", "--nex"},    description = "BEAST 2 partitions defined in Nexus file")
@@ -101,6 +112,15 @@ public class LPhyBEAST implements Callable<Integer> {
         //*** Parse LPhy file ***//
         LPhyParser parser = new REPL();
         parser.source(reader);
+
+        // log true values and tree
+        List<RandomValueLogger> loggers = new ArrayList<>();
+        loggers.add(new VarFileLogger(fileNameStem, true, true));
+        loggers.add(new TreeFileLogger(fileNameStem));
+
+        GraphicalLPhyParser gparser = new GraphicalLPhyParser(parser);
+        Sampler sampler = new Sampler(gparser);
+        sampler.sample(1, loggers);
 
         // register parser
         BEASTContext context = new BEASTContext(parser);
