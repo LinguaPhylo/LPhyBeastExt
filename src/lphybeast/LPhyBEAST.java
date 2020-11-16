@@ -43,8 +43,8 @@ public class LPhyBEAST implements Callable<Integer> {
     int preBurnin;
 
     //well calibrated study
-    @Option(names = {"-r", "--replicates"},    description = "the number of replicates (XML) given one LPhy script.")
-    int rep;
+    @Option(names = {"-r", "--replicates"}, defaultValue = "1", description = "the number of replicates (XML) given one LPhy script, " +
+            "usually to create simulations for well-calibrated study.") int rep;
 
 //    @Option(names = {"-wd", "--workdir"}, description = "Working directory") Path wd;
 //    @Option(names = {"-n", "--nex"},    description = "BEAST 2 partitions defined in Nexus file")
@@ -83,6 +83,21 @@ public class LPhyBEAST implements Callable<Integer> {
             fileNameStem = fileName.substring(0, fileName.lastIndexOf("."));
         }
 
+        if (rep > 1) {
+            // well-calibrated validations
+            for (int i = 0; i < rep; i++) {
+                fileNameStem += "_" + i;
+                createXML(reader, fileNameStem, outfile, chainLength, preBurnin);
+            }
+        } else
+            createXML(reader, fileNameStem, outfile, chainLength, preBurnin);
+
+        return 0;
+    }
+
+    private void createXML(BufferedReader reader, String fileNameStem, Path outfile,
+                           long chainLength, int preBurnin) throws IOException {
+
         String xml = toBEASTXML(reader, fileNameStem, chainLength, preBurnin);
 
         PrintWriter writer = new PrintWriter(new FileWriter(outfile.toFile()));
@@ -92,7 +107,6 @@ public class LPhyBEAST implements Callable<Integer> {
 
         System.out.println("\nCreate BEAST 2 XML : " +
                 Paths.get(System.getProperty("user.dir"), outfile.toString()));
-        return 0;
     }
 
 
@@ -115,8 +129,9 @@ public class LPhyBEAST implements Callable<Integer> {
 
         // log true values and tree
         List<RandomValueLogger> loggers = new ArrayList<>();
-        loggers.add(new VarFileLogger(fileNameStem, true, true));
-        loggers.add(new TreeFileLogger(fileNameStem));
+        final String fileNameStemTrueVaule = fileNameStem + "_" + "true";
+        loggers.add(new VarFileLogger(fileNameStemTrueVaule, true, true));
+        loggers.add(new TreeFileLogger(fileNameStemTrueVaule));
 
         GraphicalLPhyParser gparser = new GraphicalLPhyParser(parser);
         Sampler sampler = new Sampler(gparser);
