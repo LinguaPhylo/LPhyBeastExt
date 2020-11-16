@@ -68,17 +68,12 @@ public class LPhyBEAST implements Callable<Integer> {
 
     @Override
     public Integer call() throws IOException { // business logic goes here...
-        BufferedReader reader = new BufferedReader(new FileReader(infile.toFile()));
 //        String wkdir = infile.getParent().toString();
         String fileName = infile.getFileName().toString();
         String fileNameStem = fileName.substring(0, fileName.lastIndexOf("."));
 
         // if outfile is given, it will prefer to extract the fileNameStem from outfile
-        if (outfile == null) {
-            String outPath = fileNameStem + ".xml";
-            // create outfile in the same dir of infile as default
-            outfile = Paths.get(outPath);
-        } else {
+        if (outfile != null) {
             fileName = outfile.getFileName().toString();
             fileNameStem = fileName.substring(0, fileName.lastIndexOf("."));
         }
@@ -86,19 +81,27 @@ public class LPhyBEAST implements Callable<Integer> {
         if (rep > 1) {
             // well-calibrated validations
             for (int i = 0; i < rep; i++) {
-                fileNameStem += "_" + i;
-                createXML(reader, fileNameStem, outfile, chainLength, preBurnin);
+                // update fileNameStem and outfile
+                final String repFileNameStem = fileNameStem + "_" + i;
+                // need new reader
+                createXML(infile, repFileNameStem, chainLength, preBurnin);
             }
         } else
-            createXML(reader, fileNameStem, outfile, chainLength, preBurnin);
+            createXML(infile, fileNameStem, chainLength, preBurnin);
 
         return 0;
     }
 
-    private void createXML(BufferedReader reader, String fileNameStem, Path outfile,
-                           long chainLength, int preBurnin) throws IOException {
+    // fileNameStem for both outfile and XML loggers
+    private void createXML(Path infile, String fileNameStem, long chainLength, int preBurnin) throws IOException {
+        BufferedReader reader = new BufferedReader(new FileReader(infile.toFile()));
 
         String xml = toBEASTXML(reader, fileNameStem, chainLength, preBurnin);
+
+        // use fileNameStem to recover outfile
+        String outPath = fileNameStem + ".xml";
+        // create outfile in the same dir of infile as default
+        Path outfile = Paths.get(outPath);
 
         PrintWriter writer = new PrintWriter(new FileWriter(outfile.toFile()));
         writer.println(xml);
