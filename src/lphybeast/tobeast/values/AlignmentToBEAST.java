@@ -1,7 +1,9 @@
 package lphybeast.tobeast.values;
 
 import beast.evolution.alignment.Sequence;
+import beast.evolution.datatype.StandardData;
 import lphy.evolution.alignment.SimpleAlignment;
+import lphy.evolution.sequences.Standard;
 import lphy.graphicalModel.Value;
 import lphybeast.BEASTContext;
 import lphybeast.ValueToBEAST;
@@ -30,17 +32,26 @@ public class AlignmentToBEAST implements ValueToBEAST<SimpleAlignment, beast.evo
 
         beastAlignment = new beast.evolution.alignment.Alignment();
 
-        String datatype = alignment.getSequenceTypeStr();
-        if (datatype.equalsIgnoreCase("unknown"))
-            throw new IllegalArgumentException("Invalid data type " + datatype);
-
+        String datatype = getBEASTDataType(alignment);
         beastAlignment.setInputValue("dataType", datatype);
+        if (datatype.equals(Standard.NAME)) {
+            StandardData type = new StandardData();
+            // this will create codeMapping in StandardData
+            type.setInputValue("nrOfStates", alignment.getSequenceType().getCanonicalStateCount());
+            type.initAndValidate();
+            beastAlignment.setInputValue("userDataType", type);
+        }
         beastAlignment.setInputValue("sequence", sequences);
         beastAlignment.initAndValidate();
 
         // using LPhy var as ID allows multiple alignments
         if (!alignmentValue.isAnonymous()) beastAlignment.setID(alignmentValue.getCanonicalId());
         return beastAlignment;
+    }
+
+    // TODO better solution to getDataType
+    private String getBEASTDataType(SimpleAlignment alignment) {
+        return alignment.getSequenceTypeStr();
     }
 
     private Sequence createBEASTSequence(String taxon, String sequence) {
