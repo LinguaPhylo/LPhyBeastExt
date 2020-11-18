@@ -68,14 +68,16 @@ public class LPhyBEAST implements Callable<Integer> {
 
     @Override
     public Integer call() throws IOException { // business logic goes here...
-//        String wkdir = infile.getParent().toString();
         String fileName = infile.getFileName().toString();
         String fileNameStem = fileName.substring(0, fileName.lastIndexOf("."));
 
+        // null, if only file
+        Path wd = infile.getParent();
         // if outfile is given, it will prefer to extract the fileNameStem from outfile
         if (outfile != null) {
             fileName = outfile.getFileName().toString();
             fileNameStem = fileName.substring(0, fileName.lastIndexOf("."));
+            wd = outfile.getParent();
         }
 
         if (rep > 1) {
@@ -84,24 +86,25 @@ public class LPhyBEAST implements Callable<Integer> {
                 // update fileNameStem and outfile
                 final String repFileNameStem = fileNameStem + "_" + i;
                 // need new reader
-                createXML(infile, repFileNameStem, chainLength, preBurnin);
+                createXML(infile, wd, repFileNameStem, chainLength, preBurnin);
             }
         } else
-            createXML(infile, fileNameStem, chainLength, preBurnin);
+            createXML(infile, wd, fileNameStem, chainLength, preBurnin);
 
         return 0;
     }
 
     // fileNameStem for both outfile and XML loggers
-    private void createXML(Path infile, String fileNameStem, long chainLength, int preBurnin) throws IOException {
+    private void createXML(Path infile, Path wd, String fileNameStem, long chainLength, int preBurnin) throws IOException {
+        // need to call reader each loop
         BufferedReader reader = new BufferedReader(new FileReader(infile.toFile()));
 
         String xml = toBEASTXML(reader, fileNameStem, chainLength, preBurnin);
 
         // use fileNameStem to recover outfile
         String outPath = fileNameStem + ".xml";
-        // create outfile in the same dir of infile as default
-        Path outfile = Paths.get(outPath);
+        // as default wd is null then use the dir of infile
+        Path outfile = wd==null ? Paths.get(outPath) : Paths.get(wd.toString(), outPath);
 
         PrintWriter writer = new PrintWriter(new FileWriter(outfile.toFile()));
         writer.println(xml);
