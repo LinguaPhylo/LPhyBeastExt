@@ -46,6 +46,6 @@ public class Exclusion {
                 generator instanceof ARange || generator instanceof Range ||
                 generator instanceof MapFunction || generator instanceof MethodCall  ||
                 generator instanceof RangeList || generator instanceof ElementsAt || generator instanceof Rep ||
-                generator instanceof DiscretizedGamma;
+                generator instanceof DiscretizedGamma || generator instanceof Length;
     }
 }
