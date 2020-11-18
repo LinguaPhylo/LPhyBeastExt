@@ -80,13 +80,13 @@ public class BEASTContext {
     private void registerValues() {
         // the first matching converter is used.
         final Class[] valuesToBEASTs = {
-                CompoundVectorToBEAST.class,
-                AlignmentToBEAST.class, // simulated alignment
-                TimeTreeToBEAST.class,
-                DoubleValueToBEAST.class,
                 DoubleArrayValueToBEAST.class,
                 IntegerArrayValueToBEAST.class,
                 NumberArrayValueToBEAST.class,
+                CompoundVectorToBEAST.class, // TODO handle primitive CompoundVector properly
+                AlignmentToBEAST.class, // simulated alignment
+                TimeTreeToBEAST.class,
+                DoubleValueToBEAST.class,
                 DoubleArray2DValueToBEAST.class,
                 IntegerValueToBEAST.class,
                 BooleanArrayValueToBEAST.class,
@@ -909,11 +909,12 @@ public class BEASTContext {
             if (entry.getValue() instanceof Distribution) {
                 GenerativeDistribution g = (GenerativeDistribution) entry.getKey();
 
-                if (generatorOfSink(g)) {
-                    likelihoodList.add((Distribution) entry.getValue());
-                } else {
-                    priorList.add((Distribution) entry.getValue());
-                }
+                Distribution dist = (Distribution) entry.getValue();
+                if (generatorOfSink(g))
+                    likelihoodList.add(dist);
+                else
+                    priorList.add(dist);
+
             }
         }
 
@@ -955,6 +956,15 @@ public class BEASTContext {
         for (Value<?> var : parser.getModelSinks()) {
             if (var.getGenerator() == g) {
                 return true;
+            }
+            if (var instanceof VectorizedRandomVariable) {
+                VectorizedRandomVariable vv = (VectorizedRandomVariable) var;
+                for (int i = 0; i < vv.size(); i++) {
+                    RandomVariable rv = vv.getComponentValue(i);
+                    if (rv.getGenerator() == g) {
+                        return true;
+                    }
+                }
             }
         }
         return false;
