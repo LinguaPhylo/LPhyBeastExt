@@ -45,6 +45,10 @@ import static java.lang.Math.toIntExact;
 
 public class BEASTContext {
 
+    public static final String POSTERIOR_ID = "posterior";
+    public static final String PRIOR_ID = "prior";
+    public static final String LIKELIHOOD_ID = "likelihood";
+
     List<StateNode> state = new ArrayList<>();
 
     // a list of extra beast elements in the keys, with a pointer to the graphical model node that caused their production
@@ -660,11 +664,6 @@ public class BEASTContext {
                 .filter(stateNode -> !(stateNode instanceof Tree))
                 .collect(Collectors.toList());
 
-        CompoundDistribution[] compDist = elements.keySet().stream().
-                filter(b -> b instanceof CompoundDistribution).toArray(CompoundDistribution[]::new);
-        // seems only posterior prior likelihood
-        nonTrees.addAll(Arrays.asList(compDist));
-
         // tree height, but not in screen logging
         if (fileName != null) {
             List<Tree> trees = getTrees();
@@ -679,6 +678,20 @@ public class BEASTContext {
         // not in screen logging
         if (fileName != null)
             nonTrees.addAll(extraLoggables);
+
+        // add in the end to avoid sorting
+        CompoundDistribution[] top = new CompoundDistribution[3];
+        for (BEASTInterface bI : elements.keySet()) {
+            if (bI instanceof CompoundDistribution && bI.getID() != null) {
+                if (bI.getID().equals(POSTERIOR_ID))
+                    top[0] = (CompoundDistribution) bI;
+                else if (bI.getID().equals(LIKELIHOOD_ID))
+                    top[1] = (CompoundDistribution) bI;
+                else if (bI.getID().equals(PRIOR_ID))
+                    top[2] = (CompoundDistribution) bI;
+            }
+        }
+        nonTrees.addAll(0, Arrays.asList(top));
 
         Logger logger = new Logger();
         logger.setInputValue("logEvery", logEvery);
@@ -745,7 +758,7 @@ public class BEASTContext {
     }
 
     private boolean isSampledAncestor(Tree tree) {
-       return (((Value<TimeTree>)BEASTToLPHYMap.get(tree)).getGenerator() instanceof SimFBDAge);
+        return (((Value<TimeTree>)BEASTToLPHYMap.get(tree)).getGenerator() instanceof SimFBDAge);
     }
 
     private Operator createTreeScaleOperator(Tree tree) {
@@ -930,13 +943,13 @@ public class BEASTContext {
         CompoundDistribution priors = new CompoundDistribution();
         priors.setInputValue("distribution", priorList);
         priors.initAndValidate();
-        priors.setID("prior");
+        priors.setID(PRIOR_ID);
         elements.put(priors, null);
 
         CompoundDistribution likelihoods = new CompoundDistribution();
         likelihoods.setInputValue("distribution", likelihoodList);
         likelihoods.initAndValidate();
-        likelihoods.setID("likelihood");
+        likelihoods.setID(LIKELIHOOD_ID);
         elements.put(likelihoods, null);
 
         List<Distribution> posteriorList = new ArrayList<>();
@@ -946,7 +959,7 @@ public class BEASTContext {
         CompoundDistribution posterior = new CompoundDistribution();
         posterior.setInputValue("distribution", posteriorList);
         posterior.initAndValidate();
-        posterior.setID("posterior");
+        posterior.setID(POSTERIOR_ID);
         elements.put(posterior, null);
 
         return posterior;
