@@ -26,7 +26,7 @@ public class LPhyBEAST implements Callable<Integer> {
 
     public static final String VERSION = "0.0.1 alpha";
 
-    @Parameters(paramLabel = "LPhy", description = "File of the LPhy model specification")
+    @Parameters(paramLabel = "LPhy_scripts", description = "File of the LPhy model specification")
     Path infile;
 
     @Option(names = {"-V", "--version"}, versionHelp = true, description = "display version info")
