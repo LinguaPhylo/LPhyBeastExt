@@ -507,6 +507,11 @@ public class BEASTContext {
                     beastValue = getBEASTObject(getClampedValue(value.getId()));
                 }
 
+                if (beastValue == null) {
+                    LoggerUtils.log.severe("Cannot find beast object given " + value);
+                    return;
+                }
+
                 if (modifyValues) {
                     toBEAST.modifyBEASTValues(generator, beastValue, this);
                 }

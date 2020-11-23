@@ -1,11 +1,9 @@
 package lphybeast.tobeast.values;
 
 import beast.core.BEASTInterface;
-import lphy.core.distributions.VectorizedDistribution;
-import lphy.core.functions.VectorizedFunction;
 import lphy.graphicalModel.CompoundVector;
 import lphy.graphicalModel.Value;
-import lphy.graphicalModel.Vector;
+import lphy.graphicalModel.types.StringValue;
 import lphybeast.BEASTContext;
 import lphybeast.ValueToBEAST;
 import outercore.util.BEASTVector;
@@ -24,6 +22,8 @@ public class CompoundVectorToBEAST implements ValueToBEAST<Object, BEASTVector> 
         List<BEASTInterface> beastValues = new ArrayList<>();
         for (int i = 0; i < vectorValue.size(); i++)  {
             Value componentValue = vectorValue.getComponentValue(i);
+            if (componentValue instanceof StringValue)
+                return null;
             ValueToBEAST toBEAST = context.getMatchingValueToBEAST(componentValue);
 
             BEASTInterface beastValue = toBEAST.valueToBEAST(componentValue, context);
