@@ -14,6 +14,8 @@ import beast.evolution.tree.Tree;
 import beast.evolution.tree.TreeInterface;
 import beast.evolution.tree.TreeStatLogger;
 import beast.evolution.tree.TreeWithMetaDataLogger;
+import beast.mascot.distribution.Mascot;
+import beast.mascot.logger.StructuredTreeLogger;
 import beast.math.distributions.ParametricDistribution;
 import beast.math.distributions.Prior;
 import beast.util.XMLProducer;
@@ -28,6 +30,7 @@ import lphy.core.distributions.RandomComposition;
 import lphy.core.functions.ElementsAt;
 import lphy.evolution.birthdeath.SimFBDAge;
 import lphy.evolution.coalescent.SkylineCoalescent;
+import lphy.evolution.coalescent.StructuredCoalescent;
 import lphy.evolution.tree.TimeTree;
 import lphy.graphicalModel.*;
 import lphy.utils.LoggerUtils;
@@ -727,7 +730,8 @@ public class BEASTContext {
             // TODO generalise
             GraphicalModelNode graphicalModelNode = BEASTToLPHYMap.get(tree);
             Generator generator = ((RandomVariable) graphicalModelNode).getGenerator();
-            boolean logMetaData = generator instanceof SkylineCoalescent;
+            boolean logMetaData = generator instanceof SkylineCoalescent ||
+                    generator instanceof StructuredCoalescent;
 
             Logger logger = new Logger();
             logger.setInputValue("logEvery", logEvery);
@@ -738,19 +742,40 @@ public class BEASTContext {
             } else
                 logger.setInputValue("log", tree);
 
-            String fileName = fileNameStem + ".trees";
-
-            if (multipleTrees) {
+            String fileName = Objects.requireNonNull(fileNameStem) + ".trees";
+            if (multipleTrees) // multi-partitions and unlink trees
                 fileName = fileNameStem + "_" + tree.getID() + ".trees";
-            }
 
-            if (fileNameStem != null) logger.setInputValue("fileName", fileName);
+            logger.setInputValue("fileName", fileName);
             logger.setInputValue("mode", "tree");
             logger.initAndValidate();
             logger.setID(tree.getID() + ".treeLogger");
             treeLoggers.add(logger);
             elements.put(logger, null);
         }
+
+        // extra tree logger
+        for (Loggable loggable : extraLoggables) {
+            if (loggable instanceof beast.mascot.distribution.Mascot) {
+                Logger logger = new Logger();
+                logger.setInputValue("logEvery", logEvery);
+                StructuredTreeLogger structuredTreeLogger = new StructuredTreeLogger();
+                structuredTreeLogger.setInputValue("mascot", loggable);
+                logger.setInputValue("log", structuredTreeLogger);
+
+                String treeFNSteam = fileNameStem;
+                if (multipleTrees) // multi-partitions and unlink trees
+                    treeFNSteam = fileNameStem + "_" + ((Mascot) loggable).treeInput.get().getID();
+                String fileName = treeFNSteam + ".mascot.trees";
+                logger.setInputValue("fileName", fileName);
+                logger.setInputValue("mode", "tree");
+                logger.initAndValidate();
+                logger.setID("StructuredTreeLogger." + (multipleTrees ? treeFNSteam : "")); // ((Mascot) loggable).getID() == null
+                treeLoggers.add(logger);
+                elements.put(logger, null);
+            }
+        }
+
         return treeLoggers;
     }
 
