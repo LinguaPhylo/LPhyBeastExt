@@ -66,6 +66,9 @@ public class StructuredCoalescentToMascot implements
 
             mascot.initAndValidate();
 
+            // extra logging
+            context.addExtraLogger(mascot);
+
             return mascot;
         }
         throw new RuntimeException("Can't convert StructuredCoalescent unless MigrationMatrix function is used to form M matrix");
