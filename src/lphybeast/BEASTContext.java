@@ -687,7 +687,7 @@ public class BEASTContext {
         if (fileName != null)
             nonTrees.addAll(extraLoggables);
 
-        // add in the end to avoid sorting
+        // add them in the end to avoid sorting
         CompoundDistribution[] top = new CompoundDistribution[3];
         for (BEASTInterface bI : elements.keySet()) {
             if (bI instanceof CompoundDistribution && bI.getID() != null) {
@@ -727,9 +727,9 @@ public class BEASTContext {
         List<Logger> treeLoggers = new ArrayList<>();
 
         for (Tree tree : trees) {
-            // TODO generalise
             GraphicalModelNode graphicalModelNode = BEASTToLPHYMap.get(tree);
             Generator generator = ((RandomVariable) graphicalModelNode).getGenerator();
+            // TODO generalise
             boolean logMetaData = generator instanceof SkylineCoalescent ||
                     generator instanceof StructuredCoalescent;
 
@@ -756,6 +756,7 @@ public class BEASTContext {
 
         // extra tree logger
         for (Loggable loggable : extraLoggables) {
+            // TODO generalise
             if (loggable instanceof beast.mascot.distribution.Mascot) {
                 Logger logger = new Logger();
                 logger.setInputValue("logEvery", logEvery);
