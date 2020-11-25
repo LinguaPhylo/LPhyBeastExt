@@ -66,6 +66,9 @@ public class StructuredCoalescentToMascot implements
 
             mascot.initAndValidate();
 
+            // this will log popsize and rates with postfix of each location
+            // but it is duplicated to popsize and rates Loggable, which need to be removed
+            context.addExtraLogger(dynamics);
             // extra logging
             context.addExtraLogger(mascot);
 
