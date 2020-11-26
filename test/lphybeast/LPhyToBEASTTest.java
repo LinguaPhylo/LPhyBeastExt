@@ -17,7 +17,7 @@ public class LPhyToBEASTTest {
     private int ntaxa = 10;
     private final String simpleCoal = "data {\n" +
             "  L = 200;\n" +
-            "  taxa = 1:" + ntaxa + ";\n" +
+            "  taxa = taxa(names=1:" + ntaxa + ");\n" +
             "}\n" +
             "model {\n" +
             "  Θ ~ LogNormal(meanlog=3.0, sdlog=1.0);\n" +
@@ -34,6 +34,7 @@ public class LPhyToBEASTTest {
 
     @Test
     public void testSimpleCoalescent() {
+        System.out.println(simpleCoal);
         String xml = null;
         try {
             xml = lPhyBEAST.lphyToXML(simpleCoal, "simpleCoal", -1, 0);
