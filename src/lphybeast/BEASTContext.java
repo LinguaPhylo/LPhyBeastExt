@@ -15,7 +15,6 @@ import beast.evolution.tree.TreeInterface;
 import beast.evolution.tree.TreeStatLogger;
 import beast.evolution.tree.TreeWithMetaDataLogger;
 import beast.mascot.distribution.Mascot;
-import beast.mascot.dynamics.Constant;
 import beast.mascot.logger.StructuredTreeLogger;
 import beast.math.distributions.ParametricDistribution;
 import beast.math.distributions.Prior;
@@ -688,16 +687,16 @@ public class BEASTContext {
         if (fileName != null)
             nonTrees.addAll(extraLoggables);
 
-        for (Loggable loggable : extraLoggables) {
-            // fix StructuredCoalescent log
-            if (loggable instanceof Constant) {
-                // Constant includes Ne and m
-                RealParameter ne = ((Constant) loggable).NeInput.get();
-                nonTrees.remove(ne);
-                RealParameter m = ((Constant) loggable).b_mInput.get();
-                nonTrees.remove(m);
-            }
-        }
+//        for (Loggable loggable : extraLoggables) {
+//            // fix StructuredCoalescent log
+//            if (loggable instanceof Constant) {
+//                // Constant includes Ne and m
+//                RealParameter ne = ((Constant) loggable).NeInput.get();
+//                nonTrees.remove(ne);
+//                RealParameter m = ((Constant) loggable).b_mInput.get();
+//                nonTrees.remove(m);
+//            }
+//        }
 
         // add them in the end to avoid sorting
         CompoundDistribution[] top = new CompoundDistribution[3];
