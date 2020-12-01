@@ -1,8 +1,8 @@
 <project default="build" basedir="." name="lphybeast">
 
     <!-- Java 11 -->
-    <property name="sourceVersion" value="12"/>
-    <property name="targetVersion" value="12"/>
+    <property name="sourceVersion" value="15"/>
+    <property name="targetVersion" value="15"/>
 
     <!--*******************************************************************-->
 
