@@ -118,6 +118,7 @@ public class BEASTContext {
                 BirthDeathSampleTreeDTToBEAST.class,
                 DirichletToBEAST.class,
                 DirichletMultiToBEAST.class,
+                ExpMultiToBEAST.class,
                 ExpToBEAST.class,
                 F81ToBEAST.class,
                 FossilBirthDeathTreeToBEAST.class,
