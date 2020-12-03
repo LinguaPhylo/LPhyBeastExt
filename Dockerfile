@@ -11,6 +11,7 @@ FROM openjdk:15.0.1-jdk-slim-buster
 
 RUN  apt-get update \
   && apt-get install -y wget \
+  && apt-get install -y git \
   && rm -rf /var/lib/apt/lists/*
 
 # Install Ant https://hub.docker.com/r/webratio/ant/dockerfile
