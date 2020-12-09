@@ -47,6 +47,7 @@ public class Exclusion {
                 generator instanceof MapFunction || generator instanceof MethodCall  ||
                 generator instanceof RangeList || generator instanceof ElementsAt || generator instanceof Rep ||
                 generator instanceof DiscretizedGamma || generator instanceof Length ||
-                generator instanceof MigrationMatrix || generator instanceof MigrationCount;
+                generator instanceof MigrationMatrix || generator instanceof MigrationCount ||
+                generator instanceof Select;
     }
 }
