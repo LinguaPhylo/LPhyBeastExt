@@ -123,6 +123,7 @@ public class BEASTContext {
                 F81ToBEAST.class,
                 FossilBirthDeathTreeToBEAST.class,
                 GammaToBEAST.class,
+                GTRToDiscretePhylogeo.class,
                 GTRToBEAST.class,
                 HKYToBEAST.class,
                 InverseGammaToBEAST.class,
@@ -367,7 +368,7 @@ public class BEASTContext {
      */
     public void createBEASTObjects() {
 
-        Set<Value<?>> sinks = parser.getModelSinks();
+        List<Value<?>> sinks = parser.getModelSinks();
 
         for (Value<?> value : sinks) {
             createBEASTValueObjects(value);
