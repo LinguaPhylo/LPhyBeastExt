@@ -28,4 +28,4 @@ jobs:
           path: beast-outercore
 
       - name: Run Lphy BEAST Ant
-        run: ant -noinput -buildfile build.xml github-actions
+        run: ant -noinput -buildfile {GITHUB_WORKSPACE}/main/build.xml github-actions

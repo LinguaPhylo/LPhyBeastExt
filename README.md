@@ -1,6 +1,6 @@
 # LPhyBeast
 
-[![Build Status](https://github.com/LinguaPhylo/LPhyBeast/workflows/Lphy%20Beast%20tests/badge.svg)](https://github.com/LinguaPhylo/LPhyBeast/actions?query=workflow%3A%22Lphy+BEAST+tests%22)
+[![Build Status](https://github.com/LinguaPhylo/LPhyBeast/workflows/Lphy%20BEAST%20tests/badge.svg)](https://github.com/LinguaPhylo/LPhyBeast/actions?query=workflow%3A%22Lphy+BEAST+tests%22)
 
 
 LPhyBEAST is a command-line program that takes an [LPhy](http://linguaphylo.github.io/) model specification, including a data block and produces a [BEAST 2](http://beast2.org/) XML input file. It therefore enables LPHY as an alternative way to succinctly express and communicate BEAST2 analyses.
