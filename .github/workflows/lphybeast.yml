@@ -28,7 +28,7 @@ jobs:
           repository: LinguaPhylo/beast-outercore
           path: beast-outercore
 
-      - name: tests
+      - name: Find build.xml
         run: |
           pwd
           find . -name "build.xml"
