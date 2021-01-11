@@ -1,6 +1,5 @@
 # LPhyBeast
 
-[![Build Status](https://travis-ci.org/LinguaPhylo/LPhyBeast.svg?branch=master)](https://travis-ci.org/LinguaPhylo/LPhyBeast)
 [![Build Status](https://github.com/LinguaPhylo/LPhyBeast/workflows/Lphy%20Beast%20tests/badge.svg)](https://github.com/LinguaPhylo/LPhyBeast/actions?query=workflow%3A%22Lphy+BEAST+tests%22)
 
 

@@ -5,7 +5,6 @@ jobs:
   test-lphybeast:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
       - name: Set up JDK 15
         uses: actions/setup-java@v1
         with:
@@ -23,5 +22,10 @@ jobs:
           repository: LinguaPhylo/beast-outercore
           path: ../beast-outercore/
 
+      - name: Checkout LphyBEAST
+          uses: actions/checkout@v2
+          with:
+            repository: LinguaPhylo/LPhyBeast
+            path: ../LPhyBeast/
       - name: Run Lphy BEAST Ant
         run: ant -noinput -buildfile build.xml github-actions
