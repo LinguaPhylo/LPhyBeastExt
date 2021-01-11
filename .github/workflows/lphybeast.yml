@@ -23,9 +23,9 @@ jobs:
           path: ../beast-outercore/
 
       - name: Checkout LphyBEAST
-          uses: actions/checkout@v2
-          with:
-            repository: LinguaPhylo/LPhyBeast
-            path: ../LPhyBeast/
+        uses: actions/checkout@v2
+        with:
+          repository: LinguaPhylo/LPhyBeast
+          path: ../LPhyBeast/
       - name: Run Lphy BEAST Ant
         run: ant -noinput -buildfile build.xml github-actions
