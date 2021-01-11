@@ -30,6 +30,12 @@ jobs:
           repository: LinguaPhylo/beast-outercore
           path: beast-outercore
 
+      - name: tests
+        run: |
+          echo ${{env.working-directory}}
+          echo ${{github.workspace}}
+          echo ${{GITHUB_WORKSPACE}}
+
       - name: Run Lphy BEAST Ant
         run: ant -noinput -buildfile build.xml github-actions
         working-directory: ${{env.working-directory}}
