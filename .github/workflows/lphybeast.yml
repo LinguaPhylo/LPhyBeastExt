@@ -34,8 +34,6 @@ jobs:
         run: |
           echo ${{env.working-directory}}
           echo ${{github.workspace}}
-          echo ${{GITHUB_WORKSPACE}}
+          echo ${GITHUB_WORKSPACE}
 
-      - name: Run Lphy BEAST Ant
-        run: ant -noinput -buildfile build.xml github-actions
-        working-directory: ${{env.working-directory}}
+
