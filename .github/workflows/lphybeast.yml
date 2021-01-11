@@ -4,6 +4,9 @@ on: [ push, pull_request, workflow_dispatch ]
 jobs:
   test-lphybeast:
     runs-on: ubuntu-latest
+    env:
+      working-directory: ./
+
     steps:
       - name: Checkout LphyBEAST
         uses: actions/checkout@v2
@@ -28,5 +31,5 @@ jobs:
           path: beast-outercore
 
       - name: Run Lphy BEAST Ant
-        working-directory: ${GITHUB_WORKSPACE}/main
         run: ant -noinput -buildfile build.xml github-actions
+        working-directory: ${{env.working-directory}}
