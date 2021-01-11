@@ -30,9 +30,8 @@ jobs:
 
       - name: tests
         run: |
-          echo ${GITHUB_WORKSPACE}
+          pwd
           find . -name "build.xml"
 
       - name: Run Lphy BEAST Ant
-        run: ant -noinput -buildfile build.xml github-actions
-        working-directory: ${GITHUB_WORKSPACE}/main
+        run: ant -noinput -buildfile ./main/build.xml github-actions
