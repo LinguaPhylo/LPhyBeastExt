@@ -4,8 +4,6 @@ on: [ push, pull_request, workflow_dispatch ]
 jobs:
   test-lphybeast:
     runs-on: ubuntu-latest
-    env:
-      working-directory: ./
 
     steps:
       - name: Checkout LphyBEAST
@@ -32,8 +30,9 @@ jobs:
 
       - name: tests
         run: |
-          echo ${{env.working-directory}}
-          echo ${{github.workspace}}
           echo ${GITHUB_WORKSPACE}
+          find . -name "build.xml"
 
-
+      - name: Run Lphy BEAST Ant
+        run: ant -noinput -buildfile build.xml github-actions
+        working-directory: ${GITHUB_WORKSPACE}/main
