@@ -1,0 +1,27 @@
+name: Lphy BEAST tests
+on: [ push, pull_request, workflow_dispatch ]
+
+jobs:
+  test-lphybeast:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 15
+        uses: actions/setup-java@v1
+        with:
+          java-version: 15.0.1
+
+      - name: Checkout Lphy
+        uses: actions/checkout@v2
+        with:
+          repository: LinguaPhylo/linguaPhylo
+          path: ../linguaPhylo/
+
+      - name: Checkout outercore
+        uses: actions/checkout@v2
+        with:
+          repository: LinguaPhylo/beast-outercore
+          path: ../beast-outercore/
+
+      - name: Run Lphy BEAST Ant
+        run: ant -noinput -buildfile build.xml github-actions
