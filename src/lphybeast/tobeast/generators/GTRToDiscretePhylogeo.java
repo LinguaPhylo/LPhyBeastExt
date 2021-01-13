@@ -9,8 +9,11 @@ import lphy.core.functions.Select;
 import lphy.evolution.substitutionmodel.GeneralTimeReversible;
 import lphy.graphicalModel.Generator;
 import lphy.graphicalModel.GraphicalModelNode;
+import lphy.graphicalModel.Value;
 import lphybeast.BEASTContext;
 import lphybeast.GeneratorToBEAST;
+
+import java.util.Map;
 
 public class GTRToDiscretePhylogeo implements
         GeneratorToBEAST<GeneralTimeReversible, SVSGeneralSubstitutionModel> {
@@ -21,13 +24,17 @@ public class GTRToDiscretePhylogeo implements
 
         SVSGeneralSubstitutionModel svs = new SVSGeneralSubstitutionModel();
 
-        RealParameter rates = (RealParameter) context.getBEASTObject(gtr.getRates());
-        svs.setInputValue("rates", rates);
-
         Generator ratesGenerator = gtr.getRates().getGenerator();
         // rates=select(x=trait_rates, indicator=trait_indicators)
-        GraphicalModelNode<?> indicatorNode = (GraphicalModelNode<?>)
-                ratesGenerator.getParams().get(Select.indicatorParamName);
+        Map<String, Value> selectFunParams = ratesGenerator.getParams();
+        if (selectFunParams.size() != 2)
+            throw new IllegalStateException("Expecting 'select' function to produce traits rates, given rates and boolean indicators");
+
+        GraphicalModelNode<?> rateNode = (GraphicalModelNode<?>) selectFunParams.get(Select.valueParamName);
+        RealParameter rates = (RealParameter) context.getBEASTObject(rateNode);
+        svs.setInputValue("rates", rates);
+
+        GraphicalModelNode<?> indicatorNode = (GraphicalModelNode<?>) selectFunParams.get(Select.indicatorParamName);
         BooleanParameter rateIndicators = (BooleanParameter) context.getBEASTObject(indicatorNode);
         svs.setInputValue("rateIndicator", rateIndicators);
 

@@ -92,6 +92,7 @@ public class PhyloCTMCToBEAST implements GeneratorToBEAST<PhyloCTMC, GenericTree
             if (mutationRate != null) siteModel.setInputValue("mutationRate", mutationRate);
             siteModel.initAndValidate();
         }
+        siteModel.setID("geo." + siteModel.toString());
         return siteModel;
     }
 
