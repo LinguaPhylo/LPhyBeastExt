@@ -5,11 +5,14 @@ import beast.core.parameter.RealParameter;
 import beast.evolution.alignment.AlignmentFromTrait;
 import beast.evolution.branchratemodel.StrictClockModel;
 import beast.evolution.branchratemodel.UCRelaxedClockModel;
+import beast.evolution.datatype.DataType;
+import beast.evolution.datatype.UserDataType;
 import beast.evolution.likelihood.AncestralStateTreeLikelihood;
 import beast.evolution.likelihood.GenericTreeLikelihood;
 import beast.evolution.likelihood.ThreadedTreeLikelihood;
 import beast.evolution.operators.UpDownOperator;
 import beast.evolution.sitemodel.SiteModel;
+import beast.evolution.substitutionmodel.SVSGeneralSubstitutionModelLogger;
 import beast.evolution.substitutionmodel.SubstitutionModel;
 import beast.evolution.tree.Tree;
 import beast.math.distributions.Prior;
@@ -54,7 +57,11 @@ public class PhyloCTMCToBEAST implements GeneratorToBEAST<PhyloCTMC, GenericTree
 
         constructTreeAndBranchRate(phyloCTMC, context, treeLikelihood);
 
-        SiteModel siteModel = constructGeoSiteModel(phyloCTMC, context);
+        DataType userDataType = traitAlignment.getDataType();
+        if (! (userDataType instanceof UserDataType) )
+            throw new IllegalArgumentException("Substitution Model was null!");
+
+        SiteModel siteModel = constructGeoSiteModel(phyloCTMC, context, (UserDataType) userDataType);
         treeLikelihood.setInputValue("siteModel", siteModel);
 
         treeLikelihood.initAndValidate();
@@ -65,7 +72,7 @@ public class PhyloCTMCToBEAST implements GeneratorToBEAST<PhyloCTMC, GenericTree
         return treeLikelihood;
     }
 
-    private SiteModel constructGeoSiteModel(PhyloCTMC phyloCTMC, BEASTContext context) {
+    private SiteModel constructGeoSiteModel(PhyloCTMC phyloCTMC, BEASTContext context, UserDataType userDataType) {
         SiteModel siteModel = new SiteModel();
 
         Value<Double[]> siteRates = phyloCTMC.getSiteRates();
@@ -91,54 +98,20 @@ public class PhyloCTMCToBEAST implements GeneratorToBEAST<PhyloCTMC, GenericTree
             siteModel.setInputValue("substModel", substitutionModel);
             if (mutationRate != null) siteModel.setInputValue("mutationRate", mutationRate);
             siteModel.initAndValidate();
+
+            // add SVSGeneralSubstitutionModelLogger
+//<log id="geoSubstModelLogger.s:location" spec="SVSGeneralSubstitutionModelLogger" dataType="@traitDataType.location" model="@svs.s:location"/>
+            SVSGeneralSubstitutionModelLogger svsLogger = new SVSGeneralSubstitutionModelLogger();
+            svsLogger.setInputValue("dataType", userDataType);
+            svsLogger.setInputValue("model", substitutionModel);
+            svsLogger.initAndValidate();
+
+            context.addExtraLogger(svsLogger);
         }
         siteModel.setID("geo." + siteModel.toString());
         return siteModel;
     }
 
-//    private AlignmentFromTrait createAlignmentFromTrait(BEASTInterface value, BEASTContext context) {
-//        assert value instanceof beast.evolution.alignment.Alignment;
-//        beast.evolution.alignment.Alignment alignment = (beast.evolution.alignment.Alignment)value;
-//
-//        DataType dataType = alignment.getDataType();
-//        if (! (dataType instanceof UserDataType) )
-//            throw new IllegalArgumentException("UserDataType is required for trait alignment ! " + dataType.getTypeDescription());
-//
-//        List<Taxon> taxonList = context.createTaxonList(alignment.getTaxaNames());
-//        String traitStr = createTraitString(alignment);
-//
-//        TraitSet traitSet = new TraitSet();
-//        traitSet.setInputValue("traitname", DISCRETE);
-//        traitSet.setInputValue("value", traitStr);
-//
-//        TaxonSet taxa = new TaxonSet();
-//        taxa.setInputValue("taxon", taxonList);
-//        taxa.initAndValidate();
-//
-//        traitSet.setInputValue("taxa", taxa);
-//        traitSet.initAndValidate();
-//
-//        AlignmentFromTrait traitAlignment = new AlignmentFromTrait();
-//        traitAlignment.initByName("traitSet", traitSet, "userDataType", dataType);
-//        traitAlignment.setID(alignment.getID() + "." + LOCATION);
-//
-//        return traitAlignment;
-//    }
-
-//    private String createTraitString(Alignment alignment) {
-//        StringBuilder builder = new StringBuilder();
-//        int leafCount = 0;
-//        for (Sequence sequence : alignment.sequenceInput.get()) {
-//
-//                if (leafCount > 0) builder.append(", ");
-//                builder.append(sequence.getTaxon());
-//                builder.append("=");
-//                builder.append(sequence.getData());
-//                leafCount += 1;
-//
-//        }
-//        return builder.toString();
-//    }
 
     private ThreadedTreeLikelihood createThreadedTreeLikelihood(PhyloCTMC phyloCTMC, BEASTInterface value, BEASTContext context) {
         ThreadedTreeLikelihood treeLikelihood = new ThreadedTreeLikelihood();

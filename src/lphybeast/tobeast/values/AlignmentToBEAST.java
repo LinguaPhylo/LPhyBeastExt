@@ -1,6 +1,5 @@
 package lphybeast.tobeast.values;
 
-import beast.evolution.alignment.AlignmentFromTrait;
 import beast.evolution.alignment.Sequence;
 import beast.evolution.alignment.Taxon;
 import beast.evolution.alignment.TaxonSet;
@@ -41,6 +40,7 @@ public class AlignmentToBEAST implements ValueToBEAST<SimpleAlignment, beast.evo
 
         String datatype = getBEASTDataType(alignment);
         if (datatype.equalsIgnoreCase(Standard.NAME)) {
+            // AlignmentFromTrait
             beastAlignment = new beast.evolution.alignment.AlignmentFromTrait();
             // for trait alignment
             UserDataType userDataType = getUserDataType(alignment);
@@ -60,11 +60,10 @@ public class AlignmentToBEAST implements ValueToBEAST<SimpleAlignment, beast.evo
             traitSet.setInputValue("taxa", taxa);
             traitSet.initAndValidate();
 
-            AlignmentFromTrait traitAlignment = new AlignmentFromTrait();
             beastAlignment.initByName("traitSet", traitSet, "userDataType", userDataType);
 
         } else {
-
+            // normal Alignment
             beastAlignment = new beast.evolution.alignment.Alignment();
             beastAlignment.initByName("sequence", sequences, "dataType", datatype);
 
