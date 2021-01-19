@@ -8,6 +8,7 @@ import beast.core.parameter.Parameter;
 import beast.core.parameter.RealParameter;
 import beast.core.util.CompoundDistribution;
 import beast.evolution.alignment.Taxon;
+import beast.evolution.likelihood.AncestralStateTreeLikelihood;
 import beast.evolution.operators.*;
 import beast.evolution.substitutionmodel.Frequencies;
 import beast.evolution.tree.Tree;
@@ -659,6 +660,8 @@ public class BEASTContext {
     }
 
     private List<Logger> createLoggers(int logEvery, String fileName) {
+        topDist = getTopCompoundDist();
+
         List<Logger> loggers = new ArrayList<>();
         // reduce screen logging
         loggers.add(createScreenLogger(logEvery * 100));
@@ -676,8 +679,8 @@ public class BEASTContext {
 
         // tree height, but not in screen logging
         if (fileName != null) {
-            List<Tree> trees = getTrees();
-            for (Tree tree : trees) {
+            List<TreeInterface> trees = getTrees();
+            for (TreeInterface tree : trees) {
 // <log id="TreeHeight" spec="beast.evolution.tree.TreeStatLogger" tree="@Tree"/>
                 TreeStatLogger treeStatLogger = new TreeStatLogger();
                 treeStatLogger.initByName("tree", tree, "logLength", false);
@@ -701,18 +704,7 @@ public class BEASTContext {
 //        }
 
         // add them in the end to avoid sorting
-        CompoundDistribution[] top = new CompoundDistribution[3];
-        for (BEASTInterface bI : elements.keySet()) {
-            if (bI instanceof CompoundDistribution && bI.getID() != null) {
-                if (bI.getID().equals(POSTERIOR_ID))
-                    top[0] = (CompoundDistribution) bI;
-                else if (bI.getID().equals(LIKELIHOOD_ID))
-                    top[1] = (CompoundDistribution) bI;
-                else if (bI.getID().equals(PRIOR_ID))
-                    top[2] = (CompoundDistribution) bI;
-            }
-        }
-        nonTrees.addAll(0, Arrays.asList(top));
+        nonTrees.addAll(0, Arrays.asList(topDist));
 
         Logger logger = new Logger();
         logger.setInputValue("logEvery", logEvery);
@@ -723,32 +715,54 @@ public class BEASTContext {
         return logger;
     }
 
-    public List<Tree> getTrees() {
+    private CompoundDistribution[] topDist = new CompoundDistribution[3];
+    // sorted by specific order
+    private CompoundDistribution[] getTopCompoundDist() {
+        for (BEASTInterface bI : elements.keySet()) {
+            if (bI instanceof CompoundDistribution && bI.getID() != null) {
+                if (bI.getID().equals(POSTERIOR_ID))
+                    topDist[0] = (CompoundDistribution) bI;
+                else if (bI.getID().equals(LIKELIHOOD_ID))
+                    topDist[1] = (CompoundDistribution) bI;
+                else if (bI.getID().equals(PRIOR_ID))
+                    topDist[2] = (CompoundDistribution) bI;
+            }
+        }
+        return topDist;
+    }
+
+    CompoundDistribution getPosteriorDist() {
+        return topDist[0];
+    }
+
+    public List<TreeInterface> getTrees() {
         return state.stream()
-                .filter(stateNode -> stateNode instanceof Tree)
-                .map(stateNode -> (Tree) stateNode)
-                .sorted(Comparator.comparing(BEASTObject::getID))
+                .filter(stateNode -> stateNode instanceof TreeInterface)
+                .map(stateNode -> (TreeInterface) stateNode)
+                .sorted(Comparator.comparing(TreeInterface::getID))
                 .collect(Collectors.toList());
     }
 
     private List<Logger> createTreeLoggers(int logEvery, String fileNameStem) {
 
-        List<Tree> trees = getTrees();
+        List<TreeInterface> trees = getTrees();
 
         boolean multipleTrees = trees.size() > 1;
 
         List<Logger> treeLoggers = new ArrayList<>();
 
-        for (Tree tree : trees) {
+        // TODO: use tree-likelihood instead, and get all trees from tree-likelihood?
+
+        for (TreeInterface tree : trees) {
             GraphicalModelNode graphicalModelNode = BEASTToLPHYMap.get(tree);
             Generator generator = ((RandomVariable) graphicalModelNode).getGenerator();
-            // TODO generalise
+
             boolean logMetaData = generator instanceof SkylineCoalescent ||
                     generator instanceof StructuredCoalescent;
 
             Logger logger = new Logger();
             logger.setInputValue("logEvery", logEvery);
-            if (logMetaData) {
+            if (logMetaData) { // TODO
                 TreeWithMetaDataLogger treeWithMetaDataLogger = new TreeWithMetaDataLogger();
                 treeWithMetaDataLogger.setInputValue("tree", tree);
                 logger.setInputValue("log", treeWithMetaDataLogger);
@@ -768,26 +782,66 @@ public class BEASTContext {
         }
 
         // extra tree logger
+        // extraLoggables are used to retain all tree-likelihoods
         for (Loggable loggable : extraLoggables) {
-            // TODO generalise
-            if (loggable instanceof beast.mascot.distribution.Mascot) {
+
+            if (loggable instanceof beast.mascot.distribution.Mascot) { // TODO
+                // Mascot StructuredTreeLogger
+                TreeInterface tree = ((Mascot) loggable).treeInput.get();
+
+                StructuredTreeLogger structuredTreeLogger = new StructuredTreeLogger();
+                // not logging tree directly
+                structuredTreeLogger.setInputValue("mascot", loggable);
+
                 Logger logger = new Logger();
                 logger.setInputValue("logEvery", logEvery);
-                StructuredTreeLogger structuredTreeLogger = new StructuredTreeLogger();
-                structuredTreeLogger.setInputValue("mascot", loggable);
                 logger.setInputValue("log", structuredTreeLogger);
 
-                String treeFNSteam = fileNameStem;
+                String treeFNSteam = Objects.requireNonNull(fileNameStem);
+                // ((Mascot) loggable).getID() == null
                 if (multipleTrees) // multi-partitions and unlink trees
-                    treeFNSteam = fileNameStem + "_" + ((Mascot) loggable).treeInput.get().getID();
+                    treeFNSteam = fileNameStem + "_" + tree.getID();
                 String fileName = treeFNSteam + ".mascot.trees";
                 logger.setInputValue("fileName", fileName);
+                logger.setID("StructuredTreeLogger" + (multipleTrees ? "." + treeFNSteam : ""));
+
                 logger.setInputValue("mode", "tree");
                 logger.initAndValidate();
-                logger.setID("StructuredTreeLogger." + (multipleTrees ? treeFNSteam : "")); // ((Mascot) loggable).getID() == null
+
+                treeLoggers.add(logger);
+                elements.put(logger, null);
+
+            } else if (loggable instanceof AncestralStateTreeLikelihood) { // TODO
+                // DPG: TreeWithTraitLogger
+                TreeInterface tree = ((AncestralStateTreeLikelihood) loggable).treeInput.get();
+
+                TreeWithMetaDataLogger treeWithMetaDataLogger = new TreeWithMetaDataLogger();
+                treeWithMetaDataLogger.setInputValue("tree", tree);
+
+                List<BEASTObject> metadata = new ArrayList<>();
+                metadata.add((AncestralStateTreeLikelihood) loggable);
+                // posterior
+                metadata.add(getPosteriorDist());
+                treeWithMetaDataLogger.setInputValue("metadata", metadata);
+
+                Logger logger = new Logger();
+                logger.setInputValue("logEvery", logEvery);
+                logger.setInputValue("log", treeWithMetaDataLogger);
+
+                String treeFNSteam = Objects.requireNonNull(fileNameStem) + "_with_trait";
+                if (multipleTrees) // multi-partitions and unlink trees
+                    treeFNSteam = fileNameStem + "_" + tree.getID();
+                String fileName = treeFNSteam + ".trees";
+                logger.setInputValue("fileName", fileName);
+                logger.setID("TreeWithTraitLogger" + (multipleTrees ? "." + treeFNSteam : ""));
+
+                logger.setInputValue("mode", "tree");
+                logger.initAndValidate();
+
                 treeLoggers.add(logger);
                 elements.put(logger, null);
             }
+
         }
 
         return treeLoggers;
