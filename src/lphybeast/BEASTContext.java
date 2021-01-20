@@ -11,10 +11,7 @@ import beast.evolution.alignment.Taxon;
 import beast.evolution.likelihood.AncestralStateTreeLikelihood;
 import beast.evolution.operators.*;
 import beast.evolution.substitutionmodel.Frequencies;
-import beast.evolution.tree.Tree;
-import beast.evolution.tree.TreeInterface;
-import beast.evolution.tree.TreeStatLogger;
-import beast.evolution.tree.TreeWithMetaDataLogger;
+import beast.evolution.tree.*;
 import beast.mascot.distribution.Mascot;
 import beast.mascot.logger.StructuredTreeLogger;
 import beast.math.distributions.ParametricDistribution;
@@ -815,18 +812,18 @@ public class BEASTContext {
                 // DPG: TreeWithTraitLogger
                 TreeInterface tree = ((AncestralStateTreeLikelihood) loggable).treeInput.get();
 
-                TreeWithMetaDataLogger treeWithMetaDataLogger = new TreeWithMetaDataLogger();
-                treeWithMetaDataLogger.setInputValue("tree", tree);
+                TreeWithTraitLogger treeWithTraitLogger = new TreeWithTraitLogger();
+                treeWithTraitLogger.setInputValue("tree", tree);
 
                 List<BEASTObject> metadata = new ArrayList<>();
                 metadata.add((AncestralStateTreeLikelihood) loggable);
                 // posterior
                 metadata.add(getPosteriorDist());
-                treeWithMetaDataLogger.setInputValue("metadata", metadata);
+                treeWithTraitLogger.setInputValue("metadata", metadata);
 
                 Logger logger = new Logger();
                 logger.setInputValue("logEvery", logEvery);
-                logger.setInputValue("log", treeWithMetaDataLogger);
+                logger.setInputValue("log", treeWithTraitLogger);
 
                 String treeFNSteam = Objects.requireNonNull(fileNameStem) + "_with_trait";
                 if (multipleTrees) // multi-partitions and unlink trees
