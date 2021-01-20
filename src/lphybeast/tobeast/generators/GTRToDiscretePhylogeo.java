@@ -10,9 +10,11 @@ import lphy.evolution.substitutionmodel.GeneralTimeReversible;
 import lphy.graphicalModel.Generator;
 import lphy.graphicalModel.GraphicalModelNode;
 import lphy.graphicalModel.Value;
+import lphy.utils.LoggerUtils;
 import lphybeast.BEASTContext;
 import lphybeast.GeneratorToBEAST;
 
+import java.util.Arrays;
 import java.util.Map;
 
 public class GTRToDiscretePhylogeo implements
@@ -23,6 +25,8 @@ public class GTRToDiscretePhylogeo implements
                                                         BEASTInterface value, BEASTContext context) {
 
         SVSGeneralSubstitutionModel svs = new SVSGeneralSubstitutionModel();
+        // only symmetric
+        svs.setInputValue("symmetric", Boolean.TRUE);
 
         Generator ratesGenerator = gtr.getRates().getGenerator();
         // rates=select(x=trait_rates, indicator=trait_indicators)
@@ -36,12 +40,6 @@ public class GTRToDiscretePhylogeo implements
 
         GraphicalModelNode<?> indicatorNode = (GraphicalModelNode<?>) selectFunParams.get(Select.indicatorParamName);
         BooleanParameter rateIndicators = (BooleanParameter) context.getBEASTObject(indicatorNode);
-        svs.setInputValue("rateIndicator", rateIndicators);
-
-//        String[] stateNames = getStateNames();
-//        String names = Arrays.toString(stateNames);
-//        BEASTContext.createBEASTFrequencies((RealParameter) context.getBEASTObject(gtr.getFreq()), names);
-        // TODO how to map the state names to the correct dimension?
 
         RealParameter traitfrequencies = (RealParameter) context.getBEASTObject(gtr.getFreq());
         Frequencies traitfreqs = new Frequencies();
@@ -49,20 +47,36 @@ public class GTRToDiscretePhylogeo implements
         traitfreqs.initAndValidate();
         svs.setInputValue("frequencies", traitfreqs);
 
-        // only symmetric
-        svs.setInputValue("symmetric", Boolean.TRUE);
-        svs.initAndValidate();
+        // frequencies dim = number of states
+        int stateCount = traitfrequencies.getDimension();
+        validateIndicators(rateIndicators, stateCount);
+        svs.setInputValue("rateIndicator", rateIndicators);
 
-//        <operator id="BSSVSoperator" spec="BitFlipBSSVSOperator" indicator="@rateIndicator" mu="@traitClockRate" weight="10.0"/>
-//        context.addExtraOperator();
+        svs.initAndValidate();
 
         return svs;
     }
 
-    private String[] getStateNames() {
-        return new String[]{};
-    }
+    // To avoid initialization issue #31
+    private void validateIndicators(BooleanParameter rateIndicators, int stateCount) {
+        // symmetric rates
+        if (rateIndicators.getDimension() != stateCount * (stateCount - 1) / 2)
+            throw new IllegalStateException("The rate indicators should have the dimension of " +
+                    "stateCount * (stateCount - 1) / 2 !\nBut stateCount = " + stateCount +
+                    ", indicators dimension = " + rateIndicators.getDimension());
 
+        long numOfTrue = Arrays.stream(rateIndicators.getValues()).filter(indicator -> indicator).count();
+
+        if (numOfTrue < stateCount) {
+            LoggerUtils.log.warning("Invalid init value of the trait rate indicators, where " +
+                    numOfTrue + " 'true' " + " is less than number of states " + stateCount +
+                    "! Set all to be 'true' in XML !");
+
+            for (int i=0; i < rateIndicators.getDimension(); i++)
+                rateIndicators.setValue(i, true);
+        }
+
+    }
 
     @Override
     public Class<GeneralTimeReversible> getGeneratorClass() {
