@@ -100,11 +100,13 @@ public class PhyloCTMCToBEAST implements GeneratorToBEAST<PhyloCTMC, GenericTree
             siteModel.initAndValidate();
 
             // add SVSGeneralSubstitutionModelLogger
-//<log id="geoSubstModelLogger.s:location" spec="SVSGeneralSubstitutionModelLogger" dataType="@traitDataType.location" model="@svs.s:location"/>
             SVSGeneralSubstitutionModelLogger svsLogger = new SVSGeneralSubstitutionModelLogger();
             svsLogger.setInputValue("dataType", userDataType);
             svsLogger.setInputValue("model", substitutionModel);
             svsLogger.initAndValidate();
+
+            if (svsLogger.getID() == null)
+                svsLogger.setID(svsLogger.toString().substring(0, 3));
 
             context.addExtraLogger(svsLogger);
         }
