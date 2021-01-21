@@ -10,7 +10,6 @@ import lphy.evolution.substitutionmodel.GeneralTimeReversible;
 import lphy.graphicalModel.Generator;
 import lphy.graphicalModel.GraphicalModelNode;
 import lphy.graphicalModel.Value;
-import lphy.utils.LoggerUtils;
 import lphybeast.BEASTContext;
 import lphybeast.GeneratorToBEAST;
 
@@ -61,20 +60,16 @@ public class GTRToDiscretePhylogeo implements
     private void validateIndicators(BooleanParameter rateIndicators, int stateCount) {
         // symmetric rates
         if (rateIndicators.getDimension() != stateCount * (stateCount - 1) / 2)
-            throw new IllegalStateException("The rate indicators should have the dimension of " +
+            throw new IllegalStateException("In symmetric rates model, the rate indicators should have the dimension of " +
                     "stateCount * (stateCount - 1) / 2 !\nBut stateCount = " + stateCount +
                     ", indicators dimension = " + rateIndicators.getDimension());
 
         long numOfTrue = Arrays.stream(rateIndicators.getValues()).filter(indicator -> indicator).count();
 
-        if (numOfTrue < stateCount) {
-            LoggerUtils.log.warning("Invalid init value of the trait rate indicators, where " +
+        if (numOfTrue < stateCount)
+            throw new IllegalArgumentException("Invalid init value of the trait rate indicators, where " +
                     numOfTrue + " 'true' " + " is less than number of states " + stateCount +
                     "! Set all to be 'true' in XML !");
-
-            for (int i=0; i < rateIndicators.getDimension(); i++)
-                rateIndicators.setValue(i, true);
-        }
 
     }
 
