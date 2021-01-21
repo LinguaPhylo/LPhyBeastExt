@@ -48,6 +48,6 @@ public class Exclusion {
                 generator instanceof RangeList || generator instanceof ElementsAt || generator instanceof Rep ||
                 generator instanceof DiscretizedGamma || generator instanceof Length ||
                 generator instanceof MigrationMatrix || generator instanceof MigrationCount ||
-                generator instanceof Select;
+                generator instanceof Select || generator instanceof SumBoolean;
     }
 }

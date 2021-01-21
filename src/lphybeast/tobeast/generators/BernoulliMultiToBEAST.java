@@ -1,10 +1,10 @@
 package lphybeast.tobeast.generators;
 
 import beast.core.BEASTInterface;
-import outercore.math.distributions.BernoulliDistribution;
 import lphy.core.distributions.BernoulliMulti;
 import lphybeast.BEASTContext;
 import lphybeast.GeneratorToBEAST;
+import outercore.math.distributions.BernoulliDistribution;
 
 public class BernoulliMultiToBEAST implements GeneratorToBEAST<BernoulliMulti, BernoulliDistribution> {
     @Override
@@ -13,6 +13,7 @@ public class BernoulliMultiToBEAST implements GeneratorToBEAST<BernoulliMulti, B
         BernoulliDistribution bernoulliDistribution = new BernoulliDistribution();
         bernoulliDistribution.setInputValue("p", context.getBEASTObject(generator.getP()));
         bernoulliDistribution.setInputValue("parameter", value);
+        bernoulliDistribution.setInputValue("minHammingWeight", context.getBEASTObject(generator.getMinHammingWeight()));
         bernoulliDistribution.initAndValidate();
         return bernoulliDistribution;
     }
