@@ -13,7 +13,7 @@ public class BernoulliMultiToBEAST implements GeneratorToBEAST<BernoulliMulti, B
         BernoulliDistribution bernoulliDistribution = new BernoulliDistribution();
         bernoulliDistribution.setInputValue("p", context.getBEASTObject(generator.getP()));
         bernoulliDistribution.setInputValue("parameter", value);
-        bernoulliDistribution.setInputValue("minHammingWeight", context.getBEASTObject(generator.getMinHammingWeight()));
+        bernoulliDistribution.setInputValue(generator.minSuccessesParamName, context.getBEASTObject(generator.getMinSuccesses()));
         bernoulliDistribution.initAndValidate();
         return bernoulliDistribution;
     }
