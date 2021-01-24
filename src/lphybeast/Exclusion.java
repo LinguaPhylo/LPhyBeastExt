@@ -9,10 +9,7 @@ import lphy.evolution.alignment.Alignment;
 import lphy.evolution.tree.TimeTree;
 import lphy.graphicalModel.Generator;
 import lphy.graphicalModel.Value;
-import lphy.parser.functions.ExpressionNode;
-import lphy.parser.functions.MapFunction;
-import lphy.parser.functions.MethodCall;
-import lphy.parser.functions.RangeList;
+import lphy.parser.functions.*;
 
 import java.util.HashMap;
 import java.util.TreeMap;
@@ -48,6 +45,7 @@ public class Exclusion {
                 generator instanceof RangeList || generator instanceof ElementsAt || generator instanceof Rep ||
                 generator instanceof DiscretizedGamma || generator instanceof Length ||
                 generator instanceof MigrationMatrix || generator instanceof MigrationCount ||
-                generator instanceof Select || generator instanceof SumBoolean;
+                generator instanceof Select || generator instanceof SumBoolean ||
+                generator instanceof ExpressionNodeWrapper;
     }
 }

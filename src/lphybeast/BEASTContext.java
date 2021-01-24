@@ -526,7 +526,7 @@ public class BEASTContext {
             if (createGenerators) {
                 if (beastGenerator == null) {
                     if (!Exclusion.isExcludedGenerator(generator)) {
-                        throw new UnsupportedOperationException("Unhandled generator in generatorToBEAST(): " + generator);
+                        throw new UnsupportedOperationException("Unhandled generator in generatorToBEAST(): " + generator.getClass());
                     }
                 } else {
                     addToContext(generator, beastGenerator);
