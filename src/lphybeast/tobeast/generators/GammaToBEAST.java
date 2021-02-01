@@ -11,8 +11,8 @@ public class GammaToBEAST implements GeneratorToBEAST<Gamma, Prior> {
     @Override
     public Prior generatorToBEAST(Gamma generator, BEASTInterface value, BEASTContext context) {
         beast.math.distributions.Gamma gammaDistribution = new beast.math.distributions.Gamma();
-        gammaDistribution.setInputValue("shape", context.getBEASTObject(generator.getShape()));
-        gammaDistribution.setInputValue("scale", context.getBEASTObject(generator.getScale()));
+        gammaDistribution.setInputValue("alpha", context.getBEASTObject(generator.getShape()));
+        gammaDistribution.setInputValue("beta", context.getBEASTObject(generator.getScale()));
         gammaDistribution.initAndValidate();
         return BEASTContext.createPrior(gammaDistribution, (RealParameter) value);
     }
