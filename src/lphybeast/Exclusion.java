@@ -40,6 +40,7 @@ public class Exclusion {
                 generator instanceof CreateTaxa || generator instanceof TaxaFunction ||
                 generator instanceof Species || generator instanceof TaxaAgesFromFunction ||
                 generator instanceof ReadNexus || generator instanceof ReadFasta ||
+                generator instanceof ExtractTrait ||
                 generator instanceof ARange || generator instanceof Range ||
                 generator instanceof MapFunction || generator instanceof MethodCall  ||
                 generator instanceof RangeList || generator instanceof ElementsAt || generator instanceof Rep ||
