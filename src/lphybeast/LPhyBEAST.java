@@ -37,7 +37,7 @@ public class LPhyBEAST implements Callable<Integer> {
     @Option(names = {"-o", "--out"},     description = "BEAST 2 XML")  Path outfile;
 
     //MCMC
-    @Option(names = {"-l", "--chainLength"}, defaultValue = "-1", description = "define the total chain length of MCMC")
+    @Option(names = {"-l", "--chainLength"}, defaultValue = "-1", description = "define the total chain length of MCMC, default to 1 million.")
     int chainLength;
     @Option(names = {"-b", "--preBurnin"}, defaultValue = "0", description = "define the number of burn in samples taken before entering the main loop of MCMC")
     int preBurnin;
