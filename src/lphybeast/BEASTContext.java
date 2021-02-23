@@ -137,6 +137,7 @@ public class BEASTContext {
                 NormalToBEAST.class,
                 PhyloCTMCToBEAST.class,
                 PoissonToBEAST.class,
+                RandomBooleanArrayToBEAST.class,
                 SerialCoalescentToBEAST.class,
                 SimFBDAgeToBEAST.class,
                 SkylineToBSP.class,
