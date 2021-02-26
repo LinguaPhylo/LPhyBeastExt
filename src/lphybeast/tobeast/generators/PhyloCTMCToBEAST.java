@@ -148,7 +148,7 @@ public class PhyloCTMCToBEAST implements GeneratorToBEAST<PhyloCTMC, GenericTree
 
         if (branchRates != null) {
 
-            if (branchRates.getGenerator() instanceof LogNormalMulti) {
+            if (branchRates.getGenerator() instanceof LogNormalMulti) { // TODO simpleRandomLocalClock.lphy
 
                 UCRelaxedClockModel relaxedClockModel = new UCRelaxedClockModel();
 
