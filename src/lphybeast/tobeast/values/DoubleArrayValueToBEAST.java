@@ -7,7 +7,6 @@ import beast.core.parameter.RealParameter;
 import beast.evolution.operators.DeltaExchangeOperator;
 import feast.function.Concatenate;
 import lphy.core.distributions.Dirichlet;
-import lphy.core.distributions.LogNormalMulti;
 import lphy.core.distributions.WeightedDirichlet;
 import lphy.graphicalModel.Value;
 import lphybeast.BEASTContext;
@@ -67,8 +66,8 @@ public class DoubleArrayValueToBEAST implements ValueToBEAST<Double[], BEASTInte
             parameter.setInputValue("upper", 1.0);
         } else if (value.getGenerator() instanceof WeightedDirichlet) {
             parameter.setInputValue("lower", 0.0);
-        } else if (value.getGenerator() instanceof LogNormalMulti) {
-            parameter.setInputValue("lower", 0.0);
+//        } else if (value.getGenerator() instanceof LogNormalMulti) {
+//            parameter.setInputValue("lower", 0.0);
         }
 
         parameter.initAndValidate();

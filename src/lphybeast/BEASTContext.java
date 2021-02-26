@@ -110,12 +110,11 @@ public class BEASTContext {
 
     private void registerGenerators() {
         final Class[] generatorToBEASTs = {
-                BernoulliMultiToBEAST.class,
+                BernoulliMultiToBEAST.class, // cannot be replaced by IID
                 BetaToBEAST.class,
                 BirthDeathSerialSamplingToBEAST.class,
                 BirthDeathSampleTreeDTToBEAST.class,
                 DirichletToBEAST.class,
-                ExpMultiToBEAST.class,
                 ExpToBEAST.class,
                 F81ToBEAST.class,
                 FossilBirthDeathTreeToBEAST.class,
@@ -131,7 +130,6 @@ public class BEASTContext {
                 LocalBranchRatesToBEAST.class,
                 LogNormalToBEAST.class,
                 MultispeciesCoalescentToStarBEAST2.class,
-                NormalMultiToBEAST.class,
                 NormalToBEAST.class,
                 PhyloCTMCToBEAST.class,
                 PoissonToBEAST.class,
