@@ -7,7 +7,7 @@ import beast.math.distributions.Prior;
 import lphy.core.distributions.LogNormalMulti;
 import lphybeast.BEASTContext;
 import lphybeast.GeneratorToBEAST;
-
+@Deprecated
 public class LogNormalMultiToBEAST implements GeneratorToBEAST<LogNormalMulti, Prior> {
     @Override
     public Prior generatorToBEAST(LogNormalMulti generator, BEASTInterface value, BEASTContext context) {

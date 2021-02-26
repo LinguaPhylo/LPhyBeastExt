@@ -6,7 +6,7 @@ import beast.math.distributions.Prior;
 import lphy.core.distributions.InverseGammaMulti;
 import lphybeast.BEASTContext;
 import lphybeast.GeneratorToBEAST;
-
+@Deprecated
 public class InverseGammaMultiToBEAST implements GeneratorToBEAST<InverseGammaMulti, Prior> {
     @Override
     public Prior generatorToBEAST(InverseGammaMulti generator, BEASTInterface value, BEASTContext context) {

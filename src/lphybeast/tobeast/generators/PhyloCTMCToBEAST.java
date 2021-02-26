@@ -21,6 +21,7 @@ import consoperators.InConstantDistanceOperator;
 import consoperators.SimpleDistance;
 import consoperators.SmallPulley;
 import lphy.core.distributions.DiscretizedGamma;
+import lphy.core.distributions.IID;
 import lphy.core.distributions.LogNormalMulti;
 import lphy.evolution.branchrates.LocalBranchRates;
 import lphy.evolution.likelihood.PhyloCTMC;
@@ -170,7 +171,7 @@ public class PhyloCTMCToBEAST implements GeneratorToBEAST<PhyloCTMC, GenericTree
             }
 
             if (branchRates instanceof RandomVariable && timeTreeValue instanceof RandomVariable) {
-//TODO
+                throw new UnsupportedOperationException("in development");
             }
 
         } else {
@@ -207,16 +208,20 @@ public class PhyloCTMCToBEAST implements GeneratorToBEAST<PhyloCTMC, GenericTree
 
         if (siteRates != null) {
             Generator generator = siteRates.getGenerator();
-            if (generator instanceof DiscretizedGamma) {
-                DiscretizedGamma discretizedGamma = (DiscretizedGamma)generator;
-                siteModel.setInputValue("shape", context.getAsRealParameter(discretizedGamma.getShape()));
-                siteModel.setInputValue("gammaCategoryCount", discretizedGamma.getNcat().value());
 
-                //TODO need a better solution than rm RandomVariable siteRates
-                context.removeBEASTObject(context.getBEASTObject(siteRates));
+            DiscretizedGamma discretizedGamma;
+            if (generator instanceof DiscretizedGamma) {
+                discretizedGamma = (DiscretizedGamma)generator;
+            } else if (generator instanceof IID) {
+                discretizedGamma = (DiscretizedGamma) ((IID)generator).getBaseDistribution();
             } else {
                 throw new RuntimeException("Only discretized gamma site rates are supported by LPhyBEAST");
             }
+            siteModel.setInputValue("shape", context.getAsRealParameter(discretizedGamma.getShape()));
+            siteModel.setInputValue("gammaCategoryCount", discretizedGamma.getNcat().value());
+
+            //TODO need a better solution than rm RandomVariable siteRates
+            context.removeBEASTObject(context.getBEASTObject(siteRates));
         }
 
         Generator qGenerator = phyloCTMC.getQ().getGenerator();

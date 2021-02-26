@@ -6,6 +6,8 @@ import lphybeast.BEASTContext;
 import lphybeast.GeneratorToBEAST;
 import outercore.math.distributions.BernoulliDistribution;
 
+// Note: because there is a optional condition "minSuccesses",
+// it cannot be replaced by {@link IID}.
 public class BernoulliMultiToBEAST implements GeneratorToBEAST<BernoulliMulti, BernoulliDistribution> {
     @Override
     public BernoulliDistribution generatorToBEAST(BernoulliMulti generator, BEASTInterface value, BEASTContext context) {

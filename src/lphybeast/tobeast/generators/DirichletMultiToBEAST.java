@@ -1,12 +1,9 @@
 package lphybeast.tobeast.generators;
 
 import beast.core.BEASTInterface;
-import beast.core.Distribution;
 import beast.core.parameter.RealParameter;
 import beast.core.util.CompoundDistribution;
 import beast.math.distributions.Prior;
-import feast.function.Slice;
-import lphy.core.distributions.Dirichlet;
 import lphy.core.distributions.DirichletMulti;
 import lphy.graphicalModel.Value;
 import lphybeast.BEASTContext;
@@ -15,7 +12,7 @@ import outercore.util.BEASTVector;
 
 import java.util.ArrayList;
 import java.util.List;
-
+@Deprecated
 public class DirichletMultiToBEAST implements GeneratorToBEAST<DirichletMulti, CompoundDistribution> {
 
     @Override

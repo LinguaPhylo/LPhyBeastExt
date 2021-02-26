@@ -23,7 +23,7 @@ import feast.function.Concatenate;
 import feast.function.Slice;
 import lphy.core.LPhyParser;
 import lphy.core.distributions.Dirichlet;
-import lphy.core.distributions.DirichletMulti;
+import lphy.core.distributions.IID;
 import lphy.core.distributions.RandomComposition;
 import lphy.core.functions.ElementsAt;
 import lphy.evolution.birthdeath.SimFBDAge;
@@ -115,7 +115,6 @@ public class BEASTContext {
                 BirthDeathSerialSamplingToBEAST.class,
                 BirthDeathSampleTreeDTToBEAST.class,
                 DirichletToBEAST.class,
-                DirichletMultiToBEAST.class,
                 ExpMultiToBEAST.class,
                 ExpToBEAST.class,
                 F81ToBEAST.class,
@@ -124,13 +123,12 @@ public class BEASTContext {
                 GTRToDiscretePhylogeo.class,
                 GTRToBEAST.class,
                 HKYToBEAST.class,
+                IIDToBEAST.class,
                 InverseGammaToBEAST.class,
-                InverseGammaMultiToBEAST.class,
                 JukesCantorToBEAST.class,
                 K80ToBEAST.class,
                 LewisMKToBeast.class,
                 LocalBranchRatesToBEAST.class,
-                LogNormalMultiToBEAST.class,
                 LogNormalToBEAST.class,
                 MultispeciesCoalescentToStarBEAST2.class,
                 NormalMultiToBEAST.class,
@@ -947,7 +945,9 @@ public class BEASTContext {
             Operator operator;
             GenerativeDistribution generativeDistribution = variable.getGenerativeDistribution();
 
-            if (generativeDistribution instanceof Dirichlet || generativeDistribution instanceof DirichletMulti) {
+            if (generativeDistribution instanceof Dirichlet ||
+                    (generativeDistribution instanceof IID &&
+                            ((IID<?>) generativeDistribution).getBaseDistribution() instanceof Dirichlet) ) {
                 Double[] value = (Double[]) variable.value();
                 operator = new DeltaExchangeOperator();
                 operator.setInputValue("parameter", parameter);

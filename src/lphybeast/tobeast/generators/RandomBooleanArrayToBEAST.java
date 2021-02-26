@@ -1,8 +1,6 @@
 package lphybeast.tobeast.generators;
 
 import beast.core.BEASTInterface;
-import beast.math.distributions.ParametricDistribution;
-import beast.math.distributions.Poisson;
 import beast.math.distributions.Prior;
 import lphy.core.distributions.RandomBooleanArray;
 import lphybeast.BEASTContext;
@@ -12,15 +10,13 @@ public class RandomBooleanArrayToBEAST implements GeneratorToBEAST<RandomBoolean
     @Override
     public Prior generatorToBEAST(RandomBooleanArray generator, BEASTInterface value, BEASTContext context) {
 
+        throw new UnsupportedOperationException("in dev");
 
-        ParametricDistribution distr = new Poisson();
-
-        beast.core.Function x = new beast.core.util.Sum();
-
-
-
-
-        return BEASTContext.createPrior(distr, x);
+//        ParametricDistribution distr = new Poisson();
+//
+//        beast.core.Function x = new beast.core.util.Sum();
+//
+//        return BEASTContext.createPrior(distr, x);
     }
 
     @Override

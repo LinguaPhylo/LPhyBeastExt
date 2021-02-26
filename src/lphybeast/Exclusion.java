@@ -1,6 +1,7 @@
 package lphybeast;
 
 import lphy.core.distributions.DiscretizedGamma;
+import lphy.core.distributions.IID;
 import lphy.core.distributions.RandomComposition;
 import lphy.core.distributions.WeightedDirichlet;
 import lphy.core.functions.*;
@@ -44,9 +45,10 @@ public class Exclusion {
                 generator instanceof ARange || generator instanceof Range ||
                 generator instanceof MapFunction || generator instanceof MethodCall  ||
                 generator instanceof RangeList || generator instanceof ElementsAt || generator instanceof Rep ||
-                generator instanceof DiscretizedGamma || generator instanceof Length ||
                 generator instanceof MigrationMatrix || generator instanceof MigrationCount ||
-                generator instanceof Select || generator instanceof SumBoolean ||
+                generator instanceof Length || generator instanceof Select || generator instanceof SumBoolean ||
+                generator instanceof DiscretizedGamma ||
+                (generator instanceof IID && ((IID<?>) generator).getBaseDistribution() instanceof DiscretizedGamma) ||
                 generator instanceof ExpressionNodeWrapper;
     }
 }
