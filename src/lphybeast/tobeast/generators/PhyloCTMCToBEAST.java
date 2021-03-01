@@ -22,6 +22,7 @@ import consoperators.SimpleDistance;
 import consoperators.SmallPulley;
 import lphy.core.distributions.DiscretizedGamma;
 import lphy.core.distributions.IID;
+import lphy.core.distributions.LogNormal;
 import lphy.core.distributions.LogNormalMulti;
 import lphy.evolution.branchrates.LocalBranchRates;
 import lphy.evolution.likelihood.PhyloCTMC;
@@ -148,11 +149,14 @@ public class PhyloCTMCToBEAST implements GeneratorToBEAST<PhyloCTMC, GenericTree
 
         if (branchRates != null) {
 
-            if (branchRates.getGenerator() instanceof LogNormalMulti) { // TODO simpleRandomLocalClock.lphy
+            Generator generator = branchRates.getGenerator();
+            if (generator instanceof IID &&
+                    ((IID<?>) generator).getBaseDistribution() instanceof LogNormal) {
 
+                // simpleRelaxedClock.lphy
                 UCRelaxedClockModel relaxedClockModel = new UCRelaxedClockModel();
 
-                Prior logNormalPrior = (Prior) context.getBEASTObject(branchRates.getGenerator());
+                Prior logNormalPrior = (Prior) context.getBEASTObject(generator);
 
                 RealParameter beastBranchRates = (RealParameter) context.getBEASTObject(branchRates);
 
@@ -164,8 +168,8 @@ public class PhyloCTMCToBEAST implements GeneratorToBEAST<PhyloCTMC, GenericTree
 
                 addRelaxedClockOperators(tree, relaxedClockModel, beastBranchRates, context);
 
-            } else if (branchRates.getGenerator() instanceof LocalBranchRates) {
-                treeLikelihood.setInputValue("branchRateModel", context.getBEASTObject(branchRates.getGenerator()));
+            } else if (generator instanceof LocalBranchRates) {
+                treeLikelihood.setInputValue("branchRateModel", context.getBEASTObject(generator));
             } else {
                 throw new RuntimeException("Only localBranchRates and lognormally distributed branchRates currently supported for BEAST2 conversion");
             }
