@@ -18,6 +18,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 
 @Command(name = "lphybeast", version = "LPhyBEAST " + LPhyBEAST.VERSION, footer = "Copyright(c) 2020",
@@ -67,8 +68,11 @@ public class LPhyBEAST implements Callable<Integer> {
 
 
     @Override
-    public Integer call() throws IOException { // business logic goes here...
+    public Integer call() throws CommandLine.PicocliException { // business logic goes here...
         String fileName = infile.getFileName().toString();
+        if (fileName == null || !fileName.endsWith(".lphy"))
+            throw new CommandLine.InitializationException("Invalid LPhy file: the postfix has to be '.lphy'");
+
         String fileNameStem = fileName.substring(0, fileName.lastIndexOf("."));
 
         // null, if only file
@@ -95,21 +99,31 @@ public class LPhyBEAST implements Callable<Integer> {
     }
 
     // fileNameStem for both outfile and XML loggers
-    private void createXML(Path infile, Path wd, String fileNameStem, long chainLength, int preBurnin) throws IOException {
+    private void createXML(Path infile, Path wd, String fileNameStem, long chainLength, int preBurnin) throws CommandLine.PicocliException {
         // need to call reader each loop
-        BufferedReader reader = new BufferedReader(new FileReader(infile.toFile()));
-
-        String xml = toBEASTXML(reader, fileNameStem, chainLength, preBurnin);
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new FileReader(infile.toFile()));
+        } catch (FileNotFoundException e) {
+            throw new CommandLine.PicocliException("Fail to read LPhy scripts from " +
+                    infile.toString() + ", working path is " + wd.toString(), e);
+        }
+        String xml = toBEASTXML(Objects.requireNonNull(reader), fileNameStem, chainLength, preBurnin);
 
         // use fileNameStem to recover outfile
         String outPath = fileNameStem + ".xml";
         // as default wd is null then use the dir of infile
         Path outfile = wd==null ? Paths.get(outPath) : Paths.get(wd.toString(), outPath);
 
-        PrintWriter writer = new PrintWriter(new FileWriter(outfile.toFile()));
-        writer.println(xml);
-        writer.flush();
-        writer.close();
+        try {
+            PrintWriter writer = new PrintWriter(new FileWriter(outfile.toFile()));
+            writer.println(xml);
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            throw new CommandLine.PicocliException("Fail to write XML to " +
+                    outfile.toString(), e);
+        }
 
         System.out.println("\nCreate BEAST 2 XML : " +
                 Paths.get(System.getProperty("user.dir"), outfile.toString()));
@@ -128,10 +142,15 @@ public class LPhyBEAST implements Callable<Integer> {
      * @see BEASTContext#toBEASTXML(String, long, int)
      * @throws IOException
      */
-    public String toBEASTXML(BufferedReader reader, String fileNameStem, long chainLength, int preBurnin) throws IOException {
+    public String toBEASTXML(BufferedReader reader, String fileNameStem, long chainLength, int preBurnin) throws CommandLine.PicocliException {
         //*** Parse LPhy file ***//
         LPhyParser parser = new REPL();
-        parser.source(reader);
+        try {
+            parser.source(reader);
+        } catch (IOException e) {
+            throw new CommandLine.PicocliException("Cannot parse LPhy scripts in " +
+                    fileNameStem + ".lphy", e);
+        }
 
         // log true values and tree
         List<RandomValueLogger> loggers = new ArrayList<>();
@@ -158,7 +177,7 @@ public class LPhyBEAST implements Callable<Integer> {
      * @see #toBEASTXML(BufferedReader, String, long, int)
      * @throws IOException
      */
-    public String lphyToXML (String lphy, String fileNameStem, long chainLength, int preBurnin) throws IOException {
+    public String lphyToXML (String lphy, String fileNameStem, long chainLength, int preBurnin) throws CommandLine.PicocliException {
         Reader inputString = new StringReader(lphy);
         BufferedReader reader = new BufferedReader(inputString);
 

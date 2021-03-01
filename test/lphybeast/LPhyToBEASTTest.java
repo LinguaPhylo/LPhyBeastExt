@@ -2,6 +2,7 @@ package lphybeast;
 
 import org.junit.Before;
 import org.junit.Test;
+import picocli.CommandLine;
 
 import java.io.IOException;
 
@@ -38,7 +39,7 @@ public class LPhyToBEASTTest {
         String xml = null;
         try {
             xml = lPhyBEAST.lphyToXML(simpleCoal, "simpleCoal", -1, 0);
-        } catch (IOException e) {
+        } catch (CommandLine.PicocliException e) {
             e.printStackTrace();
         }
 
