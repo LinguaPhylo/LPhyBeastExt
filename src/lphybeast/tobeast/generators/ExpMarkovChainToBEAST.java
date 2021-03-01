@@ -4,6 +4,7 @@ import beast.core.BEASTInterface;
 import feast.function.Slice;
 import lphy.core.distributions.ExpMarkovChain;
 import lphy.graphicalModel.Generator;
+import lphy.graphicalModel.GraphicalModelNode;
 import lphy.graphicalModel.Value;
 import lphybeast.BEASTContext;
 import lphybeast.GeneratorToBEAST;
@@ -33,6 +34,7 @@ public class ExpMarkovChainToBEAST implements GeneratorToBEAST<ExpMarkovChain, M
             Generator dist = firstValue.getGenerator();
             BEASTInterface prior = context.getBEASTObject(dist);
             prior.setInputValue("x", feastSlice);
+            /** call {@link BEASTContext#addToContext(GraphicalModelNode, BEASTInterface)} **/
             context.putBEASTObject(dist, prior);
 
         } else {

@@ -10,6 +10,7 @@ import lphy.evolution.alignment.Alignment;
 import lphy.evolution.coalescent.MultispeciesCoalescent;
 import lphy.evolution.likelihood.PhyloCTMC;
 import lphy.evolution.tree.TimeTree;
+import lphy.graphicalModel.GraphicalModelNode;
 import lphy.graphicalModel.Value;
 import lphybeast.BEASTContext;
 import lphybeast.GeneratorToBEAST;
@@ -102,6 +103,7 @@ public class MultispeciesCoalescentToStarBEAST2 implements
         speciesTree.setID(vanillaSpeciesTree.getID());
         // replace species tree in context with newly converted tree so that tree operators are attached to the correct tree.
         context.removeBEASTObject(vanillaSpeciesTree);
+        /** call {@link BEASTContext#addToContext(GraphicalModelNode, BEASTInterface)} **/
         context.putBEASTObject(generator.getSpeciesTree(), speciesTree);
     }
     

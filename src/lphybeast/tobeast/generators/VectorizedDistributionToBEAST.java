@@ -3,6 +3,7 @@ package lphybeast.tobeast.generators;
 import beast.core.BEASTInterface;
 import lphy.core.distributions.VectorizedDistribution;
 import lphy.graphicalModel.GenerativeDistribution;
+import lphy.graphicalModel.GraphicalModelNode;
 import lphybeast.BEASTContext;
 import lphybeast.GeneratorToBEAST;
 import outercore.util.BEASTVector;
@@ -32,6 +33,7 @@ public class VectorizedDistributionToBEAST implements GeneratorToBEAST<Vectorize
 
             BEASTInterface beastGenerator = toBEAST.generatorToBEAST(generativeDistribution, values.get(i), context);
             beastGenerators.add(beastGenerator);
+            /** call {@link BEASTContext#addToContext(GraphicalModelNode, BEASTInterface)} **/
             context.putBEASTObject(generativeDistribution, beastGenerator);
         }
 

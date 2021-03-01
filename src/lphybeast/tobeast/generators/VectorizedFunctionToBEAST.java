@@ -5,6 +5,7 @@ import beast.core.BEASTObject;
 import beast.core.parameter.RealParameter;
 import lphy.core.functions.VectorizedFunction;
 import lphy.graphicalModel.DeterministicFunction;
+import lphy.graphicalModel.GraphicalModelNode;
 import lphybeast.BEASTContext;
 import lphybeast.GeneratorToBEAST;
 import outercore.util.BEASTVector;
@@ -41,6 +42,7 @@ public class VectorizedFunctionToBEAST implements GeneratorToBEAST<VectorizedFun
 
             BEASTInterface beastGenerator = toBEAST.generatorToBEAST(function, values.get(i), context);
             beastGenerators.add(beastGenerator);
+            /** call {@link BEASTContext#addToContext(GraphicalModelNode, BEASTInterface)} **/
             context.putBEASTObject(function, beastGenerator);
         }
 

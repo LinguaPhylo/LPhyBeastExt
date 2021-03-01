@@ -546,11 +546,15 @@ public class BEASTContext {
                 throw new UnsupportedOperationException("Unhandled value" + (!val.isAnonymous() ? " named " + val.getId() : "") + " in valueToBEAST(): \"" +
                         val + "\" of type " + val.value().getClass());
         } else {
+            // here is the common way to fill in context,
+            // but there is another special method to do this
+            /** {@link #putBEASTObject(GraphicalModelNode, BEASTInterface)} **/
             addToContext(val, beastValue);
         }
         return beastValue;
     }
 
+    // fill in beastObjects, BEASTToLPHYMap, elements, and state
     private void addToContext(GraphicalModelNode node, BEASTInterface beastInterface) {
         beastObjects.put(node, beastInterface);
         BEASTToLPHYMap.put(beastInterface, node);
@@ -571,7 +575,8 @@ public class BEASTContext {
                     }
                 } else if (beastInterface instanceof BEASTVector) {
                     for (BEASTInterface beastElement : ((BEASTVector) beastInterface).getObjectList()) {
-                        if (beastElement instanceof StateNode) {
+                        // BI obj is wrapped inside BEASTVector, so check existence again
+                        if (beastElement instanceof StateNode && !state.contains(beastElement)) {
                             state.add((StateNode) beastElement);
                         }
                     }
@@ -1214,6 +1219,13 @@ public class BEASTContext {
         return taxonList;
     }
 
+    /**
+     * The special method to to fill in context,
+     * use it as a caution.
+     * @param node
+     * @param beastInterface
+     * @see #valueToBEAST(Value)
+     */
     public void putBEASTObject(GraphicalModelNode node, BEASTInterface beastInterface) {
         addToContext(node, beastInterface);
     }

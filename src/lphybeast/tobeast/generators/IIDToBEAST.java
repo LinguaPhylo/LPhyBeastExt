@@ -6,6 +6,7 @@ import beast.math.distributions.Prior;
 import lphy.core.distributions.Bernoulli;
 import lphy.core.distributions.IID;
 import lphy.graphicalModel.GenerativeDistribution;
+import lphy.graphicalModel.GraphicalModelNode;
 import lphy.utils.LoggerUtils;
 import lphybeast.BEASTContext;
 import lphybeast.GeneratorToBEAST;
@@ -63,7 +64,7 @@ public class IIDToBEAST implements GeneratorToBEAST<IID, BEASTInterface> {
                     throw new IllegalArgumentException("Expecting Prior to be generated ! " + beastGenerator.getClass().getSimpleName());
 
                 beastGenerators.add((Prior) beastGenerator);
-                // add beastGenerator to BEASTContext, since they were wrapped in BEASTVector
+                /** call {@link BEASTContext#addToContext(GraphicalModelNode, BEASTInterface)} **/
                 context.putBEASTObject(baseDistribution, beastGenerator);
             }
             // wrap the list of Prior into BEASTVector

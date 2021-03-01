@@ -5,6 +5,7 @@ import beast.core.Function;
 import feast.function.Concatenate;
 import feast.function.Slice;
 import lphy.core.functions.SliceDoubleArray;
+import lphy.graphicalModel.GraphicalModelNode;
 import lphy.graphicalModel.Value;
 import lphybeast.BEASTContext;
 import lphybeast.GeneratorToBEAST;
@@ -38,11 +39,13 @@ public class SliceDoubleArrayToBEAST implements GeneratorToBEAST<SliceDoubleArra
 
             if (element instanceof BEASTInterface) {
                 context.removeBEASTObject(value);
+                /** call {@link BEASTContext#addToContext(GraphicalModelNode, BEASTInterface)} **/
                 context.putBEASTObject(lphyValue, (BEASTInterface)element);
             }
         } else {
 
             context.removeBEASTObject(value);
+            /** call {@link BEASTContext#addToContext(GraphicalModelNode, BEASTInterface)} **/
             context.putBEASTObject(lphyValue, generatorToBEAST(generator, value, context));
         }
     }

@@ -2,6 +2,7 @@ package lphybeast.tobeast.values;
 
 import beast.core.BEASTInterface;
 import lphy.graphicalModel.CompoundVector;
+import lphy.graphicalModel.GraphicalModelNode;
 import lphy.graphicalModel.Value;
 import lphy.graphicalModel.types.StringValue;
 import lphybeast.BEASTContext;
@@ -28,6 +29,7 @@ public class CompoundVectorToBEAST implements ValueToBEAST<Object, BEASTVector> 
 
             BEASTInterface beastValue = toBEAST.valueToBEAST(componentValue, context);
             beastValues.add(beastValue);
+            /** call {@link BEASTContext#addToContext(GraphicalModelNode, BEASTInterface)} **/
             context.putBEASTObject(componentValue, beastValue);
         }
 

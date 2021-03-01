@@ -36,6 +36,7 @@ public class ExpressionNodeWrapperToFEAST implements GeneratorToBEAST<Expression
     public void modifyBEASTValues(ExpressionNodeWrapper generator, BEASTInterface value, BEASTContext context) {
         Value lphyValue = (Value) context.getGraphicalModelNode(value);
         context.removeBEASTObject(value);
+        /** call {@link BEASTContext#addToContext(GraphicalModelNode, BEASTInterface)} **/
         context.putBEASTObject(lphyValue, generatorToBEAST(generator, value, context));
     }
 
