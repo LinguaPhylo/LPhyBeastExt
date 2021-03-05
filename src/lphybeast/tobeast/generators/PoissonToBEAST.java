@@ -13,20 +13,22 @@ public class PoissonToBEAST implements GeneratorToBEAST<Poisson, Prior> {
     public Prior generatorToBEAST(Poisson generator, BEASTInterface value, BEASTContext context) {
 
         // BEAST Poisson uses offset to shift value to be sampled between 0 and 1, where offset = len(states) - 1
-        // LPhy Poisson has no offset but sample between min and max (default min=0 max= Integer.MAX_VALUE),
         // for example, symmetric discrete phylogeography has locations S = len(states) and then min=S, max=S*(S-1)
-        double offset = 0.0;
-        if (generator.getMax() != null) {
-            int max = generator.getMax().value();
-            int min = 0;
-            if (generator.getMin() != null)
-                min = generator.getMin().value();
-            // len(states) = max - min
-            offset = max - min - 1;
-        } else if (generator.getMin() != null) {
-            LoggerUtils.log.warning("LPhy Poisson maximum boundary is default to Integer.MAX_VALUE ! " +
-                    "Please define it when you defined minimum boundary " + generator.getMin().value());
-        }
+        if (generator.getOffset() == null)
+            throw new UnsupportedOperationException("Only offset Poisson prior is available !");
+        double offset = generator.getOffset().value();
+
+//        if (generator.getMax() != null) {
+//            int max = generator.getMax().value();
+//            int min = 0;
+//            if (generator.getMin() != null)
+//                min = generator.getMin().value();
+//            // len(states) = max - min
+//            offset = max - min - 1;
+//        } else if (generator.getMin() != null) {
+//            LoggerUtils.log.warning("LPhy Poisson maximum boundary is default to Integer.MAX_VALUE ! " +
+//                    "Please define it when you defined minimum boundary " + generator.getMin().value());
+//        }
 
         // BEAST Poisson : Input<RealParameter> lambdaInput
         beast.math.distributions.Poisson poisson = new beast.math.distributions.Poisson();
