@@ -21,6 +21,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import feast.function.Concatenate;
 import feast.function.Slice;
+import lphy.app.Symbols;
 import lphy.core.LPhyParser;
 import lphy.core.distributions.Dirichlet;
 import lphy.core.distributions.IID;
@@ -160,17 +161,48 @@ public class BEASTContext {
 
     public BEASTInterface getBEASTObject(GraphicalModelNode<?> node) {
 
+        if (node instanceof Value) {
+            Value value = (Value)node;
+            if (!value.isAnonymous()) {
+                BEASTInterface beastInterface = getBEASTObject(value.getId());
+                if (beastInterface != null) return beastInterface;
+            }
+        }
+
         BEASTInterface beastInterface = beastObjects.get(node);
 
         if (beastInterface != null) {
             return beastInterface;
+        } else {
+            String id = node.getUniqueId();
+            String[] parts = id.split(VectorUtils.INDEX_SEPARATOR);
+            if (parts.length == 2) {
+                int index = Integer.parseInt(parts[1]);
+                Slice slice = createSlice(node, parts[0], index);
+                beastObjects.put(node, slice);
+                return slice;
+            }
         }
-
+        
         if (node instanceof SliceValue) {
             SliceValue sliceValue = (SliceValue) node;
             return handleSliceRequest(sliceValue);
         }
         return null;
+    }
+
+    private Slice createSlice(GraphicalModelNode node, String id, int index) {
+
+        BEASTInterface parentNode = getBEASTObject(Symbols.getCanonical(id));
+
+        Slice slice = new Slice();
+        slice.setInputValue("arg", parentNode);
+        slice.setInputValue("index", index);
+        slice.initAndValidate();
+        slice.setID(Symbols.getCanonical(id) + VectorUtils.INDEX_SEPARATOR + index);
+        addToContext(node, slice);
+        return slice;
+
     }
 
     boolean byslice = false;
@@ -212,7 +244,7 @@ public class BEASTContext {
         }
 
         for (BEASTInterface beastInterface : beastObjects.values()) {
-            if (id.equals(beastInterface.getID().equals(id))) return beastInterface;
+            if (beastInterface.getID() !=  null && id.equals(beastInterface.getID().equals(id))) return beastInterface;
         }
         return null;
     }
@@ -579,6 +611,17 @@ public class BEASTContext {
                         if (beastElement instanceof StateNode && !state.contains(beastElement)) {
                             state.add((StateNode) beastElement);
                         }
+                    }
+                } else if (beastInterface instanceof Slice) {
+                    BEASTInterface parent = (BEASTInterface)((Slice)beastInterface).functionInput.get();
+                    if (parent instanceof StateNode) {
+                        if (!state.contains(parent)) {
+                            state.add((StateNode) parent);
+                        } else {
+                            // parent already in state
+                        }
+                    } else {
+                        throw new RuntimeException("Slice representing random value, but the sliced beast interface is not a state node!");
                     }
                 } else {
                     throw new RuntimeException("Unexpected beastInterface returned true for isState() but can't be added to state");

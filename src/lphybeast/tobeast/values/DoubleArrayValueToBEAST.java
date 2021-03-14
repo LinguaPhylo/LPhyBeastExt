@@ -9,6 +9,7 @@ import feast.function.Concatenate;
 import lphy.core.distributions.Dirichlet;
 import lphy.core.distributions.WeightedDirichlet;
 import lphy.graphicalModel.Value;
+import lphy.graphicalModel.VectorUtils;
 import lphybeast.BEASTContext;
 import lphybeast.ValueToBEAST;
 import outercore.parameter.KeyRealParameter;
@@ -34,7 +35,7 @@ public class DoubleArrayValueToBEAST implements ValueToBEAST<Double[], BEASTInte
             Double[] values = value.value();
 
             for (int i = 0; i < values.length; i++) {
-                RealParameter parameter = context.createRealParameter(value.getCanonicalId() + "." + i, values[i]);
+                RealParameter parameter = context.createRealParameter(value.getCanonicalId() + VectorUtils.INDEX_SEPARATOR + i, values[i]);
                 context.addStateNode(parameter, value, false);
                 args.add(parameter);
             }
