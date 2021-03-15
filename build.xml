@@ -1,4 +1,4 @@
-<project default="build" basedir="." name="lphybeast">
+<project default="compile" basedir="." name="lphybeast">
 
     <!-- Java 11 -->
     <property name="sourceVersion" value="15"/>
@@ -45,6 +45,14 @@
     </path>
 
 
+    <!-- Revert to pristine state. -->
+    <target name="clean">
+        <delete dir="${build}"/>
+        <delete dir="${dist}"/>
+        <delete dir="${build-test}"/>
+        <delete dir="${test-reports}"/>
+    </target>
+
     <!-- Prepare for compilation -->
     <target name="init">
         <echo message="Java version: ${java.version}"/>
@@ -56,13 +64,13 @@
 
         <echo message="build ${lphy}/build.xml"/>
         <!-- avoid to overwrite ${repoName} -->
-        <ant antfile="${lphy}/build.xml" target="build" inheritAll="false"/>
+        <ant antfile="${lphy}/build.xml" target="compile" inheritAll="false"/>
         <echo message="build ${outercore}/build.xml"/>
-        <ant antfile="${outercore}/build.xml" target="build" inheritAll="false"/>
+        <ant antfile="${outercore}/build.xml" target="compile" inheritAll="false"/>
     </target>
 
     <!-- Compile -->
-    <target name="compile" depends="init">
+    <target name="compile" depends="clean, init">
 <!--        <pathconvert property="classpathproperty" refid="lphybe-clspath"/>-->
 <!--        <echo>${repoName} classpath is ${classpathproperty}</echo>-->
 
@@ -75,7 +83,7 @@
     <!-- Release -->
     <property name="pack" value="${dist}/package"/>
 
-    <target name="dist-lphybe" depends="compile">
+    <target name="dist" depends="compile">
         <mkdir dir="${pack}"/>
         <jar jarfile="${pack}/${projName}.src.jar">
             <fileset dir="src"/>
@@ -97,7 +105,7 @@
     </target>
 
 
-    <target name="dist" depends="build,dist-lphybe">
+    <target name="release" depends="compile, dist" description="for the release process">
         <property name="packageName" value="${projName}.v${projVersion}"/>
         <mkdir dir="${pack}"/>
         <copy file="README.md" tofile="${pack}/README"/>
@@ -107,12 +115,11 @@
               <fileset dir="${lib}" includes="LICENSE*" />
             </copy>
         -->
-        <mkdir dir="${pack}/examples"/>
-
-        <copy todir="${pack}/examples">
-            <fileset dir="${lphy}/examples" includes="*.lphy"/>
-            <fileset dir="${lphy}/examples" includes="*.nex"/>
-        </copy>
+<!--        <mkdir dir="${pack}/examples"/>-->
+<!--        <copy todir="${pack}/examples">-->
+<!--            <fileset dir="${lphy}/examples" includes="*.lphy"/>-->
+<!--            <fileset dir="${lphy}/examples" includes="*.nex"/>-->
+<!--        </copy>-->
 
         <zip destfile="${dist}/${packageName}.zip" basedir="${pack}"/>
 
@@ -123,8 +130,6 @@
         <echo>** Package ${dist}/${packageName}.zip created successfuly! **</echo>
     </target>
 
-
-    <target name="build" depends="clean, compile"/>
 
     <!-- Prepare for unit test compilation -->
     <target name="init-test">
@@ -164,15 +169,7 @@
         <fail if="testFailed" status="1" message="Unit test of ${projName} failed."/>
     </target>
 
-    <!-- Revert to pristine state. -->
-    <target name="clean">
-        <delete dir="${build}"/>
-        <delete dir="${dist}"/>
-        <delete dir="${build-test}"/>
-        <delete dir="${test-reports}"/>
-    </target>
-
-    <target name="github-actions" depends="clean, compile, test">
+    <target name="github-actions" depends="compile, test">
         <fail if="testFailed" message="One or more ${projName} tests failed."/>
     </target>
 
