@@ -54,7 +54,7 @@
     </target>
 
     <!-- Prepare for compilation -->
-    <target name="init">
+    <target name="init" depends="clean">
         <echo message="Java version: ${java.version}"/>
         <echo message="${ant.project.name}: ${ant.file}"/>
         <echo message="Working dir is ${repoName}." />
@@ -70,7 +70,7 @@
     </target>
 
     <!-- Compile -->
-    <target name="compile" depends="clean, init">
+    <target name="compile" depends="init">
 <!--        <pathconvert property="classpathproperty" refid="lphybe-clspath"/>-->
 <!--        <echo>${repoName} classpath is ${classpathproperty}</echo>-->
 
@@ -143,7 +143,7 @@
 
 
     <!-- Compile unit tests -->
-    <target name="compile-test" depends="init-test,compile">
+    <target name="compile-test" depends="init-test">
         <javac target="${targetVersion}" source="${sourceVersion}" srcdir="${test}" destdir="${build-test}"
                classpathref="lphybe-clspath"  includeantruntime="false">
         </javac>
@@ -152,7 +152,7 @@
 
 
     <!-- Run unit tests -->
-    <target name="test" depends="compile-test">
+    <target name="test" depends="compile, compile-test">
         <junit printsummary="yes" failureproperty="testFailed">
             <classpath>
                 <path refid="lphybe-clspath"/>
@@ -169,7 +169,7 @@
         <fail if="testFailed" status="1" message="Unit test of ${projName} failed."/>
     </target>
 
-    <target name="github-actions" depends="compile, test">
+    <target name="github-actions" depends="compile, compile-test, test">
         <fail if="testFailed" message="One or more ${projName} tests failed."/>
     </target>
 
