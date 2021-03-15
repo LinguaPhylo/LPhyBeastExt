@@ -7,6 +7,7 @@ import beast.core.parameter.IntegerParameter;
 import beast.core.parameter.Parameter;
 import beast.core.parameter.RealParameter;
 import beast.core.util.CompoundDistribution;
+import beast.evolution.alignment.Alignment;
 import beast.evolution.alignment.Taxon;
 import beast.evolution.likelihood.AncestralStateTreeLikelihood;
 import beast.evolution.operators.*;
@@ -165,10 +166,23 @@ public class BEASTContext {
             Value value = (Value)node;
             if (!value.isAnonymous()) {
                 BEASTInterface beastInterface = getBEASTObject(value.getId());
-                if (beastInterface != null) return beastInterface;
+                // cannot be Alignment, otherwise getBEASTObject(value.getId()) makes data clamping not working;
+                // it will get simulated Alignment even though data is clamped.
+                if (beastInterface != null) {
+                    if (beastInterface instanceof BEASTVector) {
+                        List<BEASTInterface> beastInterfaceList = ((BEASTVector)beastInterface).getObjectList();
+
+                        if ( !(beastInterfaceList.get(0) instanceof Alignment) )
+                            return beastInterface;
+
+                    } else if ( !(beastInterface instanceof Alignment) ) {
+                        return beastInterface;
+                    }
+                }
             }
         }
 
+        // have to use this for data clamping
         BEASTInterface beastInterface = beastObjects.get(node);
 
         if (beastInterface != null) {
@@ -536,7 +550,8 @@ public class BEASTContext {
                 BEASTInterface beastValue = beastObjects.get(value);
                 // If this is a generative distribution then swap to the clamped value if it exists
                 if (generator instanceof GenerativeDistribution && isClamped(value.getId())) {
-                    beastValue = getBEASTObject(getClampedValue(value.getId()));
+                    Value clampedValue = getClampedValue(value.getId());
+                    beastValue = getBEASTObject(clampedValue);
                 }
 
                 if (beastValue == null) {
