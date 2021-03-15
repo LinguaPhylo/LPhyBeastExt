@@ -162,6 +162,9 @@ public class BEASTContext {
 
     public BEASTInterface getBEASTObject(GraphicalModelNode<?> node) {
 
+        // Q=jukesCantor(), rateMatrix.getMeanRate() is null
+        if (node == null) return null;
+
         if (node instanceof Value) {
             Value value = (Value)node;
             if (!value.isAnonymous()) {

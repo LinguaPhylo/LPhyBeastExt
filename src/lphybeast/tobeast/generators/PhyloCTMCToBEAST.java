@@ -23,7 +23,6 @@ import consoperators.SmallPulley;
 import lphy.core.distributions.DiscretizedGamma;
 import lphy.core.distributions.IID;
 import lphy.core.distributions.LogNormal;
-import lphy.core.distributions.LogNormalMulti;
 import lphy.evolution.branchrates.LocalBranchRates;
 import lphy.evolution.likelihood.PhyloCTMC;
 import lphy.evolution.substitutionmodel.RateMatrix;
@@ -232,16 +231,15 @@ public class PhyloCTMCToBEAST implements GeneratorToBEAST<PhyloCTMC, GenericTree
         if (qGenerator == null || !(qGenerator instanceof RateMatrix)) {
             throw new RuntimeException("BEAST2 only supports Q matrices constructed by a RateMatrix function (e.g. hky, gtr, jukeCantor et cetera).");
         } else {
-            RateMatrix rateMatrix = (RateMatrix)qGenerator;
-
-            BEASTInterface mutationRate = context.getBEASTObject(rateMatrix.getMeanRate());
-
             SubstitutionModel substitutionModel = (SubstitutionModel) context.getBEASTObject(qGenerator);
-
             if (substitutionModel == null) throw new IllegalArgumentException("Substitution Model was null!");
-
             siteModel.setInputValue("substModel", substitutionModel);
+
+            RateMatrix rateMatrix = (RateMatrix)qGenerator;
+            Value<Double> meanRate = rateMatrix.getMeanRate();
+            BEASTInterface mutationRate = meanRate==null ? null : context.getBEASTObject(meanRate);
             if (mutationRate != null) siteModel.setInputValue("mutationRate", mutationRate);
+
             siteModel.initAndValidate();
         }
         return siteModel;
