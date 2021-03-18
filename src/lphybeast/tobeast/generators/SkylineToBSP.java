@@ -1,11 +1,12 @@
 package lphybeast.tobeast.generators;
 
 import beast.core.BEASTInterface;
-import beast.core.parameter.IntegerParameter;
 import beast.evolution.tree.coalescent.TreeIntervals;
 import lphy.evolution.coalescent.SkylineCoalescent;
 import lphybeast.BEASTContext;
 import lphybeast.GeneratorToBEAST;
+import outercore.parameter.KeyIntegerParameter;
+import outercore.parameter.KeyRealParameter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,13 +24,19 @@ public class SkylineToBSP implements
 
         bsp.setInputValue("treeIntervals", treeIntervals);
 
-        bsp.setInputValue("popSizes", context.getBEASTObject(coalescent.getTheta()));
+        // https://github.com/LinguaPhylo/LPhyBeast/issues/33
+        // pop size index has to be same as group size, for Tracer skyline plot
+        BEASTInterface popSizes = context.getBEASTObject(coalescent.getTheta());
+        if ( !(popSizes instanceof KeyRealParameter) )
+            throw new IllegalArgumentException("Expecting KeyRealParameter for Skyline pop size ! ");
+        bsp.setInputValue("popSizes", popSizes);
 
-        IntegerParameter groupSizeParameter = null;
+        KeyIntegerParameter groupSizeParameter = null;
         if (coalescent.getGroupSizes() != null) {
-            groupSizeParameter = (IntegerParameter)context.getBEASTObject(coalescent.getGroupSizes());
+            groupSizeParameter = (KeyIntegerParameter)context.getBEASTObject(coalescent.getGroupSizes());
         } else {
-            groupSizeParameter = new IntegerParameter();
+            // classic skyline
+            groupSizeParameter = new KeyIntegerParameter();
             List<Integer> groupSizes = new ArrayList<>();
             for (int i = 0; i < coalescent.getTheta().value().length; i++) {
                 groupSizes.add(1);
@@ -37,6 +44,7 @@ public class SkylineToBSP implements
             groupSizeParameter.setInputValue("value", groupSizes);
             groupSizeParameter.setInputValue("dimension", groupSizes.size());
             groupSizeParameter.initAndValidate();
+            groupSizeParameter.setID("groupSizes");
         }
 
         bsp.setInputValue("groupSizes", groupSizeParameter);

@@ -1,21 +1,21 @@
 package lphybeast.tobeast.values;
 
-import beast.core.parameter.IntegerParameter;
 import lphy.core.distributions.RandomComposition;
 import lphy.graphicalModel.RandomVariable;
 import lphy.graphicalModel.Value;
 import lphybeast.BEASTContext;
 import lphybeast.ValueToBEAST;
+import outercore.parameter.KeyIntegerParameter;
 
 import java.util.Arrays;
 import java.util.List;
 
-public class IntegerArrayValueToBEAST implements ValueToBEAST<Integer[], IntegerParameter> {
+public class IntegerArrayValueToBEAST implements ValueToBEAST<Integer[], KeyIntegerParameter> {
 
     @Override
-    public IntegerParameter valueToBEAST(Value<Integer[]> value, BEASTContext context) {
+    public KeyIntegerParameter valueToBEAST(Value<Integer[]> value, BEASTContext context) {
 
-        IntegerParameter parameter = new IntegerParameter();
+        KeyIntegerParameter parameter = new KeyIntegerParameter();
         List<Integer> values = Arrays.asList(value.value());
         parameter.setInputValue("value", values);
         parameter.setInputValue("dimension", values.size());
@@ -37,8 +37,8 @@ public class IntegerArrayValueToBEAST implements ValueToBEAST<Integer[], Integer
     }
 
     @Override
-    public Class<IntegerParameter> getBEASTClass() {
-        return IntegerParameter.class;
+    public Class<KeyIntegerParameter> getBEASTClass() {
+        return KeyIntegerParameter.class;
     }
 
 }
