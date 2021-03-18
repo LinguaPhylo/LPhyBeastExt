@@ -11,11 +11,12 @@ import lphy.core.distributions.WeightedDirichlet;
 import lphy.graphicalModel.Value;
 import lphy.graphicalModel.VectorUtils;
 import lphybeast.BEASTContext;
+import lphybeast.BEASTFactory;
 import lphybeast.ValueToBEAST;
+import outercore.parameter.KeyParameter;
 import outercore.parameter.KeyRealParameter;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static lphybeast.BEASTContext.getOperatorWeight;
@@ -56,25 +57,24 @@ public class DoubleArrayValueToBEAST implements ValueToBEAST<Double[], BEASTInte
             return concatenatedParameters;
         }
 
-        KeyRealParameter parameter = new KeyRealParameter();
-        List<Number> values = Arrays.asList(value.value());
-        parameter.setInputValue("value", values);
-        parameter.setInputValue("dimension", values.size());
-
+        Double lower = null;
+        Double upper = null;
         // check domain
         if (value.getGenerator() instanceof Dirichlet) {
-            parameter.setInputValue("lower", 0.0);
-            parameter.setInputValue("upper", 1.0);
+            lower = 0.0;
+            upper = 1.0;
         } else if (value.getGenerator() instanceof WeightedDirichlet) {
-            parameter.setInputValue("lower", 0.0);
+            lower = 0.0;
 //        } else if (value.getGenerator() instanceof LogNormalMulti) {
-//            parameter.setInputValue("lower", 0.0);
+//            lower = 0.0;
         }
 
-        parameter.initAndValidate();
-        ValueToParameter.setID(parameter, value);
-        return parameter;
-//        }
+        KeyParameter parameter = BEASTFactory.createKeyParameter(value, lower, upper, false);
+        if (!(parameter instanceof KeyRealParameter))
+            throw new IllegalStateException("Expecting to create KeyRealParameter from " + value.getCanonicalId());
+
+        return (KeyRealParameter) parameter;
+
     }
 
     @Override
