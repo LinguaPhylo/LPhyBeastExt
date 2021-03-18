@@ -7,6 +7,7 @@ import lphy.graphicalModel.Generator;
 import lphy.graphicalModel.GraphicalModelNode;
 import lphy.graphicalModel.Value;
 import lphybeast.BEASTContext;
+import lphybeast.BEASTFactory;
 import lphybeast.GeneratorToBEAST;
 import outercore.math.distributions.MarkovChainDistribution;
 
@@ -25,10 +26,7 @@ public class ExpMarkovChainToBEAST implements GeneratorToBEAST<ExpMarkovChain, M
             context.removeBEASTObject(firstV);
 
             // create theta[0]
-            Slice feastSlice = new Slice();
-            feastSlice.setInputValue("arg", value);
-            feastSlice.setInputValue("index", 0);
-            feastSlice.initAndValidate();
+            Slice feastSlice = BEASTFactory.createSlice(value,0, firstValue.getCanonicalId());
 
             // replace Prior x = theta[0]
             Generator dist = firstValue.getGenerator();

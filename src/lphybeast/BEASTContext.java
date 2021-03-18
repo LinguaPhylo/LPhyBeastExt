@@ -87,8 +87,8 @@ public class BEASTContext {
     private void registerValues() {
         // the first matching converter is used.
         final Class[] valuesToBEASTs = {
-                DoubleArrayValueToBEAST.class,
-                IntegerArrayValueToBEAST.class,
+                DoubleArrayValueToBEAST.class,  // KeyRealParameter
+                IntegerArrayValueToBEAST.class, // KeyIntegerParameter
                 NumberArrayValueToBEAST.class,
                 CompoundVectorToBEAST.class, // TODO handle primitive CompoundVector properly
                 AlignmentToBEAST.class, // simulated alignment
@@ -195,7 +195,7 @@ public class BEASTContext {
             String[] parts = id.split(VectorUtils.INDEX_SEPARATOR);
             if (parts.length == 2) {
                 int index = Integer.parseInt(parts[1]);
-                Slice slice = createSlice(node, parts[0], index);
+                Slice slice = createSliceFromVector(node, parts[0], index);
                 beastObjects.put(node, slice);
                 return slice;
             }
@@ -208,15 +208,12 @@ public class BEASTContext {
         return null;
     }
 
-    private Slice createSlice(GraphicalModelNode node, String id, int index) {
+    private Slice createSliceFromVector(GraphicalModelNode node, String id, int index) {
 
         BEASTInterface parentNode = getBEASTObject(Symbols.getCanonical(id));
 
-        Slice slice = new Slice();
-        slice.setInputValue("arg", parentNode);
-        slice.setInputValue("index", index);
-        slice.initAndValidate();
-        slice.setID(Symbols.getCanonical(id) + VectorUtils.INDEX_SEPARATOR + index);
+        Slice slice = BEASTFactory.createSlice(parentNode, index,
+                Symbols.getCanonical(id) + VectorUtils.INDEX_SEPARATOR + index);
         addToContext(node, slice);
         return slice;
 
@@ -237,11 +234,7 @@ public class BEASTContext {
 
         if (slicedBEASTValue != null) {
             if (!(slicedBEASTValue instanceof Concatenate)) {
-                Slice slice = new Slice();
-                slice.setInputValue("arg", slicedBEASTValue);
-                slice.setInputValue("index", sliceValue.getIndex());
-                slice.initAndValidate();
-                slice.setID(sliceValue.getId());
+                Slice slice = BEASTFactory.createSlice(slicedBEASTValue, sliceValue.getIndex(), sliceValue.getId());
                 addToContext(sliceValue, slice);
                 return slice;
             } else {

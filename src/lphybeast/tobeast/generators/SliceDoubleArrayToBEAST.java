@@ -8,6 +8,7 @@ import lphy.core.functions.SliceDoubleArray;
 import lphy.graphicalModel.GraphicalModelNode;
 import lphy.graphicalModel.Value;
 import lphybeast.BEASTContext;
+import lphybeast.BEASTFactory;
 import lphybeast.GeneratorToBEAST;
 
 public class SliceDoubleArrayToBEAST implements GeneratorToBEAST<SliceDoubleArray, Slice> {
@@ -18,12 +19,8 @@ public class SliceDoubleArrayToBEAST implements GeneratorToBEAST<SliceDoubleArra
         Integer end =  slice.end().value();
         Integer count = end - start + 1;
 
-        Slice feastSlice = new Slice();
-        feastSlice.setInputValue("arg", context.getBEASTObject(slice.array()));
-        feastSlice.setInputValue("index", start);
-        if (count != 1) feastSlice.setInputValue("count", count);
-        feastSlice.initAndValidate();
-        return feastSlice;
+        return BEASTFactory.createSlice(context.getBEASTObject(slice.array()),
+                start, count, slice.getUniqueId());
     }
 
     @Override
