@@ -22,7 +22,7 @@
     <!-- these directories cannot use ../${repoName}/ because of Docker -->
 
     <property name="projName" value="LPhyBEAST"/>
-    <property name="projVersion" value="0.0.1"/>
+    <property name="projVersion" value="0.0.2"/>
 
     <!--*******************************************************************-->
 
