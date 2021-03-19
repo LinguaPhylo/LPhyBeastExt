@@ -29,6 +29,10 @@ public class SkylineToBSP implements
         BEASTInterface popSizes = context.getBEASTObject(coalescent.getTheta());
         if ( !(popSizes instanceof KeyRealParameter) )
             throw new IllegalArgumentException("Expecting KeyRealParameter for Skyline pop size ! ");
+        // For Tracer, which requires index starting from 1
+        popSizes.setInputValue("idStart1", true);
+        popSizes.initAndValidate();
+
         bsp.setInputValue("popSizes", popSizes);
 
         KeyIntegerParameter groupSizeParameter = null;
@@ -43,9 +47,11 @@ public class SkylineToBSP implements
             }
             groupSizeParameter.setInputValue("value", groupSizes);
             groupSizeParameter.setInputValue("dimension", groupSizes.size());
-            groupSizeParameter.initAndValidate();
             groupSizeParameter.setID("groupSizes");
         }
+        // For Tracer, which requires index starting from 1
+        groupSizeParameter.setInputValue("idStart1", true);
+        groupSizeParameter.initAndValidate();
 
         bsp.setInputValue("groupSizes", groupSizeParameter);
         bsp.initAndValidate();
