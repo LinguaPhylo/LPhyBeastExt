@@ -53,7 +53,7 @@
         <delete dir="${test-reports}"/>
     </target>
 
-    <!-- Prepare for compilation -->
+    <!-- Compile dependencies, prepare to compile lphybeast -->
     <target name="init" depends="clean">
         <echo message="Java version: ${java.version}"/>
         <echo message="${ant.project.name}: ${ant.file}"/>
@@ -62,11 +62,14 @@
         <mkdir dir="${build}"/>
         <mkdir dir="${dist}"/>
 
+        <!-- call target from lphy and outercore build.xml -->
+
         <echo message="build ${lphy}/build.xml"/>
         <!-- avoid to overwrite ${repoName} -->
         <ant antfile="${lphy}/build.xml" target="compile" inheritAll="false"/>
         <echo message="build ${outercore}/build.xml"/>
         <ant antfile="${outercore}/build.xml" target="compile" inheritAll="false"/>
+
     </target>
 
     <!-- Compile -->
