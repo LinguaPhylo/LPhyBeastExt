@@ -1,8 +1,8 @@
 <project default="compile" basedir="." name="lphybeast">
 
     <!-- Java 11 -->
-    <property name="sourceVersion" value="15"/>
-    <property name="targetVersion" value="15"/>
+    <property name="sourceVersion" value="16"/>
+    <property name="targetVersion" value="16"/>
 
     <!--*******************************************************************-->
 
@@ -86,7 +86,59 @@
     <!-- Release -->
     <property name="pack" value="${dist}/package"/>
 
-    <target name="dist" depends="compile">
+    <!-- Create BEAST 2 package, no dist task here -->
+    <target name="release" depends="compile" description="release as BEAST 2 package">
+        <xmlproperty file="version.xml" collapseAttributes="true"/>
+        <echo>name=${addon.name}, version=${addon.version}</echo>
+        <echo>depends=${addon.depends.on}, atleast=${addon.depends.atleast}</echo>
+
+        <property name="projVersion" value="${addon.version}"/>
+        <property name="fullName" value="${projName}.v${projVersion}"/>
+        <echo>fullName=${fullName}</echo>
+
+        <mkdir dir="${pack}"/>
+
+        <jar jarfile="${pack}/${fullName}.src.jar" basedir="${src}" />
+
+        <!--   use as BEAST 2 plugin     -->
+        <jar jarfile="${pack}/${projName}.v${projVersion}.jar">
+            <fileset dir="${build}" includes="/**/*.class"/>
+
+            <manifest>
+                <attribute name="Main-Class" value="lphybeast.LPhyBEAST"/>
+            </manifest>
+            <!--   picocli     -->
+            <zipgroupfileset dir="${lib}">
+                <include name="picocli*.jar"/>
+                <include name="guava*.jar"/>
+                <include name="jblas*.jar"/>
+            </zipgroupfileset>
+        </jar>
+
+        <copy file="README.md" tofile="${pack}/README" />
+<!--      TODO  <copy file="LICENSE" tofile="${pack}/LICENSE" />-->
+
+        <copy file="version.xml" todir="${pack}" />
+
+        <zip destfile="${dist}/${fullName}.zip" basedir="${pack}" />
+
+<!--        <delete dir="${pack}"/>-->
+
+        <echo/>
+        <echo>** Package ${dist}/${fullName}.zip created successfully! **</echo>
+
+        <copy file="${dist}/${fullName}.zip" todir="releases" />
+        <echo/>
+        <echo>Copy ${dist}/${fullName}.zip to releases folder</echo>
+
+        <delete file="${dist}/${fullName}.zip"/>
+        <echo/>
+        <echo>Remove ${dist}/${fullName}.zip</echo>
+
+    </target>
+
+    <!-- bundle all jars from lib, not used by release -->
+    <target name="dist-all-jar" depends="compile">
         <mkdir dir="${pack}"/>
         <jar jarfile="${pack}/${projName}.src.jar">
             <fileset dir="src"/>
@@ -94,9 +146,9 @@
 
         <!-- lphybeast depends on lphy -->
         <jar jarfile="${pack}/${projName}.v${projVersion}.jar">
-            <fileset dir="${build}"/>
-            <fileset dir="${outercore}/build"/>
-            <fileset dir="${lphy}/build"/>
+            <fileset dir="${build}/**/*.class"/>
+            <fileset dir="${outercore}/build/**/*.class"/>
+            <fileset dir="${lphy}/build/**/*.class"/>
 
             <manifest>
                 <attribute name="Main-Class" value="lphybeast.LPhyBEAST"/>
@@ -105,32 +157,6 @@
             <zipgroupfileset dir="${outercore}/lib" includes="*.jar"/>
             <zipgroupfileset dir="${lib}" includes="*.jar"/>
         </jar>
-    </target>
-
-
-    <target name="release" depends="compile, dist" description="for the release process">
-        <property name="packageName" value="${projName}.v${projVersion}"/>
-        <mkdir dir="${pack}"/>
-        <copy file="README.md" tofile="${pack}/README"/>
-        <!--
-            <copy file="COPYING" todir="${pack}" />
-            <copy todir="${pack}">
-              <fileset dir="${lib}" includes="LICENSE*" />
-            </copy>
-        -->
-<!--        <mkdir dir="${pack}/examples"/>-->
-<!--        <copy todir="${pack}/examples">-->
-<!--            <fileset dir="${lphy}/examples" includes="*.lphy"/>-->
-<!--            <fileset dir="${lphy}/examples" includes="*.nex"/>-->
-<!--        </copy>-->
-
-        <zip destfile="${dist}/${packageName}.zip" basedir="${pack}"/>
-
-        <!--    <delete dir="${pack}"/>-->
-
-        <echo/>
-        <echo/>
-        <echo>** Package ${dist}/${packageName}.zip created successfuly! **</echo>
     </target>
 
 

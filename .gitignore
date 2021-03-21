@@ -14,6 +14,9 @@ out/
 build/
 dist/
 
+# But not releases
+!releases/*.zip
+
 # macOS Files
 **/.DS_Store
 

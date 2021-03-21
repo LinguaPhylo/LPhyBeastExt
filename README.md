@@ -28,4 +28,7 @@ Two partitions imported from _primate.nex_.
 LPhyBEAST twoPartitionCoalescentNex.lphy
 ```
 
+## Tutorials
+
+LPhyBEAST [Tutorials](https://linguaphylo.github.io/tutorials/)
 
