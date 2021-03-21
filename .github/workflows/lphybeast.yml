@@ -11,10 +11,10 @@ jobs:
         with:
           path: main
 
-      - name: Set up JDK 15
+      - name: Set up JDK 16
         uses: actions/setup-java@v1
         with:
-          java-version: 15.0.1
+          java-version: 16
 
       - name: Checkout Lphy
         uses: actions/checkout@v2
