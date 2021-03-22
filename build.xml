@@ -65,8 +65,9 @@
         <!-- call target from lphy and outercore build.xml -->
 
         <echo message="build ${lphy}/build.xml"/>
-        <!-- avoid to overwrite ${repoName} -->
-        <ant antfile="${lphy}/build.xml" target="compile" inheritAll="false"/>
+        <!--   need lphy.jar     -->
+        <ant antfile="${lphy}/build.xml" target="dist" inheritAll="false"/>
+        <!--   outercore is beast2 package, install from package manager     -->
         <echo message="build ${outercore}/build.xml"/>
         <ant antfile="${outercore}/build.xml" target="compile" inheritAll="false"/>
 
@@ -87,7 +88,8 @@
     <property name="pack" value="${dist}/package"/>
 
     <!-- Create BEAST 2 package, no dist task here -->
-    <target name="release" depends="compile" description="release as BEAST 2 package">
+    <target name="release" depends="compile" unless="file.exists"
+            description="release as BEAST 2 package">
         <xmlproperty file="version.xml" collapseAttributes="true"/>
         <echo>name=${addon.name}, version=${addon.version}</echo>
         <echo>depends=${addon.depends.on}, atleast=${addon.depends.atleast}</echo>
@@ -100,7 +102,7 @@
 
         <jar jarfile="${pack}/${fullName}.src.jar" basedir="${src}" />
 
-        <!--   use as BEAST 2 plugin     -->
+        <!--   use as BEAST 2 plugin, but need lphy.jar     -->
         <jar jarfile="${pack}/lib/${fullName}.jar">
             <fileset dir="${build}" includes="**/*.class"/>
 
@@ -117,6 +119,14 @@
                 <include name="jblas*.jar"/>
             </fileset>
         </copy>
+
+        <!--   copy lphy here     -->
+        <property name="lphyRelease" value="${lphy}/dist/package/lphy.v${projVersion}"/>
+        <available property="file.exists" file="${lphyRelease}.jar"/>
+        <copy file="${lphyRelease}.jar" todir="${pack}/lib" />
+        <copy file="${lphyRelease}.src.jar" todir="${pack}" />
+
+        <echo>Copy ${lphyRelease}.jar and ${lphyRelease}.src.jar here.</echo>
 
         <copy file="README.md" tofile="${pack}/README" />
 <!--      TODO  <copy file="LICENSE" tofile="${pack}/LICENSE" />-->
