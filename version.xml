@@ -27,5 +27,11 @@
 
     <!-- Not released : contraband bdtree -->
 
+    <packageapp description="A command-line program that takes an LPhy model specification including a data block, and produces a BEAST 2 XML input file."
+                class="lphybeast.LPhyBEAST"
+                args=""
+    />
+
+
 </addon>
 
