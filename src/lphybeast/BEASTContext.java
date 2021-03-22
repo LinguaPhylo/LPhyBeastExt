@@ -131,7 +131,7 @@ public class BEASTContext {
                 LewisMKToBeast.class,
                 LocalBranchRatesToBEAST.class,
                 LogNormalToBEAST.class,
-                MultispeciesCoalescentToStarBEAST2.class,
+//                MultispeciesCoalescentToStarBEAST2.class,
                 NormalToBEAST.class,
                 PhyloCTMCToBEAST.class,
                 PoissonToBEAST.class,
