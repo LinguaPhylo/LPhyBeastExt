@@ -21,11 +21,14 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 
-@Command(name = "lphybeast", version = "LPhyBEAST " + LPhyBEAST.VERSION, footer = "Copyright(c) 2020",
-        description = "LPhyBEAST takes an LPhy model specification, and some data and produces a BEAST 2 XML file.")
+@Command(name = "lphybeast", footer = "Copyright(c) 2020",
+        description = "LPhyBEAST takes an LPhy model specification, and some data and produces a BEAST 2 XML file.",
+        version = { "LPhyBEAST " + LPhyBEAST.VERSION,
+        "JVM: ${java.version} (${java.vendor} ${java.vm.name} ${java.vm.version})",
+        "OS: ${os.name} ${os.version} ${os.arch}"})
 public class LPhyBEAST implements Callable<Integer> {
 
-    public static final String VERSION = "0.0.1 alpha";
+    public static final String VERSION = "0.0.2 alpha";
 
     @Parameters(paramLabel = "LPhy_scripts", description = "File of the LPhy model specification")
     Path infile;
@@ -36,6 +39,8 @@ public class LPhyBEAST implements Callable<Integer> {
     boolean usageHelpRequested;
 
     @Option(names = {"-o", "--out"},     description = "BEAST 2 XML")  Path outfile;
+    // not change the current directory
+    @Option(names = {"-wd", "--workdir"}, description = "Working directory (\"user.dir\")") Path wd;
 
     //MCMC
     @Option(names = {"-l", "--chainLength"}, defaultValue = "-1", description = "define the total chain length of MCMC, default to 1 million.")
@@ -47,7 +52,6 @@ public class LPhyBEAST implements Callable<Integer> {
     @Option(names = {"-r", "--replicates"}, defaultValue = "1", description = "the number of replicates (XML) given one LPhy script, " +
             "usually to create simulations for well-calibrated study.") int rep;
 
-//    @Option(names = {"-wd", "--workdir"}, description = "Working directory") Path wd;
 //    @Option(names = {"-n", "--nex"},    description = "BEAST 2 partitions defined in Nexus file")
 //    Path nexfile;
 //    Map<String, String> partitionMap; // d1=primates.nex:noncoding|d2=primates.nex:coding   //
@@ -69,54 +73,62 @@ public class LPhyBEAST implements Callable<Integer> {
 
     @Override
     public Integer call() throws CommandLine.PicocliException { // business logic goes here...
+        if (wd != null)
+            System.setProperty("user.dir", wd.toString());
+
         String fileName = infile.getFileName().toString();
         if (fileName == null || !fileName.endsWith(".lphy"))
             throw new CommandLine.InitializationException("Invalid LPhy file: the postfix has to be '.lphy'");
 
         String fileNameStem = fileName.substring(0, fileName.lastIndexOf("."));
 
-        // null, if only file
-        Path wd = infile.getParent();
         // if outfile is given, it will prefer to extract the fileNameStem from outfile
+        Path outfileParent = null;
         if (outfile != null) {
             fileName = outfile.getFileName().toString();
             fileNameStem = fileName.substring(0, fileName.lastIndexOf("."));
-            wd = outfile.getParent();
+            outfileParent = outfile.getParent();
         }
 
+        // assign user.dir
+        wd = Paths.get(System.getProperty("user.dir"));
         if (rep > 1) {
             // well-calibrated validations
             for (int i = 0; i < rep; i++) {
                 // update fileNameStem and outfile
                 final String repFileNameStem = fileNameStem + "_" + i;
                 // need new reader
-                createXML(infile, wd, repFileNameStem, chainLength, preBurnin);
+                createXML(infile, outfileParent, repFileNameStem, chainLength, preBurnin);
             }
         } else
-            createXML(infile, wd, fileNameStem, chainLength, preBurnin);
+            createXML(infile, outfileParent, fileNameStem, chainLength, preBurnin);
 
         return 0;
     }
 
+    // inPath and outPath will base on System.getProperty("user.dir")
     // fileNameStem for both outfile and XML loggers
-    private void createXML(Path infile, Path wd, String fileNameStem, long chainLength, int preBurnin) throws CommandLine.PicocliException {
+    private void createXML(Path infile, Path outfileParent, String fileNameStem, long chainLength, int preBurnin) throws CommandLine.PicocliException {
         // need to call reader each loop
+        Path inPath = Paths.get(wd.toString(), infile.toString());
         BufferedReader reader = null;
         try {
-            reader = new BufferedReader(new FileReader(infile.toFile()));
+            reader = new BufferedReader(new FileReader(inPath.toFile()));
         } catch (FileNotFoundException e) {
             throw new CommandLine.PicocliException("Fail to read LPhy scripts from " +
-                    infile.toString() + ", working path is " + wd.toString(), e);
+                    inPath.toString() + ", working path is " + wd.toString(), e);
         }
         String xml = toBEASTXML(Objects.requireNonNull(reader), fileNameStem, chainLength, preBurnin);
 
         // use fileNameStem to recover outfile
-        String outPath = fileNameStem + ".xml";
-        // as default wd is null then use the dir of infile
-        Path outfile = wd==null ? Paths.get(outPath) : Paths.get(wd.toString(), outPath);
+        String outFile = fileNameStem + ".xml";
+        // add parent if outfile Path has
+        if (outfileParent != null)
+            outFile = Paths.get(outfileParent.toString(), outFile).toString();
 
+        Path outPath = Paths.get(wd.toString(), outFile);
         try {
-            PrintWriter writer = new PrintWriter(new FileWriter(outfile.toFile()));
+            PrintWriter writer = new PrintWriter(new FileWriter(outPath.toFile()));
             writer.println(xml);
             writer.flush();
             writer.close();
@@ -125,8 +137,8 @@ public class LPhyBEAST implements Callable<Integer> {
                     outfile.toString(), e);
         }
 
-        System.out.println("\nCreate BEAST 2 XML : " +
-                Paths.get(System.getProperty("user.dir"), outfile.toString()));
+        System.out.println("\nInput LPhy : " + inPath.toAbsolutePath());
+        System.out.println("Create BEAST 2 XML : " + outPath.toAbsolutePath());
     }
 
 
