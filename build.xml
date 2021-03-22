@@ -101,19 +101,22 @@
         <jar jarfile="${pack}/${fullName}.src.jar" basedir="${src}" />
 
         <!--   use as BEAST 2 plugin     -->
-        <jar jarfile="${pack}/${projName}.v${projVersion}.jar">
+        <jar jarfile="${pack}/lib/${projName}.v${projVersion}.jar">
             <fileset dir="${build}" includes="/**/*.class"/>
 
             <manifest>
                 <attribute name="Main-Class" value="lphybeast.LPhyBEAST"/>
             </manifest>
-            <!--   picocli     -->
-            <zipgroupfileset dir="${lib}">
+        </jar>
+
+        <!--   copy picocli libs     -->
+        <copy todir="${pack}/lib">
+            <fileset dir="${lib}" >
                 <include name="picocli*.jar"/>
                 <include name="guava*.jar"/>
                 <include name="jblas*.jar"/>
-            </zipgroupfileset>
-        </jar>
+            </fileset>
+        </copy>
 
         <copy file="README.md" tofile="${pack}/README" />
 <!--      TODO  <copy file="LICENSE" tofile="${pack}/LICENSE" />-->
