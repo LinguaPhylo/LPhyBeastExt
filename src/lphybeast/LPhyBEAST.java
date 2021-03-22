@@ -40,7 +40,9 @@ public class LPhyBEAST implements Callable<Integer> {
 
     @Option(names = {"-o", "--out"},     description = "BEAST 2 XML")  Path outfile;
     // not change the current directory
-    @Option(names = {"-wd", "--workdir"}, description = "Working directory (\"user.dir\")") Path wd;
+    @Option(names = {"-wd", "--workdir"}, description = " is the working directory (\"user.dir\"), " +
+            "which will be assign to the parent folder of input and output. " +
+            "It will be convert to the absolute path, if given as a relative path.") Path wd;
 
     //MCMC
     @Option(names = {"-l", "--chainLength"}, defaultValue = "-1", description = "define the total chain length of MCMC, default to 1 million.")
@@ -74,7 +76,7 @@ public class LPhyBEAST implements Callable<Integer> {
     @Override
     public Integer call() throws CommandLine.PicocliException { // business logic goes here...
         if (wd != null)
-            System.setProperty("user.dir", wd.toString());
+            System.setProperty("user.dir", wd.toAbsolutePath().toString());
 
         String fileName = infile.getFileName().toString();
         if (fileName == null || !fileName.endsWith(".lphy"))
