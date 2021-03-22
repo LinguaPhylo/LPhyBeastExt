@@ -77,7 +77,7 @@
 <!--        <pathconvert property="classpathproperty" refid="lphybe-clspath"/>-->
 <!--        <echo>${repoName} classpath is ${classpathproperty}</echo>-->
 
-        <javac target="${targetVersion}" source="${sourceVersion}" srcdir="src" destdir="${build}"
+        <javac target="${targetVersion}" source="${sourceVersion}" srcdir="${src}" destdir="${build}"
                classpathref="lphybe-clspath" includeantruntime="false">
         </javac>
         <echo message="Successfully compiled ${projName}." />
@@ -101,8 +101,8 @@
         <jar jarfile="${pack}/${fullName}.src.jar" basedir="${src}" />
 
         <!--   use as BEAST 2 plugin     -->
-        <jar jarfile="${pack}/lib/${projName}.v${projVersion}.jar">
-            <fileset dir="${build}" includes="/**/*.class"/>
+        <jar jarfile="${pack}/lib/${fullName}.jar">
+            <fileset dir="${build}" includes="**/*.class"/>
 
             <manifest>
                 <attribute name="Main-Class" value="lphybeast.LPhyBEAST"/>
