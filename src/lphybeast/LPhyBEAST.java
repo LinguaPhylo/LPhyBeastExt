@@ -40,9 +40,8 @@ public class LPhyBEAST implements Callable<Integer> {
 
     @Option(names = {"-o", "--out"},     description = "BEAST 2 XML")  Path outfile;
     // not change the current directory
-    @Option(names = {"-wd", "--workdir"}, description = " is the working directory (\"user.dir\"), " +
-            "which will be assign to the parent folder of input and output. " +
-            "It will be convert to the absolute path, if given as a relative path.") Path wd;
+    @Option(names = {"-wd", "--workdir"}, description = "It will concatenate to the front of " +
+            "the input and output path, which can be used for batch processing.") Path wd;
 
     //MCMC
     @Option(names = {"-l", "--chainLength"}, defaultValue = "-1", description = "define the total chain length of MCMC, default to 1 million.")
@@ -75,8 +74,8 @@ public class LPhyBEAST implements Callable<Integer> {
 
     @Override
     public Integer call() throws CommandLine.PicocliException { // business logic goes here...
-        if (wd != null)
-            System.setProperty("user.dir", wd.toAbsolutePath().toString());
+//        if (wd != null)
+//            System.setProperty("user.dir", wd.toAbsolutePath().toString());
 
         String fileName = infile.getFileName().toString();
         if (fileName == null || !fileName.endsWith(".lphy"))
@@ -93,7 +92,7 @@ public class LPhyBEAST implements Callable<Integer> {
         }
 
         // assign user.dir
-        wd = Paths.get(System.getProperty("user.dir"));
+//        wd = Paths.get(System.getProperty("user.dir"));
         if (rep > 1) {
             // well-calibrated validations
             for (int i = 0; i < rep; i++) {
@@ -112,13 +111,15 @@ public class LPhyBEAST implements Callable<Integer> {
     // fileNameStem for both outfile and XML loggers
     private void createXML(Path infile, Path outfileParent, String fileNameStem, long chainLength, int preBurnin) throws CommandLine.PicocliException {
         // need to call reader each loop
-        Path inPath = Paths.get(wd.toString(), infile.toString());
+        // if wd == null, assume infile can be absolute path
+        Path inPath = wd == null ? infile: Paths.get(wd.toString(), infile.toString());
+
         BufferedReader reader = null;
         try {
             reader = new BufferedReader(new FileReader(inPath.toFile()));
         } catch (FileNotFoundException e) {
             throw new CommandLine.PicocliException("Fail to read LPhy scripts from " +
-                    inPath.toString() + ", working path is " + wd.toString(), e);
+                    inPath.toString() + (wd == null ? "" : ", working path is " + wd.toString()), e);
         }
         String xml = toBEASTXML(Objects.requireNonNull(reader), fileNameStem, chainLength, preBurnin);
 
@@ -128,7 +129,8 @@ public class LPhyBEAST implements Callable<Integer> {
         if (outfileParent != null)
             outFile = Paths.get(outfileParent.toString(), outFile).toString();
 
-        Path outPath = Paths.get(wd.toString(), outFile);
+        // if wd == null, assume infile can be absolute path
+        Path outPath = wd == null ? Paths.get(outFile) : Paths.get(wd.toString(), outFile);
         try {
             PrintWriter writer = new PrintWriter(new FileWriter(outPath.toFile()));
             writer.println(xml);
