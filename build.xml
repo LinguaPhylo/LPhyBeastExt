@@ -22,7 +22,8 @@
     <!-- these directories cannot use ../${repoName}/ because of Docker -->
 
     <property name="projName" value="LPhyBEAST"/>
-    <property name="projVersion" value="0.0.2"/>
+    <property name="projVersion" value="0.0.3"/>
+    <property name="lphyVersion" value="0.0.2"/>
 
     <!--*******************************************************************-->
 
@@ -121,7 +122,7 @@
         </copy>
 
         <!--   copy lphy here     -->
-        <property name="lphyRelease" value="${lphy}/dist/package/lphy.v${projVersion}"/>
+        <property name="lphyRelease" value="${lphy}/dist/package/lphy.v${lphyVersion}"/>
         <available property="file.exists" file="${lphyRelease}.jar"/>
         <copy file="${lphyRelease}.jar" todir="${pack}/lib" />
         <copy file="${lphyRelease}.src.jar" todir="${pack}" />
