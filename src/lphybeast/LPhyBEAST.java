@@ -96,7 +96,8 @@ public class LPhyBEAST implements Callable<Integer> {
         if (infile.isAbsolute()) { // handle absolute path, ignore wd
             inPath = infile;
             // if absolute path, set wd to the folder containing input file
-            wd = infile.getParent();
+            System.setProperty("user.dir", infile.getParent().toString());
+            System.out.println("Set user.dir to " + infile.getParent().toString());
         } else {
             // assign user.dir
             wd = Paths.get(System.getProperty("user.dir"));
