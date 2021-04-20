@@ -40,8 +40,9 @@ public class LPhyBEAST implements Callable<Integer> {
 
     @Option(names = {"-o", "--out"},     description = "BEAST 2 XML")  Path outfile;
     // not change the current directory
-    @Option(names = {"-wd", "--workdir"}, description = "It will concatenate to the front of " +
-            "the input and output path, which can be used for batch processing.") Path wd;
+    @Option(names = {"-wd", "--workdir"}, description = "It will change 'user.dir' and concatenate " +
+            "to the front of the input and output path (assuming relative), which can be used for batch processing. " +
+            "If either LPhy script path or output is a absolute path, then this option will be ignored.") Path wd;
 
     //MCMC
     @Option(names = {"-l", "--chainLength"}, defaultValue = "-1", description = "define the total chain length of MCMC, default to 1 million.")
@@ -74,8 +75,8 @@ public class LPhyBEAST implements Callable<Integer> {
 
     @Override
     public Integer call() throws CommandLine.PicocliException { // business logic goes here...
-//        if (wd != null)
-//            System.setProperty("user.dir", wd.toAbsolutePath().toString());
+        if (wd != null)
+            System.setProperty("user.dir", wd.toAbsolutePath().toString());
 
         String fileName = infile.getFileName().toString();
         if (fileName == null || !fileName.endsWith(".lphy"))
@@ -91,8 +92,17 @@ public class LPhyBEAST implements Callable<Integer> {
             outfileParent = outfile.getParent();
         }
 
-        // assign user.dir
-//        wd = Paths.get(System.getProperty("user.dir"));
+        Path inPath;
+        if (infile.isAbsolute()) { // handle absolute path, ignore wd
+            inPath = infile;
+            // if absolute path, set wd to the folder containing input file
+            wd = infile.getParent();
+        } else {
+            // assign user.dir
+            wd = Paths.get(System.getProperty("user.dir"));
+            inPath = Paths.get(wd.toString(), infile.toString());
+        }
+
         if (rep > 1) {
             // well-calibrated validations
             for (int i = 0; i < rep; i++) {
@@ -109,11 +119,9 @@ public class LPhyBEAST implements Callable<Integer> {
 
     // inPath and outPath will base on System.getProperty("user.dir")
     // fileNameStem for both outfile and XML loggers
-    private void createXML(Path infile, Path outfileParent, String fileNameStem, long chainLength, int preBurnin) throws CommandLine.PicocliException {
-        // need to call reader each loop
-        // if wd == null, assume infile can be absolute path
-        Path inPath = wd == null ? infile: Paths.get(wd.toString(), infile.toString());
+    private void createXML(Path inPath, Path outfileParent, String fileNameStem, long chainLength, int preBurnin) throws CommandLine.PicocliException {
 
+        // need to call reader each loop
         BufferedReader reader = null;
         try {
             reader = new BufferedReader(new FileReader(inPath.toFile()));
@@ -125,14 +133,18 @@ public class LPhyBEAST implements Callable<Integer> {
 
         // use fileNameStem to recover outfile
         String outFile = fileNameStem + ".xml";
+        Path outPath = null;
         // add parent if outfile Path has
-        if (outfileParent != null)
-            outFile = Paths.get(outfileParent.toString(), outFile).toString();
+        if (outfileParent != null) {
+            if (outfileParent.isAbsolute())
+                outPath = Paths.get(outfileParent.toString(), outFile);
+            else // if outfileParent is absolute path, then use wd
+                outPath = Paths.get(wd.toString(), outfileParent.toString(), outFile);
+        } else
+            outPath = Paths.get(wd.toString(), outFile);
 
-        // if wd == null, assume infile can be absolute path
-        Path outPath = wd == null ? Paths.get(outFile) : Paths.get(wd.toString(), outFile);
         try {
-            PrintWriter writer = new PrintWriter(new FileWriter(outPath.toFile()));
+            PrintWriter writer = new PrintWriter(new FileWriter(Objects.requireNonNull(outPath).toFile()));
             writer.println(xml);
             writer.flush();
             writer.close();
