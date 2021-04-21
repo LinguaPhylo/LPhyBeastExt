@@ -23,7 +23,7 @@
 
     <property name="projName" value="LPhyBEAST"/>
     <property name="projVersion" value="0.0.3"/>
-    <property name="lphyVersion" value="0.0.2"/>
+    <property name="lphyVersion" value="0.0.3"/>
 
     <!--*******************************************************************-->
 
