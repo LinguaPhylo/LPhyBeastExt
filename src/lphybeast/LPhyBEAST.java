@@ -7,6 +7,7 @@ import lphy.core.TreeFileLogger;
 import lphy.core.VarFileLogger;
 import lphy.graphicalModel.RandomValueLogger;
 import lphy.parser.REPL;
+import lphy.utils.IOUtils;
 import lphy.utils.LoggerUtils;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
@@ -75,74 +76,59 @@ public class LPhyBEAST implements Callable<Integer> {
 
     @Override
     public Integer call() throws CommandLine.PicocliException { // business logic goes here...
-        if (wd != null)
-            System.setProperty("user.dir", wd.toAbsolutePath().toString());
 
         String fileName = infile.getFileName().toString();
         if (fileName == null || !fileName.endsWith(".lphy"))
             throw new CommandLine.InitializationException("Invalid LPhy file: the postfix has to be '.lphy'");
 
-        String fileNameStem = fileName.substring(0, fileName.lastIndexOf("."));
+        if (wd != null)
+            IOUtils.setUserDir(wd.toAbsolutePath().toString());
+        // if the relative path, then concatenate user.dir before it
+        final Path inPath = IOUtils.getPath(infile);
 
-        // if outfile is given, it will prefer to extract the fileNameStem from outfile
-        Path outfileParent = null;
+        Path outPath = null;
         if (outfile != null) {
-            fileName = outfile.getFileName().toString();
-            fileNameStem = fileName.substring(0, fileName.lastIndexOf("."));
-            outfileParent = outfile.getParent();
-        }
-
-        Path inPath;
-        if (infile.isAbsolute()) { // handle absolute path, ignore wd
-            inPath = infile;
-            // if absolute path, set wd to the folder containing input file
-            System.setProperty("user.dir", infile.getParent().toString());
-            System.out.println("Set user.dir to " + infile.getParent().toString());
+            outPath = IOUtils.getPath(outfile);
         } else {
-            // assign user.dir
-            wd = Paths.get(System.getProperty("user.dir"));
-            inPath = Paths.get(wd.toString(), infile.toString());
+            // use input file stem
+            String infilePathNoExt = inPath.toString().substring(0, inPath.toString().lastIndexOf("."));
+            outPath = Paths.get(infilePathNoExt + ".xml");
         }
 
+        // add rep after file stem
         if (rep > 1) {
+            final String outPathNoExt = outPath.toString().substring(0, outPath.toString().lastIndexOf("."));
             // well-calibrated validations
             for (int i = 0; i < rep; i++) {
-                // update fileNameStem and outfile
-                final String repFileNameStem = fileNameStem + "_" + i;
+                // update outPath to add i
+                outPath = Paths.get(outPathNoExt + "_" + i + ".xml");
                 // need new reader
-                createXML(infile, outfileParent, repFileNameStem, chainLength, preBurnin);
+                createXML(inPath, outPath, chainLength, preBurnin);
             }
-        } else
-            createXML(infile, outfileParent, fileNameStem, chainLength, preBurnin);
+        } else // normal output
+            createXML(inPath, outPath, chainLength, preBurnin);
 
         return 0;
     }
 
-    // inPath and outPath will base on System.getProperty("user.dir")
+    // the relative path given in readNexus in a script always refers to user.dir
     // fileNameStem for both outfile and XML loggers
-    private void createXML(Path inPath, Path outfileParent, String fileNameStem, long chainLength, int preBurnin) throws CommandLine.PicocliException {
+    private void createXML(Path inPath, Path outPath, long chainLength, int preBurnin) throws CommandLine.PicocliException {
 
         // need to call reader each loop
         BufferedReader reader = null;
         try {
             reader = new BufferedReader(new FileReader(inPath.toFile()));
+            // set user.dir to the folder containing example file
+            IOUtils.setUserDir(inPath.getParent().toString());
+
         } catch (FileNotFoundException e) {
             throw new CommandLine.PicocliException("Fail to read LPhy scripts from " +
-                    inPath.toString() + (wd == null ? "" : ", working path is " + wd.toString()), e);
+                    inPath.toString() + ", user.dir = " + System.getProperty(IOUtils.USER_DIR), e);
         }
-        String xml = toBEASTXML(Objects.requireNonNull(reader), fileNameStem, chainLength, preBurnin);
-
-        // use fileNameStem to recover outfile
-        String outFile = fileNameStem + ".xml";
-        Path outPath = null;
-        // add parent if outfile Path has
-        if (outfileParent != null) {
-            if (outfileParent.isAbsolute())
-                outPath = Paths.get(outfileParent.toString(), outFile);
-            else // if outfileParent is absolute path, then use wd
-                outPath = Paths.get(wd.toString(), outfileParent.toString(), outFile);
-        } else
-            outPath = Paths.get(wd.toString(), outFile);
+        String path = outPath.toString();
+        String pathNoExt = path.substring(0, path.lastIndexOf("."));
+        String xml = toBEASTXML(Objects.requireNonNull(reader), pathNoExt, chainLength, preBurnin);
 
         try {
             PrintWriter writer = new PrintWriter(new FileWriter(Objects.requireNonNull(outPath).toFile()));
@@ -162,7 +148,7 @@ public class LPhyBEAST implements Callable<Integer> {
     /**
      * Alternative method to give LPhy script (e.g. from String), not only from a file.
      * @param reader
-     * @param fileNameStem
+     * @param filePathNoExt
      * @param chainLength    if <=0, then use default 1,000,000.
      *                       logEvery = chainLength / numOfSamples,
      *                       where numOfSamples = 2000 as default.
@@ -171,21 +157,21 @@ public class LPhyBEAST implements Callable<Integer> {
      * @see BEASTContext#toBEASTXML(String, long, int)
      * @throws IOException
      */
-    public String toBEASTXML(BufferedReader reader, String fileNameStem, long chainLength, int preBurnin) throws CommandLine.PicocliException {
+    public String toBEASTXML(BufferedReader reader, String filePathNoExt, long chainLength, int preBurnin) throws CommandLine.PicocliException {
         //*** Parse LPhy file ***//
         LPhyParser parser = new REPL();
         try {
             parser.source(reader);
         } catch (IOException e) {
             throw new CommandLine.PicocliException("Cannot parse LPhy scripts in " +
-                    fileNameStem + ".lphy", e);
+                    filePathNoExt + ".lphy", e);
         }
 
         // log true values and tree
         List<RandomValueLogger> loggers = new ArrayList<>();
-        final String fileNameStemTrueVaule = fileNameStem + "_" + "true";
-        loggers.add(new VarFileLogger(fileNameStemTrueVaule, true, true));
-        loggers.add(new TreeFileLogger(fileNameStemTrueVaule));
+        final String filePathNoExtTrueVaule = filePathNoExt + "_" + "true";
+        loggers.add(new VarFileLogger(filePathNoExtTrueVaule, true, true));
+        loggers.add(new TreeFileLogger(filePathNoExtTrueVaule));
 
         GraphicalLPhyParser gparser = new GraphicalLPhyParser(parser);
         Sampler sampler = new Sampler(gparser);
@@ -195,8 +181,8 @@ public class LPhyBEAST implements Callable<Integer> {
         BEASTContext context = new BEASTContext(parser);
 
         //*** Write BEAST 2 XML ***//
-        // avoid to add dir into fileNameStem passed into XML logger
-        return context.toBEASTXML(fileNameStem, chainLength, preBurnin);
+        // avoid to add dir into filePathNoExt passed into XML logger
+        return context.toBEASTXML(filePathNoExt, chainLength, preBurnin);
     }
 
     /**
