@@ -41,8 +41,8 @@ public class LPhyBEAST implements Callable<Integer> {
 
     @Option(names = {"-o", "--out"},     description = "BEAST 2 XML")  Path outfile;
     // not change the current directory
-    @Option(names = {"-wd", "--workdir"}, description = "It will change 'user.dir' and concatenate " +
-            "to the front of the input and output path (assuming relative), which can be used for batch processing. " +
+    @Option(names = {"-wd", "--workdir"}, description = "set 'user.dir' and concatenate to the front of " +
+            "the input and output path (if the relative path is provided), which can be used for batch processing. " +
             "If either LPhy script path or output is a absolute path, then this option will be ignored.") Path wd;
 
     //MCMC
