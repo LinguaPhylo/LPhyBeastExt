@@ -143,6 +143,7 @@ public class BEASTContext {
                 StructuredCoalescentToMascot.class,
                 TreeLengthToBEAST.class,
                 TN93ToBEAST.class,
+                GT16ToBEAST.class,
                 UniformToBEAST.class,
                 VectorizedDistributionToBEAST.class,
                 VectorizedFunctionToBEAST.class,
