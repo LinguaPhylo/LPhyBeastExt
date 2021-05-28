@@ -6,7 +6,9 @@ import beast.evolution.alignment.TaxonSet;
 import beast.evolution.datatype.UserDataType;
 import beast.evolution.tree.TraitSet;
 import jebl.evolution.sequences.SequenceType;
+import jebl.evolution.sequences.State;
 import lphy.evolution.alignment.SimpleAlignment;
+import lphy.evolution.sequences.PhasedGenotype;
 import lphy.evolution.sequences.Standard;
 import lphy.graphicalModel.Value;
 import lphybeast.BEASTContext;
@@ -63,9 +65,16 @@ public class AlignmentToBEAST implements ValueToBEAST<SimpleAlignment, beast.evo
             beastAlignment.initByName("traitSet", traitSet, "userDataType", userDataType);
 
         } else {
+
+            if (datatype.equalsIgnoreCase(PhasedGenotype.NAME)) {
+                // TODO hard code
+                datatype = "nucleotideDiploid16WithError";
+            }
             // normal Alignment
             beastAlignment = new beast.evolution.alignment.Alignment();
-            beastAlignment.initByName("sequence", sequences, "dataType", datatype);
+            beastAlignment.setInputValue("dataType", datatype);
+            beastAlignment.setInputValue("sequence", sequences);
+            beastAlignment.initAndValidate();
 
         }
 
@@ -90,16 +99,17 @@ public class AlignmentToBEAST implements ValueToBEAST<SimpleAlignment, beast.evo
         if (! (sequenceType instanceof Standard))
             throw new IllegalArgumentException("Standard data type is required ! " + sequenceType.getName());
 
-        List<String> stateNames = ((Standard) sequenceType).getStateNames();
-        String codeMap = IntStream.range(0, stateNames.size())
-                .mapToObj(i -> stateNames.get(i) + "=" + i)
+        List<State> states = ((Standard) sequenceType).getStates();
+        // State toString is stateCode
+        String codeMap = IntStream.range(0, states.size())
+                .mapToObj(i -> states.get(i) + "=" + i)
                 .collect(Collectors.joining(","));
-        codeMap += ", ? = " + IntStream.range(0, stateNames.size()).mapToObj(String::valueOf)
+        codeMap += ", ? = " + IntStream.range(0, states.size()).mapToObj(String::valueOf)
                 .collect(Collectors.joining(" "));
 
         // codeMap="Asia=0,EU=1,NZ=2,RoW=3,USA=4,? = 0 1 2 3 4" codelength="-1" states="5"
         userDataType.initByName("codeMap", codeMap,
-                "codelength", -1, "states", stateNames.size());
+                "codelength", -1, "states", states.size());
         // this will create codeMapping in StandardData
 //        userDataType.setInputValue("nrOfStates", alignment.getSequenceType().getCanonicalStateCount());
         userDataType.initAndValidate();
