@@ -1,17 +1,17 @@
 package lphybeast.tobeast.values;
 
+import beast.core.parameter.IntegerParameter;
+import beast.core.parameter.Parameter;
 import lphy.core.distributions.RandomComposition;
 import lphy.graphicalModel.Value;
 import lphybeast.BEASTContext;
 import lphybeast.BEASTFactory;
 import lphybeast.ValueToBEAST;
-import outercore.parameter.KeyIntegerParameter;
-import outercore.parameter.KeyParameter;
 
-public class IntegerArrayValueToBEAST implements ValueToBEAST<Integer[], KeyIntegerParameter> {
+public class IntegerArrayValueToBEAST implements ValueToBEAST<Integer[], IntegerParameter> {
 
     @Override
-    public KeyIntegerParameter valueToBEAST(Value<Integer[]> value, BEASTContext context) {
+    public IntegerParameter valueToBEAST(Value<Integer[]> value, BEASTContext context) {
 
 //        KeyIntegerParameter parameter = new KeyIntegerParameter();
 //        List<Integer> values = Arrays.asList(value.value());
@@ -28,11 +28,11 @@ public class IntegerArrayValueToBEAST implements ValueToBEAST<Integer[], KeyInte
         }
         Integer upper = null;
 
-        KeyParameter parameter = BEASTFactory.createKeyParameter(value, lower, upper, false);
-        if (!(parameter instanceof KeyIntegerParameter))
+        Parameter parameter = BEASTFactory.createKeyParameter(value, lower, upper, false);
+        if (!(parameter instanceof IntegerParameter))
             throw new IllegalStateException("Expecting to create KeyIntegerParameter from " + value.getCanonicalId());
 
-        return (KeyIntegerParameter) parameter;
+        return (IntegerParameter) parameter;
     }
 
     @Override
@@ -41,8 +41,8 @@ public class IntegerArrayValueToBEAST implements ValueToBEAST<Integer[], KeyInte
     }
 
     @Override
-    public Class<KeyIntegerParameter> getBEASTClass() {
-        return KeyIntegerParameter.class;
+    public Class<IntegerParameter> getBEASTClass() {
+        return IntegerParameter.class;
     }
 
 }

@@ -3,6 +3,7 @@ package lphybeast.tobeast.values;
 import beast.core.BEASTInterface;
 import beast.core.Function;
 import beast.core.Operator;
+import beast.core.parameter.Parameter;
 import beast.core.parameter.RealParameter;
 import beast.evolution.operators.DeltaExchangeOperator;
 import feast.function.Concatenate;
@@ -13,8 +14,6 @@ import lphy.graphicalModel.VectorUtils;
 import lphybeast.BEASTContext;
 import lphybeast.BEASTFactory;
 import lphybeast.ValueToBEAST;
-import outercore.parameter.KeyParameter;
-import outercore.parameter.KeyRealParameter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -69,11 +68,11 @@ public class DoubleArrayValueToBEAST implements ValueToBEAST<Double[], BEASTInte
 //            lower = 0.0;
         }
 
-        KeyParameter parameter = BEASTFactory.createKeyParameter(value, lower, upper, false);
-        if (!(parameter instanceof KeyRealParameter))
+        Parameter parameter = BEASTFactory.createKeyParameter(value, lower, upper, false);
+        if (!(parameter instanceof RealParameter))
             throw new IllegalStateException("Expecting to create KeyRealParameter from " + value.getCanonicalId());
 
-        return (KeyRealParameter) parameter;
+        return (RealParameter) parameter;
 
     }
 

@@ -1,16 +1,16 @@
 package lphybeast.tobeast.values;
 
+import beast.core.parameter.Parameter;
+import beast.core.parameter.RealParameter;
 import lphy.graphicalModel.Value;
 import lphybeast.BEASTContext;
 import lphybeast.BEASTFactory;
 import lphybeast.ValueToBEAST;
-import outercore.parameter.KeyParameter;
-import outercore.parameter.KeyRealParameter;
 
-public class NumberArrayValueToBEAST implements ValueToBEAST<Number[], KeyRealParameter> {
+public class NumberArrayValueToBEAST implements ValueToBEAST<Number[], RealParameter> {
 
     @Override
-    public KeyRealParameter valueToBEAST(Value<Number[]> value, BEASTContext context) {
+    public RealParameter valueToBEAST(Value<Number[]> value, BEASTContext context) {
 
 //        KeyRealParameter parameter = new KeyRealParameter();
 //        List<Double> values = new ArrayList<>();
@@ -19,12 +19,11 @@ public class NumberArrayValueToBEAST implements ValueToBEAST<Number[], KeyRealPa
 //        }
 //        parameter.setInputValue("value", values);
 //        parameter.setInputValue("dimension", values.size());
-
-        KeyParameter parameter = BEASTFactory.createKeyParameter(value, null, null, true);
-        if (!(parameter instanceof KeyRealParameter))
+        Parameter parameter = BEASTFactory.createKeyParameter(value, null, null, true);
+        if (!(parameter instanceof RealParameter))
             throw new IllegalStateException("Expecting to create KeyRealParameter from " + value.getCanonicalId());
 
-        return (KeyRealParameter) parameter;
+        return (RealParameter) parameter;
     }
 
     @Override
@@ -33,8 +32,8 @@ public class NumberArrayValueToBEAST implements ValueToBEAST<Number[], KeyRealPa
     }
 
     @Override
-    public Class<KeyRealParameter> getBEASTClass() {
-        return KeyRealParameter.class;
+    public Class<RealParameter> getBEASTClass() {
+        return RealParameter.class;
     }
 
 }

@@ -1,6 +1,7 @@
 package lphybeast.tobeast.generators;
 
 import beast.core.BEASTInterface;
+import beast.core.parameter.RealParameter;
 import beast.evolution.alignment.Taxon;
 import beast.evolution.alignment.TaxonSet;
 import beast.evolution.tree.TraitSet;
@@ -14,7 +15,6 @@ import lphy.graphicalModel.Value;
 import lphybeast.BEASTContext;
 import lphybeast.GeneratorToBEAST;
 import lphybeast.tobeast.values.TimeTreeToBEAST;
-import outercore.parameter.KeyRealParameter;
 
 import java.util.Arrays;
 import java.util.List;
@@ -48,10 +48,10 @@ public class StructuredCoalescentToMascot implements
             BEASTInterface ne =  context.getBEASTObject(NeValue);
             BEASTInterface bMR =  context.getBEASTObject(backwardsMigrationRates);
 
-            if ( ! ( (ne instanceof KeyRealParameter) || (bMR instanceof KeyRealParameter) ) )
+            if ( ! ( (ne instanceof RealParameter) || (bMR instanceof RealParameter) ) )
                 throw new IllegalArgumentException("Ne and backwardsMigration have to be KeyRealParameter !");
-            KeyRealParameter neParam =  (KeyRealParameter) ne;
-            KeyRealParameter bMRParam =  (KeyRealParameter) bMR;
+            RealParameter neParam =  (RealParameter) ne;
+            RealParameter bMRParam =  (RealParameter) bMR;
 
             // set keys to Ne
             if (uniqueDemes.size() != neParam.getDimension())

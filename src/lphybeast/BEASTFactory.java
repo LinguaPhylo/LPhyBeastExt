@@ -1,13 +1,13 @@
 package lphybeast;
 
 import beast.core.BEASTInterface;
+import beast.core.parameter.IntegerParameter;
+import beast.core.parameter.Parameter;
+import beast.core.parameter.RealParameter;
 import feast.function.Slice;
 import lphy.graphicalModel.RandomVariable;
 import lphy.graphicalModel.Value;
 import lphybeast.tobeast.values.ValueToParameter;
-import outercore.parameter.KeyIntegerParameter;
-import outercore.parameter.KeyParameter;
-import outercore.parameter.KeyRealParameter;
 
 import java.util.Arrays;
 import java.util.List;
@@ -47,8 +47,8 @@ public final class BEASTFactory {
     }
 
 
-    public static KeyParameter<? extends Number> createKeyParameter(Value<? extends Number[]> value,
-                                                                    Number lower, Number upper, boolean forceToDouble) {
+    public static Parameter<? extends Number> createKeyParameter(Value<? extends Number[]> value,
+                                                                 Number lower, Number upper, boolean forceToDouble) {
 
         List<Number> values = Arrays.asList(value.value());
 
@@ -56,7 +56,7 @@ public final class BEASTFactory {
         if ( !forceToDouble &&
                 Objects.requireNonNull(value).getType().getComponentType().isAssignableFrom(Integer.class) ) {
 
-            KeyIntegerParameter parameter = new KeyIntegerParameter();
+            IntegerParameter parameter = new IntegerParameter();
             parameter.setInputValue("value", values);
             parameter.setInputValue("dimension", values.size());
 
@@ -75,7 +75,7 @@ public final class BEASTFactory {
 
         } else { // Double and Number
 
-            KeyRealParameter parameter = new KeyRealParameter();
+            RealParameter parameter = new RealParameter();
             parameter.setInputValue("value", values);
             parameter.setInputValue("dimension", values.size());
 

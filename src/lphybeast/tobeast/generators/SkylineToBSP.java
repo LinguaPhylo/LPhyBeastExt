@@ -1,12 +1,12 @@
 package lphybeast.tobeast.generators;
 
 import beast.core.BEASTInterface;
+import beast.core.parameter.IntegerParameter;
+import beast.core.parameter.RealParameter;
 import beast.evolution.tree.coalescent.TreeIntervals;
 import lphy.evolution.coalescent.SkylineCoalescent;
 import lphybeast.BEASTContext;
 import lphybeast.GeneratorToBEAST;
-import outercore.parameter.KeyIntegerParameter;
-import outercore.parameter.KeyRealParameter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +27,7 @@ public class SkylineToBSP implements
         // https://github.com/LinguaPhylo/LPhyBeast/issues/33
         // pop size index has to be same as group size, for Tracer skyline plot
         BEASTInterface popSizes = context.getBEASTObject(coalescent.getTheta());
-        if ( !(popSizes instanceof KeyRealParameter) )
+        if ( !(popSizes instanceof RealParameter) )
             throw new IllegalArgumentException("Expecting KeyRealParameter for Skyline pop size ! ");
         // For Tracer, which requires index starting from 1
         popSizes.setInputValue("idStart1", true);
@@ -35,12 +35,12 @@ public class SkylineToBSP implements
 
         bsp.setInputValue("popSizes", popSizes);
 
-        KeyIntegerParameter groupSizeParameter = null;
+        IntegerParameter groupSizeParameter = null;
         if (coalescent.getGroupSizes() != null) {
-            groupSizeParameter = (KeyIntegerParameter)context.getBEASTObject(coalescent.getGroupSizes());
+            groupSizeParameter = (IntegerParameter)context.getBEASTObject(coalescent.getGroupSizes());
         } else {
             // classic skyline
-            groupSizeParameter = new KeyIntegerParameter();
+            groupSizeParameter = new IntegerParameter();
             List<Integer> groupSizes = new ArrayList<>();
             for (int i = 0; i < coalescent.getTheta().value().length; i++) {
                 groupSizes.add(1);
