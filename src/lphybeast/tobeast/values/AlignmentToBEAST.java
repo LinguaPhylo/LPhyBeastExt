@@ -68,7 +68,7 @@ public class AlignmentToBEAST implements ValueToBEAST<SimpleAlignment, beast.evo
 
             if (datatype.equalsIgnoreCase(PhasedGenotype.NAME)) {
                 // TODO hard code
-                datatype = "nucleotideDiploid16WithError";
+                datatype = "nucleotideDiploid16";
             }
             // normal Alignment
             beastAlignment = new beast.evolution.alignment.Alignment();

@@ -2,6 +2,7 @@ package lphybeast.tobeast.generators;
 
 import beast.core.BEASTInterface;
 import beast.core.parameter.RealParameter;
+import beast.evolution.substitutionmodel.Frequencies;
 import lphy.evolution.substitutionmodel.GT16;
 import lphy.graphicalModel.Value;
 import lphybeast.BEASTContext;
@@ -20,9 +21,13 @@ public class GT16ToBEAST implements GeneratorToBEAST<GT16, beast.evolution.subst
         ratesParameter.setInputValue("keys", "AC AG AT CG CT GT");
         ratesParameter.initAndValidate();
 
-        beastGT16.setInputValue("rates", ratesParameter);
-        beastGT16.setInputValue("frequencies", BEASTContext.createBEASTFrequencies(
-                (RealParameter) context.getBEASTObject(freqs), "A C G T"));
+        Frequencies freqsParameter = BEASTContext.createBEASTFrequencies(
+                (RealParameter) context.getBEASTObject(freqs),
+                "0 1 2 3 4 5 6 7 8 9 a b c d e f");
+        freqsParameter.initAndValidate();
+
+        beastGT16.setInputValue("nucRates", ratesParameter);
+        beastGT16.setInputValue("frequencies", freqsParameter);
         beastGT16.initAndValidate();
 
         return beastGT16;
