@@ -90,9 +90,15 @@ public class LPhyBEAST implements Callable<Integer> {
         if (outfile != null) {
             outPath = IOUtils.getPath(outfile);
         } else {
-            // use input file stem
-            String infilePathNoExt = inPath.toString().substring(0, inPath.toString().lastIndexOf("."));
-            outPath = Paths.get(infilePathNoExt + ".xml");
+            if (wd != null) {
+                String infileNoExt = fileName.substring(0, fileName.lastIndexOf("."));
+                // add wd before file stem
+                outPath = Paths.get(wd.toAbsolutePath().toString(), infileNoExt + ".xml");
+            } else {
+                // use input file stem with file path
+                String infilePathNoExt = inPath.toString().substring(0, inPath.toString().lastIndexOf("."));
+                outPath = Paths.get(infilePathNoExt + ".xml");
+            }
         }
 
         // add rep after file stem
@@ -181,7 +187,11 @@ public class LPhyBEAST implements Callable<Integer> {
         BEASTContext context = new BEASTContext(parser);
 
         //*** Write BEAST 2 XML ***//
-        // avoid to add dir into filePathNoExt passed into XML logger
+        // remove any dir in filePathNoExt here
+        if (filePathNoExt.contains(File.separator))
+            filePathNoExt = filePathNoExt.substring(filePathNoExt.lastIndexOf(File.separator)+1);
+        // filePathNoExt here is file stem, which will be used in XML log file names.
+        // Cannot handle any directories from other machines.
         return context.toBEASTXML(filePathNoExt, chainLength, preBurnin);
     }
 
