@@ -3,21 +3,19 @@ package lphybeast.tobeast.values;
 import beast.evolution.alignment.Sequence;
 import beast.evolution.alignment.Taxon;
 import beast.evolution.alignment.TaxonSet;
+import beast.evolution.datatype.DataType;
 import beast.evolution.datatype.UserDataType;
 import beast.evolution.tree.TraitSet;
 import jebl.evolution.sequences.SequenceType;
-import jebl.evolution.sequences.State;
 import lphy.evolution.alignment.SimpleAlignment;
-import lphy.evolution.sequences.PhasedGenotype;
 import lphy.evolution.sequences.Standard;
 import lphy.graphicalModel.Value;
 import lphybeast.BEASTContext;
+import lphybeast.DataTypeRegistry;
 import lphybeast.ValueToBEAST;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 public class AlignmentToBEAST implements ValueToBEAST<SimpleAlignment, beast.evolution.alignment.Alignment> {
 
@@ -27,30 +25,28 @@ public class AlignmentToBEAST implements ValueToBEAST<SimpleAlignment, beast.evo
     public beast.evolution.alignment.Alignment valueToBEAST(Value<SimpleAlignment> alignmentValue, BEASTContext context) {
 
         SimpleAlignment alignment = alignmentValue.value();
-//        SequenceType sequenceType = alignment.getSequenceType();// binary has no datatype
+        SequenceType lphyDataType = alignment.getSequenceType();
         String[] taxaNames = alignment.getTaxaNames();
+
+        DataType beastDataType = DataTypeRegistry.getBEASTDataType(lphyDataType);
+
         beast.evolution.alignment.Alignment beastAlignment;
+        // TODO BEAST special data types: StandardData, UserDataType, IntegerData
+        if (lphyDataType instanceof Standard) {
+            // UserDataType for trait alignment
+            if ( ! (beastDataType instanceof UserDataType))
+                throw new IllegalArgumentException("Require BEAST 'user defined' ! But find " +
+                        beastDataType.getTypeDescription());
 
-        List<Sequence> sequences = new ArrayList<>();
-
-        for (int i = 0; i < taxaNames.length; i++) {
-            context.addTaxon(taxaNames[i]);
-            // have to convert to string, cannot use integer state
-            String s = alignment.getSequence(i);
-            sequences.add(createBEASTSequence(taxaNames[i], s));
-        }
-
-        String datatype = getBEASTDataType(alignment);
-        if (datatype.equalsIgnoreCase(Standard.NAME)) {
             // AlignmentFromTrait
             beastAlignment = new beast.evolution.alignment.AlignmentFromTrait();
-            // for trait alignment
-            UserDataType userDataType = getUserDataType(alignment);
-            beastAlignment.setInputValue("userDataType", userDataType);
+            // Input<DataType.Base> userDataTypeInput
+            beastAlignment.setInputValue("userDataType", beastDataType);
 
             List<Taxon> taxonList = context.createTaxonList(List.of(taxaNames));
             String traitStr = createTraitString(alignment);
 
+            // TODO morphological data
             TraitSet traitSet = new TraitSet();
             traitSet.setInputValue("traitname", DISCRETE);
             traitSet.setInputValue("value", traitStr);
@@ -62,17 +58,25 @@ public class AlignmentToBEAST implements ValueToBEAST<SimpleAlignment, beast.evo
             traitSet.setInputValue("taxa", taxa);
             traitSet.initAndValidate();
 
-            beastAlignment.initByName("traitSet", traitSet, "userDataType", userDataType);
+            beastAlignment.setInputValue("traitSet", traitSet);
+            beastAlignment.initAndValidate();
 
         } else {
 
-            if (datatype.equalsIgnoreCase(PhasedGenotype.NAME)) {
-                // TODO hard code
-                datatype = "nucleotideDiploid16";
+            // sequences
+            List<Sequence> sequences = new ArrayList<>();
+            for (int i = 0; i < taxaNames.length; i++) {
+                context.addTaxon(taxaNames[i]);
+                // have to convert to string, cannot use integer state
+                // state = sequenceType.getState(alignment[taxonIndex][j]);
+                String s = alignment.getSequence(i);
+                sequences.add(createBEASTSequence(taxaNames[i], s));
             }
+
             // normal Alignment
             beastAlignment = new beast.evolution.alignment.Alignment();
-            beastAlignment.setInputValue("dataType", datatype);
+            // Input<String> dataTypeInput
+            beastAlignment.setInputValue("dataType", beastDataType.getTypeDescription());
             beastAlignment.setInputValue("sequence", sequences);
             beastAlignment.initAndValidate();
 
@@ -81,39 +85,6 @@ public class AlignmentToBEAST implements ValueToBEAST<SimpleAlignment, beast.evo
         // using LPhy var as ID allows multiple alignments
         if (!alignmentValue.isAnonymous()) beastAlignment.setID(alignmentValue.getCanonicalId());
         return beastAlignment;
-    }
-
-    // TODO better solution to getDataType for BEAST from Lphy Alignment
-    private String getBEASTDataType(SimpleAlignment alignment) {
-        return alignment.getSequenceTypeStr();
-    }
-
-    // for trait alignment
-    private UserDataType getUserDataType(SimpleAlignment alignment) {
-        // userDataType: non-standard, user specified data type, if specified 'dataType' is ignored
-        UserDataType userDataType = new UserDataType();
-        // no ambiguous
-//        int stateCount = alignment.getCanonicalStateCount();
-
-        SequenceType sequenceType = alignment.getSequenceType();
-        if (! (sequenceType instanceof Standard))
-            throw new IllegalArgumentException("Standard data type is required ! " + sequenceType.getName());
-
-        List<State> states = ((Standard) sequenceType).getStates();
-        // State toString is stateCode
-        String codeMap = IntStream.range(0, states.size())
-                .mapToObj(i -> states.get(i) + "=" + i)
-                .collect(Collectors.joining(","));
-        codeMap += ", ? = " + IntStream.range(0, states.size()).mapToObj(String::valueOf)
-                .collect(Collectors.joining(" "));
-
-        // codeMap="Asia=0,EU=1,NZ=2,RoW=3,USA=4,? = 0 1 2 3 4" codelength="-1" states="5"
-        userDataType.initByName("codeMap", codeMap,
-                "codelength", -1, "states", states.size());
-        // this will create codeMapping in StandardData
-//        userDataType.setInputValue("nrOfStates", alignment.getSequenceType().getCanonicalStateCount());
-        userDataType.initAndValidate();
-        return userDataType;
     }
 
     // taxa names = traits, ...
