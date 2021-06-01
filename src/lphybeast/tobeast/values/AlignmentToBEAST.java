@@ -7,8 +7,11 @@ import beast.evolution.datatype.DataType;
 import beast.evolution.datatype.UserDataType;
 import beast.evolution.tree.TraitSet;
 import jebl.evolution.sequences.SequenceType;
+import lphy.evolution.alignment.Alignment;
 import lphy.evolution.alignment.SimpleAlignment;
 import lphy.evolution.sequences.Standard;
+import lphy.graphicalModel.Generator;
+import lphy.graphicalModel.GraphicalModelNode;
 import lphy.graphicalModel.Value;
 import lphybeast.BEASTContext;
 import lphybeast.DataTypeRegistry;
@@ -84,6 +87,23 @@ public class AlignmentToBEAST implements ValueToBEAST<SimpleAlignment, beast.evo
 
         // using LPhy var as ID allows multiple alignments
         if (!alignmentValue.isAnonymous()) beastAlignment.setID(alignmentValue.getCanonicalId());
+
+        // TODO temp solution to rm parent alignment if there is a child alignment created from it,
+        // e.g. original alignment creates err alignment
+
+        Generator<?> alignmentGenerator = alignmentValue.getGenerator();
+        boolean hasParentAlignment = false;
+        for (GraphicalModelNode<?> input : alignmentGenerator.getInputs()) {
+            if (input.value() instanceof Alignment) {
+                hasParentAlignment = true;
+                break;
+            }
+        }
+
+        if (hasParentAlignment) {
+
+        }
+
         return beastAlignment;
     }
 

@@ -121,6 +121,7 @@ public class BEASTContext {
                 F81ToBEAST.class,
                 FossilBirthDeathTreeToBEAST.class,
                 GammaToBEAST.class,
+                GT16ErrorModelToBEAST.class,
                 GTRToDiscretePhylogeo.class,
                 GTRToBEAST.class,
                 HKYToBEAST.class,
@@ -635,6 +636,8 @@ public class BEASTContext {
                     } else {
                         throw new RuntimeException("Slice representing random value, but the sliced beast interface is not a state node!");
                     }
+                } else if (beastInterface instanceof Alignment) {
+
                 } else {
                     throw new RuntimeException("Unexpected beastInterface returned true for isState() but can't be added to state");
                 }
