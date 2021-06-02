@@ -8,7 +8,7 @@ import beast.evolution.datatype.UserDataType;
 import beast.evolution.tree.TraitSet;
 import jebl.evolution.sequences.SequenceType;
 import lphy.evolution.alignment.SimpleAlignment;
-import lphy.evolution.sequences.Standard;
+import lphy.evolution.datatype.Standard;
 import lphy.graphicalModel.Value;
 import lphybeast.BEASTContext;
 import lphybeast.DataTypeRegistry;

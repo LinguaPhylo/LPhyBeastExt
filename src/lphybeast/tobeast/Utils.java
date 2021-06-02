@@ -3,7 +3,7 @@ package lphybeast.tobeast;
 import beast.evolution.datatype.Aminoacid;
 import beast.evolution.datatype.Nucleotide;
 import jebl.evolution.sequences.SequenceType;
-import lphy.evolution.sequences.DataType;
+import lphy.evolution.datatype.DataType;
 
 /**
  * @author Walter Xie

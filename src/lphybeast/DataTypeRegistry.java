@@ -4,10 +4,10 @@ import beast.evolution.datatype.DataType;
 import beast.evolution.datatype.UserDataType;
 import jebl.evolution.sequences.SequenceType;
 import jebl.evolution.sequences.State;
-import lphy.evolution.sequences.Binary;
-import lphy.evolution.sequences.Continuous;
-import lphy.evolution.sequences.PhasedGenotype;
-import lphy.evolution.sequences.Standard;
+import lphy.evolution.datatype.Binary;
+import lphy.evolution.datatype.Continuous;
+import lphy.evolution.datatype.PhasedGenotype;
+import lphy.evolution.datatype.Standard;
 
 import java.util.List;
 import java.util.Map;
