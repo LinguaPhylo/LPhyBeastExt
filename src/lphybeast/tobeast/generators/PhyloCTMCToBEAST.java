@@ -24,6 +24,7 @@ import lphy.core.distributions.DiscretizedGamma;
 import lphy.core.distributions.IID;
 import lphy.core.distributions.LogNormal;
 import lphy.evolution.branchrates.LocalBranchRates;
+import lphy.evolution.datatype.SequenceTypeFactory;
 import lphy.evolution.likelihood.PhyloCTMC;
 import lphy.evolution.substitutionmodel.RateMatrix;
 import lphy.evolution.tree.TimeTree;
@@ -39,7 +40,7 @@ public class PhyloCTMCToBEAST implements GeneratorToBEAST<PhyloCTMC, GenericTree
 
     public GenericTreeLikelihood generatorToBEAST(PhyloCTMC phyloCTMC, BEASTInterface value, BEASTContext context) {
 
-        if (lphy.evolution.datatype.DataType.isStandard( phyloCTMC.getDataType() ) ) { // TODO morphology
+        if (SequenceTypeFactory.isStandardDataType( phyloCTMC.getDataType() ) ) { // TODO morphology
             // for discrete phylogeography
             return createAncestralStateTreeLikelihood(phyloCTMC, value, context);
         } else {
