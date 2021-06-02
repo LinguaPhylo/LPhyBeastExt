@@ -355,6 +355,10 @@ public class BEASTContext {
             }
         }
         if (matchingKey != null) beastObjects.remove(matchingKey);
+
+        // it may be in extraLoggables
+        if (extraLoggables.contains(beastObject))
+            extraLoggables.remove(beastObject);
     }
 
     public static RealParameter createRealParameter(Double[] value) {

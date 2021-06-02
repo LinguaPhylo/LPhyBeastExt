@@ -56,7 +56,7 @@ public class PhyloCTMCToBEAST implements GeneratorToBEAST<PhyloCTMC, GenericTree
         AlignmentFromTrait traitAlignment = (beast.evolution.alignment.AlignmentFromTrait)value;
         treeLikelihood.setInputValue("data", traitAlignment);
 
-        constructTreeAndBranchRate(phyloCTMC, context, treeLikelihood);
+        constructTreeAndBranchRate(phyloCTMC, treeLikelihood, context);
 
         DataType userDataType = traitAlignment.getDataType();
         if (! (userDataType instanceof UserDataType) )
@@ -123,7 +123,7 @@ public class PhyloCTMCToBEAST implements GeneratorToBEAST<PhyloCTMC, GenericTree
         beast.evolution.alignment.Alignment alignment = (beast.evolution.alignment.Alignment)value;
         treeLikelihood.setInputValue("data", alignment);
 
-        constructTreeAndBranchRate(phyloCTMC, context, treeLikelihood);
+        constructTreeAndBranchRate(phyloCTMC, treeLikelihood, context);
 
         SiteModel siteModel = constructSiteModel(phyloCTMC, context);
         treeLikelihood.setInputValue("siteModel", siteModel);
@@ -136,7 +136,13 @@ public class PhyloCTMCToBEAST implements GeneratorToBEAST<PhyloCTMC, GenericTree
         return treeLikelihood;
     }
 
-    private void constructTreeAndBranchRate(PhyloCTMC phyloCTMC, BEASTContext context, GenericTreeLikelihood treeLikelihood) {
+    /**
+     * Create tree and clock rate inside this tree likelihood.
+     * @param phyloCTMC
+     * @param treeLikelihood
+     * @param context
+     */
+    public static void constructTreeAndBranchRate(PhyloCTMC phyloCTMC, GenericTreeLikelihood treeLikelihood, BEASTContext context) {
         Value<TimeTree> timeTreeValue = phyloCTMC.getTree();
         Tree tree = (Tree) context.getBEASTObject(timeTreeValue);
         //tree.setInputValue("taxa", value);
@@ -203,7 +209,7 @@ public class PhyloCTMCToBEAST implements GeneratorToBEAST<PhyloCTMC, GenericTree
      * @param context the beast context
      * @return a BEAST SiteModel representing the site model of this LPHY PhyloCTMC
      */
-    private SiteModel constructSiteModel(PhyloCTMC phyloCTMC, BEASTContext context) {
+    public static SiteModel constructSiteModel(PhyloCTMC phyloCTMC, BEASTContext context) {
 
         SiteModel siteModel = new SiteModel();
 
@@ -245,7 +251,7 @@ public class PhyloCTMCToBEAST implements GeneratorToBEAST<PhyloCTMC, GenericTree
         return siteModel;
     }
 
-    private void addRelaxedClockOperators(Tree tree, UCRelaxedClockModel relaxedClockModel, RealParameter rates, BEASTContext context) {
+    private static void addRelaxedClockOperators(Tree tree, UCRelaxedClockModel relaxedClockModel, RealParameter rates, BEASTContext context) {
 
         double tWindowSize = tree.getRoot().getHeight() / 10.0;
 
@@ -287,7 +293,7 @@ public class PhyloCTMCToBEAST implements GeneratorToBEAST<PhyloCTMC, GenericTree
     }
 
     // when both mu and tree are random var
-    private void addUpDownOperator(Tree tree, RealParameter clockRate, BEASTContext context) {
+    private static void addUpDownOperator(Tree tree, RealParameter clockRate, BEASTContext context) {
         String idStr = clockRate.getID() + "Up" + tree.getID() + "DownOperator";
         // avoid to duplicate updown ops from the same pair of rate and tree
         if (!context.hasExtraOperator(idStr)) {
