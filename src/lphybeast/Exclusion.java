@@ -1,10 +1,15 @@
 package lphybeast;
 
+import jebl.evolution.sequences.SequenceType;
 import lphy.core.distributions.DiscretizedGamma;
 import lphy.core.distributions.IID;
 import lphy.core.distributions.RandomComposition;
 import lphy.core.distributions.WeightedDirichlet;
 import lphy.core.functions.*;
+import lphy.core.functions.datatype.BinaryDatatypeFunction;
+import lphy.core.functions.datatype.NucleotidesFunction;
+import lphy.core.functions.datatype.PhasedGenotypeFunction;
+import lphy.core.functions.datatype.StandardDatatypeFunction;
 import lphy.evolution.Taxa;
 import lphy.evolution.alignment.Alignment;
 import lphy.evolution.tree.TimeTree;
@@ -29,6 +34,7 @@ public class Exclusion {
         Object ob = val.value();
         return ob instanceof String || ob instanceof String[] || // ignore all String: d = nexus(file="Dengue4.nex");
                 ob instanceof HashMap || ob instanceof TreeMap ||
+                ob instanceof SequenceType || // ignore all data types
                 // exclude the value returned by taxa (and ages) functions
                 ( ob instanceof Taxa && !(ob instanceof Alignment) ) || ob instanceof TimeTree[];
     }
@@ -48,6 +54,9 @@ public class Exclusion {
                 generator instanceof MigrationMatrix || generator instanceof MigrationCount ||
                 generator instanceof Length || generator instanceof Select || generator instanceof SumBoolean ||
                 generator instanceof DiscretizedGamma ||
+                // ignore all data types
+                generator instanceof NucleotidesFunction || generator instanceof StandardDatatypeFunction ||
+                generator instanceof BinaryDatatypeFunction || generator instanceof PhasedGenotypeFunction ||
                 (generator instanceof IID && ((IID<?>) generator).getBaseDistribution() instanceof DiscretizedGamma) ||
                 generator instanceof ExpressionNodeWrapper;
     }
