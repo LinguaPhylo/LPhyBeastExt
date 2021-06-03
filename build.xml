@@ -118,6 +118,8 @@
                 <include name="picocli*.jar"/>
                 <include name="guava*.jar"/>
                 <include name="jblas*.jar"/>
+                <!-- TODO cannot find phylonco release -->
+                <include name="phylonco*.jar"/>
             </fileset>
         </copy>
 
