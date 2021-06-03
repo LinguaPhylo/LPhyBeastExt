@@ -15,6 +15,8 @@ import lphy.graphicalModel.Value;
 import lphybeast.BEASTContext;
 import lphybeast.GeneratorToBEAST;
 
+import java.util.Objects;
+
 /**
  * This has to create TreeLikelihood
  * @author Walter Xie
@@ -52,7 +54,7 @@ public class GT16ErrorModelToBEAST implements GeneratorToBEAST<GT16ErrorModel, T
         // A ~ PhyloCTMC(); E ~ ErrorModel(A);
         PhyloCTMC phyloCTMC = null;
         Value<Alignment> origAlignmentInput = null;
-        for (GraphicalModelNode<?> input : generator.getInputs()) {
+        for (GraphicalModelNode<?> input : Objects.requireNonNull(generator.getInputs())) {
             if (input instanceof Value && input.value() instanceof Alignment) {
                 origAlignmentInput = (Value<Alignment>) input;
                 phyloCTMC = (PhyloCTMC) origAlignmentInput.getGenerator();

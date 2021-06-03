@@ -122,6 +122,7 @@ public class BEASTContext {
                 FossilBirthDeathTreeToBEAST.class,
                 GammaToBEAST.class,
                 GT16ErrorModelToBEAST.class,
+                GTUnphaseToBEAST.class,
                 GTRToDiscretePhylogeo.class,
                 GTRToBEAST.class,
                 HKYToBEAST.class,
@@ -1081,7 +1082,11 @@ public class BEASTContext {
 
         for (Map.Entry<GraphicalModelNode<?>, BEASTInterface> entry : beastObjects.entrySet()) {
             if (entry.getValue() instanceof Distribution) {
-                GenerativeDistribution g = (GenerativeDistribution) entry.getKey();
+                if ( !(entry.getKey() instanceof Generator) )
+                    throw new IllegalArgumentException("Require likelihood or prior to be Generator !");
+
+                // Now allow function in the key, e.g. GTUnphaseToBEAST
+                Generator g = (Generator) entry.getKey();
 
                 Distribution dist = (Distribution) entry.getValue();
                 if (generatorOfSink(g))
@@ -1126,7 +1131,7 @@ public class BEASTContext {
         return posterior;
     }
 
-    private boolean generatorOfSink(GenerativeDistribution g) {
+    private boolean generatorOfSink(Generator g) {
         for (Value<?> var : parser.getModelSinks()) {
             if (var.getGenerator() == g) {
                 return true;
