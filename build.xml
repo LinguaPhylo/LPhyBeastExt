@@ -1,8 +1,8 @@
 <project default="compile" basedir="." name="lphybeast">
 
     <!-- Java 11 -->
-    <property name="sourceVersion" value="16"/>
-    <property name="targetVersion" value="16"/>
+    <property name="sourceVersion" value="15"/>
+    <property name="targetVersion" value="15"/>
 
     <!--*******************************************************************-->
 
@@ -22,8 +22,8 @@
     <!-- these directories cannot use ../${repoName}/ because of Docker -->
 
     <property name="projName" value="LPhyBEAST"/>
-    <property name="projVersion" value="0.0.3"/>
-    <property name="lphyVersion" value="0.0.3"/>
+    <property name="projVersion" value="0.0.4"/>
+    <property name="lphyVersion" value="0.0.4"/>
 
     <!--*******************************************************************-->
 
