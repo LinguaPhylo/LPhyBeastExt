@@ -29,24 +29,17 @@ public class GT16ErrorModelToBEAST implements GeneratorToBEAST<GT16ErrorModel, T
         assert value instanceof beast.evolution.alignment.Alignment;
         beast.evolution.alignment.Alignment errAlignment = (beast.evolution.alignment.Alignment)value;
 
-        // the allelic drop out probability
-        double delta = generator.getDelta();
-        // the sequencing/amplification error rate
-        double epsilon = generator.getEpsilon();
-
         beast.evolution.errormodel.GT16ErrorModel gt16ErrorModel = new beast.evolution.errormodel.GT16ErrorModel();
 
         DataType beastDataType = errAlignment.getDataType();
         // Input<DataType> datatypeInput
         gt16ErrorModel.setInputValue("datatype", beastDataType);
 
-        RealParameter deltaParam = new RealParameter(String.valueOf(delta));
+        RealParameter deltaParam = context.getAsRealParameter(generator.getDelta());
         gt16ErrorModel.setInputValue("delta", deltaParam);
-        RealParameter epsilonParam = new RealParameter(String.valueOf(epsilon));
+        RealParameter epsilonParam = context.getAsRealParameter(generator.getEpsilon());
         gt16ErrorModel.setInputValue("epsilon", epsilonParam);
-
         gt16ErrorModel.initAndValidate();
-
 
         // TODO temp solution to rm parent alignment if there is a child alignment created from it,
         // e.g. original alignment creates err alignment
