@@ -11,8 +11,8 @@ public class BetaToBEAST implements GeneratorToBEAST<Beta, Prior> {
     @Override
     public Prior generatorToBEAST(Beta generator, BEASTInterface value, BEASTContext context) {
         beast.math.distributions.Beta betaDistribution = new beast.math.distributions.Beta();
-        betaDistribution.setInputValue("alpha", context.getBEASTObject(generator.getParams().get("alpha")));
-        betaDistribution.setInputValue("beta", context.getBEASTObject(generator.getParams().get("beta")));
+        betaDistribution.setInputValue("alpha", context.getAsRealParameter(generator.getParams().get("alpha")));
+        betaDistribution.setInputValue("beta", context.getAsRealParameter(generator.getParams().get("beta")));
         betaDistribution.initAndValidate();
         return BEASTContext.createPrior(betaDistribution, (RealParameter) value);
     }
