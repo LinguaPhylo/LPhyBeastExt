@@ -7,8 +7,6 @@ import beast.evolution.tree.coalescent.TreeIntervals;
 import lphy.evolution.coalescent.SkylineCoalescent;
 import lphybeast.BEASTContext;
 import lphybeast.GeneratorToBEAST;
-import outercore.parameter.KeyIntegerParameter;
-import outercore.parameter.KeyRealParameter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,17 +24,24 @@ public class SkylineToBSP implements
 
         bsp.setInputValue("treeIntervals", treeIntervals);
 
-        // https://github.com/LinguaPhylo/LPhyBeast/issues/33
         BEASTInterface theta = context.getBEASTObject(coalescent.getTheta());
         if ( ! (theta instanceof RealParameter) )
             throw new IllegalArgumentException("Expecting RealParameter for Skyline pop size ! ");
 
-        KeyRealParameter popSizes = KeyRealParameter.createKeyRealParameter((RealParameter) theta);
-        // TODO For Tracer, which requires index starting from 1
-        popSizes.setInputValue("idStart1", true);
-        popSizes.initAndValidate();
+        RealParameter thetaParam = (RealParameter) theta;
+        // TODO best way to check the index in the keys
+        // keys reply on BEAST Parameter default String getKey(int i)
+        // expecting keys = [1, 2, 3, ...]
+        int i = Integer.parseInt(thetaParam.getKey(0));
+        // https://github.com/LinguaPhylo/LPhyBeast/issues/33
+        if (i < 1)
+            throw new IllegalArgumentException("Tracer requires the key of pop size parameter to start from 1, which cannot pick up 0");
+        // set keys explicitly to show them in XML
+        String[] keys = thetaParam.getKeys();
+        String keysStr = String.join(" ", keys);
+        theta.setInputValue("keys", keysStr);
 
-        bsp.setInputValue("popSizes", popSizes);
+        bsp.setInputValue("popSizes", theta);
 
         // pop size index has to be same as group size, for Tracer skyline plot
         IntegerParameter groupSizeParam = null;
@@ -46,20 +51,25 @@ public class SkylineToBSP implements
             // classic skyline
             groupSizeParam = new IntegerParameter();
             List<Integer> groupSizes = new ArrayList<>();
-            for (int i = 0; i < coalescent.getTheta().value().length; i++) {
+            for (int j = 0; j < thetaParam.getDimension(); j++) {
                 groupSizes.add(1);
             }
             groupSizeParam.setInputValue("value", groupSizes);
             groupSizeParam.setInputValue("dimension", groupSizes.size());
             groupSizeParam.setID("groupSizes");
         }
+        // expecting keys = [1, 2, 3, ...]
+        i = Integer.parseInt(groupSizeParam.getKey(0));
+        // https://github.com/LinguaPhylo/LPhyBeast/issues/33
+        if (i < 1)
+            throw new IllegalArgumentException("Tracer requires the key of group size parameter to start from 1, which cannot pick up 0");
 
-        KeyIntegerParameter groupSizesKeyIntParam = KeyIntegerParameter.createKeyIntegerParameter((IntegerParameter) groupSizeParam);
-        // TODO For Tracer, which requires index starting from 1
-        groupSizesKeyIntParam.setInputValue("idStart1", true);
-        groupSizesKeyIntParam.initAndValidate();
+        // set keys explicitly to show them in XML
+        keys = groupSizeParam.getKeys();
+        keysStr = String.join(" ", keys);
+        groupSizeParam.setInputValue("keys", keysStr);
 
-        bsp.setInputValue("groupSizes", groupSizesKeyIntParam);
+        bsp.setInputValue("groupSizes", groupSizeParam);
         bsp.initAndValidate();
 
         return bsp;
