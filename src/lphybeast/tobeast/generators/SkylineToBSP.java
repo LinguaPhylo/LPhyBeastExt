@@ -24,11 +24,7 @@ public class SkylineToBSP implements
 
         bsp.setInputValue("treeIntervals", treeIntervals);
 
-        BEASTInterface theta = context.getBEASTObject(coalescent.getTheta());
-        if ( ! (theta instanceof RealParameter) )
-            throw new IllegalArgumentException("Expecting RealParameter for Skyline pop size ! ");
-
-        RealParameter thetaParam = (RealParameter) theta;
+        RealParameter thetaParam = context.getAsRealParameter(coalescent.getTheta());
         // TODO best way to check the index in the keys
         // keys reply on BEAST Parameter default String getKey(int i)
         // expecting keys = [1, 2, 3, ...]
@@ -39,14 +35,14 @@ public class SkylineToBSP implements
         // set keys explicitly to show them in XML
         String[] keys = thetaParam.getKeys();
         String keysStr = String.join(" ", keys);
-        theta.setInputValue("keys", keysStr);
+        thetaParam.setInputValue("keys", keysStr);
 
-        bsp.setInputValue("popSizes", theta);
+        bsp.setInputValue("popSizes", thetaParam);
 
         // pop size index has to be same as group size, for Tracer skyline plot
         IntegerParameter groupSizeParam = null;
         if (coalescent.getGroupSizes() != null) {
-            groupSizeParam = (IntegerParameter)context.getBEASTObject(coalescent.getGroupSizes());
+            groupSizeParam = context.getAsIntegerParameter(coalescent.getGroupSizes());
         } else {
             // classic skyline
             groupSizeParam = new IntegerParameter();
