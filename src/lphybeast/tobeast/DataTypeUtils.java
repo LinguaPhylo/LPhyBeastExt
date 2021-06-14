@@ -1,4 +1,4 @@
-package lphybeast.registry;
+package lphybeast.tobeast;
 
 import beast.evolution.datatype.DataType;
 import beast.evolution.datatype.UserDataType;
@@ -12,26 +12,10 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
- * All data types should be registered here.
+ * Utils
  * @author Walter Xie
  */
-public class DataTypeRegistry {
-
-    // LPhy SequenceType => BEAST DataType
-//    private static final Map<SequenceType, DataType> dataTypeMap = null;
-
-//    static {
-//        dataTypeMap.put(SequenceType.NUCLEOTIDE, new beast.evolution.datatype.Nucleotide());
-//        dataTypeMap.put(SequenceType.AMINO_ACID, new beast.evolution.datatype.Aminoacid());
-//        dataTypeMap.put(Binary.getInstance(), new beast.evolution.datatype.Binary());
-//        dataTypeMap.put(Continuous.getInstance(), new beast.evolution.datatype.ContinuousDataType());
-////        dataTypeMap.put(PhasedGenotype.INSTANCE, new beast.evolution.datatype.NucleotideDiploid16());
-//
-//        //exclude Standard
-//    }
-//
-//    // register data types here
-//    private DataTypeRegistry() { }
+public class DataTypeUtils {
 
     public static DataType getBEASTDataType(SequenceType lphyDataType, Map<SequenceType, DataType> dataTypeMap) {
         if (lphyDataType instanceof Standard) {
@@ -39,10 +23,6 @@ public class DataTypeRegistry {
         }
         return dataTypeMap.get(lphyDataType);
     }
-
-//    public static void addDataType(SequenceType lphyDataType, DataType beastDataType) {
-//        dataTypeMap.put(lphyDataType, beastDataType);
-//    }
 
     // for trait alignment
     private static UserDataType getUserDataType(Standard lphyDataType) {
