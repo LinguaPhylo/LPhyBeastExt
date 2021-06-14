@@ -11,8 +11,8 @@ import lphy.evolution.alignment.SimpleAlignment;
 import lphy.evolution.datatype.Standard;
 import lphy.graphicalModel.Value;
 import lphybeast.BEASTContext;
-import lphybeast.DataTypeRegistry;
 import lphybeast.ValueToBEAST;
+import lphybeast.registry.DataTypeRegistry;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +28,7 @@ public class AlignmentToBEAST implements ValueToBEAST<SimpleAlignment, beast.evo
         SequenceType lphyDataType = alignment.getSequenceType();
         String[] taxaNames = alignment.getTaxaNames();
 
-        DataType beastDataType = DataTypeRegistry.getBEASTDataType(lphyDataType);
+        DataType beastDataType = DataTypeRegistry.getBEASTDataType(lphyDataType, context.getDataTypeMap());
 
         beast.evolution.alignment.Alignment beastAlignment;
         // TODO BEAST special data types: StandardData, UserDataType, IntegerData

@@ -1,17 +1,13 @@
-package lphybeast;
+package lphybeast.registry;
 
 import beast.evolution.datatype.DataType;
 import beast.evolution.datatype.UserDataType;
 import jebl.evolution.sequences.SequenceType;
 import jebl.evolution.sequences.State;
-import lphy.evolution.datatype.Binary;
-import lphy.evolution.datatype.Continuous;
-import lphy.evolution.datatype.PhasedGenotype;
 import lphy.evolution.datatype.Standard;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -22,27 +18,31 @@ import java.util.stream.IntStream;
 public class DataTypeRegistry {
 
     // LPhy SequenceType => BEAST DataType
-    protected static final Map<SequenceType, DataType> dataTypeMap = new ConcurrentHashMap<>();
+//    private static final Map<SequenceType, DataType> dataTypeMap = null;
 
-    static {
-        dataTypeMap.put(SequenceType.NUCLEOTIDE, new beast.evolution.datatype.Nucleotide());
-        dataTypeMap.put(SequenceType.AMINO_ACID, new beast.evolution.datatype.Aminoacid());
-        dataTypeMap.put(Binary.getInstance(), new beast.evolution.datatype.Binary());
-        dataTypeMap.put(Continuous.getInstance(), new beast.evolution.datatype.ContinuousDataType());
-        dataTypeMap.put(PhasedGenotype.INSTANCE, new beast.evolution.datatype.NucleotideDiploid16());
+//    static {
+//        dataTypeMap.put(SequenceType.NUCLEOTIDE, new beast.evolution.datatype.Nucleotide());
+//        dataTypeMap.put(SequenceType.AMINO_ACID, new beast.evolution.datatype.Aminoacid());
+//        dataTypeMap.put(Binary.getInstance(), new beast.evolution.datatype.Binary());
+//        dataTypeMap.put(Continuous.getInstance(), new beast.evolution.datatype.ContinuousDataType());
+////        dataTypeMap.put(PhasedGenotype.INSTANCE, new beast.evolution.datatype.NucleotideDiploid16());
+//
+//        //exclude Standard
+//    }
+//
+//    // register data types here
+//    private DataTypeRegistry() { }
 
-        //exclude Standard
-    }
-
-    // register data types here
-    private DataTypeRegistry() { }
-
-    public static DataType getBEASTDataType(SequenceType lphyDataType) {
+    public static DataType getBEASTDataType(SequenceType lphyDataType, Map<SequenceType, DataType> dataTypeMap) {
         if (lphyDataType instanceof Standard) {
             return getUserDataType((Standard) lphyDataType);
         }
         return dataTypeMap.get(lphyDataType);
     }
+
+//    public static void addDataType(SequenceType lphyDataType, DataType beastDataType) {
+//        dataTypeMap.put(lphyDataType, beastDataType);
+//    }
 
     // for trait alignment
     private static UserDataType getUserDataType(Standard lphyDataType) {

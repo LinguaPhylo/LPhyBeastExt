@@ -9,6 +9,7 @@ import beast.core.parameter.RealParameter;
 import beast.core.util.CompoundDistribution;
 import beast.evolution.alignment.Alignment;
 import beast.evolution.alignment.Taxon;
+import beast.evolution.datatype.DataType;
 import beast.evolution.likelihood.AncestralStateTreeLikelihood;
 import beast.evolution.operators.*;
 import beast.evolution.substitutionmodel.Frequencies;
@@ -22,6 +23,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import feast.function.Concatenate;
 import feast.function.Slice;
+import jebl.evolution.sequences.SequenceType;
 import lphy.app.Symbols;
 import lphy.core.LPhyParser;
 import lphy.core.distributions.Dirichlet;
@@ -34,14 +36,14 @@ import lphy.evolution.coalescent.StructuredCoalescent;
 import lphy.evolution.tree.TimeTree;
 import lphy.graphicalModel.*;
 import lphy.utils.LoggerUtils;
-import lphybeast.tobeast.generators.*;
-import lphybeast.tobeast.values.*;
+import lphybeast.registry.ClassesRegistry;
 import org.xml.sax.SAXException;
 import outercore.util.BEASTVector;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import static java.lang.Math.toIntExact;
@@ -52,14 +54,22 @@ public class BEASTContext {
     public static final String PRIOR_ID = "prior";
     public static final String LIKELIHOOD_ID = "likelihood";
 
+    //*** registry ***//
+
+    List<ValueToBEAST> valueToBEASTList = new ArrayList<>();
+    //use LinkedHashMap to keep inserted ordering, so the first matching converter is used.
+    Map<Class, GeneratorToBEAST> generatorToBEASTMap = new LinkedHashMap<>();
+    // LPhy SequenceType => BEAST DataType
+    Map<SequenceType, DataType> dataTypeMap = new ConcurrentHashMap<>();
+
+    //*** to BEAST ***//
+
     List<StateNode> state = new ArrayList<>();
 
-    // a list of extra beast elements in the keys, with a pointer to the graphical model node that caused their production
+    // a list of extra beast elements in the keys,
+    // with a pointer to the graphical model node that caused their production
     private Multimap<BEASTInterface, GraphicalModelNode<?>> elements = HashMultimap.create();
     List<StateNodeInitialiser> inits = new ArrayList<>();
-
-    // a list of beast state nodes to skip the automatic operator creation for.
-    private Set<StateNode> skipOperators = new HashSet<>();
 
     // a map of graphical model nodes to a list of equivalent BEASTInterface objects
     private Map<GraphicalModelNode<?>, BEASTInterface> beastObjects = new HashMap<>();
@@ -67,8 +77,8 @@ public class BEASTContext {
     // a map of BEASTInterface to graphical model nodes that they represent
     private Map<BEASTInterface, GraphicalModelNode<?>> BEASTToLPHYMap = new HashMap<>();
 
-    List<ValueToBEAST> valueToBEASTList = new ArrayList<>();
-    Map<Class, GeneratorToBEAST> generatorToBEASTMap = new HashMap<>();
+    // a list of beast state nodes to skip the automatic operator creation for.
+    private Set<StateNode> skipOperators = new HashSet<>();
 
     private List<Operator> extraOperators = new ArrayList<>();
     private List<Loggable> extraLoggables = new ArrayList<>();
@@ -80,29 +90,48 @@ public class BEASTContext {
 
     public BEASTContext(LPhyParser phyParser) {
         parser = phyParser;
-        registerValues();
-        registerGenerators();
+
+        //TODO: need to make the registry class path not hard-coded
+        final String registryClsPath = "lphybeast.registry";
+
+//        Package[] packages = Package.getPackages();
+//        List<Package> packageList = new ArrayList<>();
+//        for (Package pkg : packages) {
+//            String name = pkg.getName().toLowerCase();//.replaceAll("\\.", "-");
+//            if (name.contains("registry"))
+//                packageList.add(pkg);
+//        }
+
+//        String[] classPathEntries = ClassesRegistry.getAllClassPathEntries();
+
+        try {
+            List<ClassesRegistry> registryList = ClassesRegistry.getRegistryClasses(registryClsPath);
+
+            for (ClassesRegistry registry : registryList) {
+                final Class<?>[] valuesToBEASTs = registry.getValuesToBEASTs();
+                final Class<?>[] generatorToBEASTs = registry.getGeneratorToBEASTs();
+                final Map<SequenceType, DataType> dataTypeMap = registry.getDataTypeMap();
+
+                registerValues(valuesToBEASTs);
+                registerGenerators(generatorToBEASTs);
+                registerDataTypes(dataTypeMap);
+            }
+
+        } catch (InstantiationException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println(valueToBEASTList.size() + " ValuesToBEAST = " + valueToBEASTList);
+        System.out.println(generatorToBEASTMap.size() + " GeneratorToBEAST = " + generatorToBEASTMap);
+        System.out.println(dataTypeMap.size() + " Data Type = " + dataTypeMap);
     }
 
-    private void registerValues() {
-        // the first matching converter is used.
-        final Class[] valuesToBEASTs = {
-                DoubleArrayValueToBEAST.class,  // KeyRealParameter
-                IntegerArrayValueToBEAST.class, // KeyIntegerParameter
-                NumberArrayValueToBEAST.class,
-                CompoundVectorToBEAST.class, // TODO handle primitive CompoundVector properly
-                AlignmentToBEAST.class, // simulated alignment
-                TimeTreeToBEAST.class,
-                DoubleValueToBEAST.class,
-                DoubleArray2DValueToBEAST.class,
-                IntegerValueToBEAST.class,
-                BooleanArrayValueToBEAST.class,
-                BooleanValueToBEAST.class
-        };
-
-        for (Class c : valuesToBEASTs) {
+    private void registerValues(final Class<?>[] valuesToBEASTs) {
+        for (Class<?> c : valuesToBEASTs) {
             try {
                 ValueToBEAST valueToBEAST = (ValueToBEAST) c.newInstance();
+                if (valueToBEASTList.contains(valueToBEAST))
+                    LoggerUtils.log.severe(valueToBEAST + " exists in the valueToBEASTList !");
                 valueToBEASTList.add(valueToBEAST);
             } catch (InstantiationException | IllegalAccessException e) {
                 e.printStackTrace();
@@ -110,57 +139,30 @@ public class BEASTContext {
         }
     }
 
-    private void registerGenerators() {
-        final Class[] generatorToBEASTs = {
-                BernoulliMultiToBEAST.class, // cannot be replaced by IID
-                BetaToBEAST.class,
-                BirthDeathSerialSamplingToBEAST.class,
-                BirthDeathSampleTreeDTToBEAST.class,
-                DirichletToBEAST.class,
-                ExpToBEAST.class,
-                F81ToBEAST.class,
-                FossilBirthDeathTreeToBEAST.class,
-                GammaToBEAST.class,
-                GT16ErrorModelToBEAST.class,
-                GTUnphaseToBEAST.class,
-                GTRToDiscretePhylogeo.class,
-                GTRToBEAST.class,
-                HKYToBEAST.class,
-                IIDToBEAST.class,
-                InverseGammaToBEAST.class,
-                JukesCantorToBEAST.class,
-                K80ToBEAST.class,
-                LewisMKToBeast.class,
-                LocalBranchRatesToBEAST.class,
-                LogNormalToBEAST.class,
-//                MultispeciesCoalescentToStarBEAST2.class,
-                NormalToBEAST.class,
-                PhyloCTMCToBEAST.class,
-                PoissonToBEAST.class,
-                RandomBooleanArrayToBEAST.class,
-                SerialCoalescentToBEAST.class,
-                SimFBDAgeToBEAST.class,
-                SkylineToBSP.class,
-                SliceDoubleArrayToBEAST.class,
-                StructuredCoalescentToMascot.class,
-                TreeLengthToBEAST.class,
-                TN93ToBEAST.class,
-                GT16ToBEAST.class,
-                UniformToBEAST.class,
-                VectorizedDistributionToBEAST.class,
-                VectorizedFunctionToBEAST.class,
-                YuleToBEAST.class,
-                ExpMarkovChainToBEAST.class
-        };
+    private void registerGenerators(final Class<?>[] generatorToBEASTs) {
 
         for (Class c : generatorToBEASTs) {
             try {
                 GeneratorToBEAST generatorToBEAST = (GeneratorToBEAST) c.newInstance();
+                if (generatorToBEASTMap.containsKey(generatorToBEAST))
+                    LoggerUtils.log.severe(generatorToBEAST + " exists in the generatorToBEASTMap !");
                 generatorToBEASTMap.put(generatorToBEAST.getGeneratorClass(), generatorToBEAST);
             } catch (InstantiationException | IllegalAccessException e) {
                 e.printStackTrace();
             }
         }
+    }
+
+    private void registerDataTypes(final Map<SequenceType, DataType> dataTypeMap) {
+        for (Map.Entry<SequenceType, DataType> entry : dataTypeMap.entrySet()) {
+            if (dataTypeMap.containsKey(entry.getKey()))
+                LoggerUtils.log.severe(entry.getKey() + " exists in the dataTypeMap !");
+            this.dataTypeMap.put(entry.getKey(), entry.getValue());
+        }
+    }
+
+    public Map<SequenceType, DataType> getDataTypeMap() {
+        return this.dataTypeMap;
     }
 
     public BEASTInterface getBEASTObject(GraphicalModelNode<?> node) {
