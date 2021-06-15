@@ -12,8 +12,9 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 
 /**
- * The template to register classes, which include {@link lphybeast.ValueToBEAST},
- * {@link lphybeast.GeneratorToBEAST}, {@link DataType}.
+ * Implement this interface to register classes converting LPhy into BEAST,
+ * which include {@link lphybeast.ValueToBEAST}, {@link lphybeast.GeneratorToBEAST}, {@link DataType}.
+ *
  * @author Walter Xie
  */
 public interface ClassesRegistry {

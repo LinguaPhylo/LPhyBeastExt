@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
+ * The registry class for lphybeast core.
  * @author Walter Xie
  */
 public class LPhyBEASTRegistry implements ClassesRegistry{
