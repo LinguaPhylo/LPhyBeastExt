@@ -5,7 +5,6 @@ import beast.core.parameter.Parameter;
 import lphy.core.distributions.RandomComposition;
 import lphy.graphicalModel.Value;
 import lphybeast.BEASTContext;
-import lphybeast.BEASTFactory;
 import lphybeast.ValueToBEAST;
 
 public class IntegerArrayValueToBEAST implements ValueToBEAST<Integer[], IntegerParameter> {
@@ -28,7 +27,7 @@ public class IntegerArrayValueToBEAST implements ValueToBEAST<Integer[], Integer
         }
         Integer upper = null;
 
-        Parameter parameter = BEASTFactory.createKeyParameter(value, lower, upper, false);
+        Parameter parameter = BEASTContext.createParameterWithBound(value, lower, upper, false);
         if (!(parameter instanceof IntegerParameter))
             throw new IllegalStateException("Expecting to create KeyIntegerParameter from " + value.getCanonicalId());
 

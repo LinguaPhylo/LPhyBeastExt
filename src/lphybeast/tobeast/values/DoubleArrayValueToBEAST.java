@@ -12,7 +12,6 @@ import lphy.core.distributions.WeightedDirichlet;
 import lphy.graphicalModel.Value;
 import lphy.graphicalModel.VectorUtils;
 import lphybeast.BEASTContext;
-import lphybeast.BEASTFactory;
 import lphybeast.ValueToBEAST;
 
 import java.util.ArrayList;
@@ -35,7 +34,7 @@ public class DoubleArrayValueToBEAST implements ValueToBEAST<Double[], BEASTInte
             Double[] values = value.value();
 
             for (int i = 0; i < values.length; i++) {
-                RealParameter parameter = context.createRealParameter(value.getCanonicalId() + VectorUtils.INDEX_SEPARATOR + i, values[i]);
+                RealParameter parameter = BEASTContext.createRealParameter(value.getCanonicalId() + VectorUtils.INDEX_SEPARATOR + i, values[i]);
                 context.addStateNode(parameter, value, false);
                 args.add(parameter);
             }
@@ -68,7 +67,7 @@ public class DoubleArrayValueToBEAST implements ValueToBEAST<Double[], BEASTInte
 //            lower = 0.0;
         }
 
-        Parameter parameter = BEASTFactory.createKeyParameter(value, lower, upper, false);
+        Parameter parameter = BEASTContext.createParameterWithBound(value, lower, upper, false);
         if (!(parameter instanceof RealParameter))
             throw new IllegalStateException("Expecting to create KeyRealParameter from " + value.getCanonicalId());
 

@@ -4,7 +4,6 @@ import beast.core.parameter.Parameter;
 import beast.core.parameter.RealParameter;
 import lphy.graphicalModel.Value;
 import lphybeast.BEASTContext;
-import lphybeast.BEASTFactory;
 import lphybeast.ValueToBEAST;
 
 public class NumberArrayValueToBEAST implements ValueToBEAST<Number[], RealParameter> {
@@ -19,7 +18,7 @@ public class NumberArrayValueToBEAST implements ValueToBEAST<Number[], RealParam
 //        }
 //        parameter.setInputValue("value", values);
 //        parameter.setInputValue("dimension", values.size());
-        Parameter parameter = BEASTFactory.createKeyParameter(value, null, null, true);
+        Parameter parameter = BEASTContext.createParameterWithBound(value, null, null, true);
         if (!(parameter instanceof RealParameter))
             throw new IllegalStateException("Expecting to create KeyRealParameter from " + value.getCanonicalId());
 

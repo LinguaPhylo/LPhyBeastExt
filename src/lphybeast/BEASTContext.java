@@ -37,6 +37,7 @@ import lphy.evolution.tree.TimeTree;
 import lphy.graphicalModel.*;
 import lphy.utils.LoggerUtils;
 import lphybeast.registry.ClassesRegistry;
+import lphybeast.tobeast.values.ValueToParameter;
 import org.xml.sax.SAXException;
 import outercore.util.BEASTVector;
 
@@ -68,20 +69,20 @@ public class BEASTContext {
 
     // a list of extra beast elements in the keys,
     // with a pointer to the graphical model node that caused their production
-    private Multimap<BEASTInterface, GraphicalModelNode<?>> elements = HashMultimap.create();
+    private final Multimap<BEASTInterface, GraphicalModelNode<?>> elements = HashMultimap.create();
     List<StateNodeInitialiser> inits = new ArrayList<>();
 
     // a map of graphical model nodes to a list of equivalent BEASTInterface objects
-    private Map<GraphicalModelNode<?>, BEASTInterface> beastObjects = new HashMap<>();
+    private final Map<GraphicalModelNode<?>, BEASTInterface> beastObjects = new HashMap<>();
 
     // a map of BEASTInterface to graphical model nodes that they represent
-    private Map<BEASTInterface, GraphicalModelNode<?>> BEASTToLPHYMap = new HashMap<>();
+    private final Map<BEASTInterface, GraphicalModelNode<?>> BEASTToLPHYMap = new HashMap<>();
 
     // a list of beast state nodes to skip the automatic operator creation for.
-    private Set<StateNode> skipOperators = new HashSet<>();
+    private final Set<StateNode> skipOperators = new HashSet<>();
 
-    private List<Operator> extraOperators = new ArrayList<>();
-    private List<Loggable> extraLoggables = new ArrayList<>();
+    private final List<Operator> extraOperators = new ArrayList<>();
+    private final List<Loggable> extraLoggables = new ArrayList<>();
 
     SortedMap<String, Taxon> allTaxa = new TreeMap<>();
 
@@ -213,11 +214,11 @@ public class BEASTContext {
         return null;
     }
 
-    private Slice createSliceFromVector(GraphicalModelNode node, String id, int index) {
+    public Slice createSliceFromVector(GraphicalModelNode node, String id, int index) {
 
         BEASTInterface parentNode = getBEASTObject(Symbols.getCanonical(id));
 
-        Slice slice = BEASTFactory.createSlice(parentNode, index,
+        Slice slice = SliceFactory.createSlice(parentNode, index,
                 Symbols.getCanonical(id) + VectorUtils.INDEX_SEPARATOR + index);
         addToContext(node, slice);
         return slice;
@@ -239,7 +240,7 @@ public class BEASTContext {
 
         if (slicedBEASTValue != null) {
             if (!(slicedBEASTValue instanceof Concatenate)) {
-                Slice slice = BEASTFactory.createSlice(slicedBEASTValue, sliceValue.getIndex(), sliceValue.getId());
+                Slice slice = SliceFactory.createSlice(slicedBEASTValue, sliceValue.getIndex(), sliceValue.getId());
                 addToContext(sliceValue, slice);
                 return slice;
             } else {
@@ -360,8 +361,7 @@ public class BEASTContext {
         if (matchingKey != null) beastObjects.remove(matchingKey);
 
         // it may be in extraLoggables
-        if (extraLoggables.contains(beastObject))
-            extraLoggables.remove(beastObject);
+        extraLoggables.remove(beastObject);
     }
 
     public static RealParameter createRealParameter(Double[] value) {
@@ -408,6 +408,56 @@ public class BEASTContext {
 
         return parameter;
     }
+
+    public static Parameter<? extends Number> createParameterWithBound(
+            Value<? extends Number[]> value, Number lower, Number upper, boolean forceToDouble) {
+
+        List<Number> values = Arrays.asList(value.value());
+
+        // forceToDouble will ignore whether component type is Integer or not
+        if ( !forceToDouble &&
+                Objects.requireNonNull(value).getType().getComponentType().isAssignableFrom(Integer.class) ) {
+
+            IntegerParameter parameter = new IntegerParameter();
+            parameter.setInputValue("value", values);
+            parameter.setInputValue("dimension", values.size());
+
+            if (lower != null)
+                parameter.setInputValue("lower", lower.intValue());
+            if (upper != null)
+                parameter.setInputValue("upper", upper.intValue());
+
+            // set estimate="false" for IntegerArray values that are not RandomVariables.
+            if (!(value instanceof RandomVariable))
+                parameter.setInputValue("estimate", false);
+
+            parameter.initAndValidate();
+            ValueToParameter.setID(parameter, value);
+
+            return parameter;
+
+        } else { // Double and Number
+
+            RealParameter parameter = new RealParameter();
+            parameter.setInputValue("value", values);
+            parameter.setInputValue("dimension", values.size());
+
+            if (lower != null)
+                parameter.setInputValue("lower", lower.doubleValue());
+            if (upper != null)
+                parameter.setInputValue("upper", upper.doubleValue());
+
+            // set estimate="false" for DoubleArray values that are not RandomVariables.
+            if (!(value instanceof RandomVariable))
+                parameter.setInputValue("estimate", false);
+
+            parameter.initAndValidate();
+            ValueToParameter.setID(parameter, value);
+
+            return parameter;
+        }
+    }
+
 
     /**
      * Make a BEAST2 model from the current model in parser.
@@ -660,7 +710,7 @@ public class BEASTContext {
                 ElementsAt elementsAt = (ElementsAt) value.getGenerator();
                 if (elementsAt.array() instanceof RandomVariable) {
                     BEASTInterface beastInterface = getBEASTObject(elementsAt.array());
-                    if (beastInterface == null) return true;
+                    return beastInterface == null;
                 }
             }
         }
