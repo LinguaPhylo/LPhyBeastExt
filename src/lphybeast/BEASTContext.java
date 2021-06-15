@@ -69,20 +69,20 @@ public class BEASTContext {
 
     // a list of extra beast elements in the keys,
     // with a pointer to the graphical model node that caused their production
-    private final Multimap<BEASTInterface, GraphicalModelNode<?>> elements = HashMultimap.create();
+    private Multimap<BEASTInterface, GraphicalModelNode<?>> elements = HashMultimap.create();
     List<StateNodeInitialiser> inits = new ArrayList<>();
 
     // a map of graphical model nodes to a list of equivalent BEASTInterface objects
-    private final Map<GraphicalModelNode<?>, BEASTInterface> beastObjects = new HashMap<>();
+    private Map<GraphicalModelNode<?>, BEASTInterface> beastObjects = new HashMap<>();
 
     // a map of BEASTInterface to graphical model nodes that they represent
-    private final Map<BEASTInterface, GraphicalModelNode<?>> BEASTToLPHYMap = new HashMap<>();
+    private Map<BEASTInterface, GraphicalModelNode<?>> BEASTToLPHYMap = new HashMap<>();
 
     // a list of beast state nodes to skip the automatic operator creation for.
-    private final Set<StateNode> skipOperators = new HashSet<>();
+    private Set<StateNode> skipOperators = new HashSet<>();
 
-    private final List<Operator> extraOperators = new ArrayList<>();
-    private final List<Loggable> extraLoggables = new ArrayList<>();
+    private List<Operator> extraOperators = new ArrayList<>();
+    private List<Loggable> extraLoggables = new ArrayList<>();
 
     SortedMap<String, Taxon> allTaxa = new TreeMap<>();
 
