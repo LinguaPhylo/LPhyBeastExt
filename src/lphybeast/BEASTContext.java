@@ -103,23 +103,18 @@ public class BEASTContext {
 //                packageList.add(pkg);
 //        }
 
-        try {
-            List<ClassesRegistry> registryList = ClassesRegistry.getRegistryClasses();
+        List<ClassesRegistry> registryList = ClassesRegistry.getRegistryClasses();
 
 //            List<ClassesRegistry> registryList = ClassesRegistry.getRegistryClasses(registryClsPath);
 
-            for (ClassesRegistry registry : registryList) {
-                final Class<?>[] valuesToBEASTs = registry.getValuesToBEASTs();
-                final Class<?>[] generatorToBEASTs = registry.getGeneratorToBEASTs();
-                final Map<SequenceType, DataType> dataTypeMap = registry.getDataTypeMap();
+        for (ClassesRegistry registry : registryList) {
+            final Class<?>[] valuesToBEASTs = registry.getValuesToBEASTs();
+            final Class<?>[] generatorToBEASTs = registry.getGeneratorToBEASTs();
+            final Map<SequenceType, DataType> dataTypeMap = registry.getDataTypeMap();
 
-                registerValues(valuesToBEASTs);
-                registerGenerators(generatorToBEASTs);
-                registerDataTypes(dataTypeMap);
-            }
-
-        } catch (InstantiationException | IllegalAccessException e) {
-            e.printStackTrace();
+            registerValues(valuesToBEASTs);
+            registerGenerators(generatorToBEASTs);
+            registerDataTypes(dataTypeMap);
         }
 
         System.out.println(valueToBEASTList.size() + " ValuesToBEAST = " + valueToBEASTList);
