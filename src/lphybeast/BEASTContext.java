@@ -710,7 +710,7 @@ public class BEASTContext {
                 ElementsAt elementsAt = (ElementsAt) value.getGenerator();
                 if (elementsAt.array() instanceof RandomVariable) {
                     BEASTInterface beastInterface = getBEASTObject(elementsAt.array());
-                    return beastInterface == null;
+                    if (beastInterface == null) return true;
                 }
             }
         }
