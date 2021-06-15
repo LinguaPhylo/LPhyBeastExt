@@ -5,6 +5,10 @@ import jebl.evolution.sequences.SequenceType;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -13,18 +17,100 @@ import java.util.jar.JarInputStream;
 
 /**
  * Implement this interface to register classes converting LPhy into BEAST,
- * which include {@link lphybeast.ValueToBEAST}, {@link lphybeast.GeneratorToBEAST}, {@link DataType}.
+ * which should include {@link lphybeast.ValueToBEAST}, {@link lphybeast.GeneratorToBEAST},
+ * and {@link DataType}.
  *
  * @author Walter Xie
  */
 public interface ClassesRegistry {
 
-    Class[] getValuesToBEASTs();
+    Class<?>[] getValuesToBEASTs();
 
-    Class[] getGeneratorToBEASTs();
+    Class<?>[] getGeneratorToBEASTs();
 
     Map<SequenceType, DataType> getDataTypeMap();
 
+    static String[] getAllClassPathEntries(){
+        return System.getProperty("java.class.path").split(
+                System.getProperty("path.separator")
+        );
+    }
+
+    /**
+     * Derived from //https://stackoverflow.com/questions/28678026/how-can-i-get-all-class-files-in-a-specific-package-in-java
+     * @return all {@link ClassesRegistry} child classes from "java.class.path",
+     *         containing registration information for LPhyBEAST.
+     */
+    static List<ClassesRegistry> getRegistryClasses() {
+
+        List<ClassesRegistry> registryList = new ArrayList<>();
+        String[] classPathEntries = getAllClassPathEntries();
+
+        String name;
+        for (String classpathEntry : classPathEntries) {
+            if (classpathEntry.endsWith(".jar")) {
+                // this is for released jars
+                File jar = new File(classpathEntry);
+                try {
+                    JarInputStream is = new JarInputStream(new FileInputStream(jar));
+                    JarEntry entry;
+                    while((entry = is.getNextJarEntry()) != null) {
+                        name = entry.getName();
+
+                        addRegistryClass(name, registryList);
+                    }
+                } catch (Exception ex) {
+                    // Silence is gold
+                }
+            } else {
+                // this is for development scenarios
+                try {
+                    final String prefix = classpathEntry + File.separatorChar;
+                    // find all classes under the "prefix" folder, maxDepth to 10
+                    List<Path> files = Files.find(Paths.get(prefix),
+                            10, (p, bfa) ->
+                            (bfa.isRegularFile()) && p.toString().endsWith(".class")).toList();
+
+                    for (Path path : files) {
+                        name = path.toString();
+                        // rm the classpath entry from name, so only java package left in name
+                        name = name.replaceFirst(prefix, "");;
+
+                        addRegistryClass(name, registryList);
+                    }
+                } catch (Exception ex) {
+                    // Silence is gold
+                }
+            }
+
+        }
+        return registryList;
+    }
+
+    final String registryPostfix = "Registry.class";
+
+    // add ClassesRegistry child classes to registryList
+    private static void addRegistryClass(String name, List<ClassesRegistry> registryList) throws
+            ClassNotFoundException, NoSuchMethodException, InvocationTargetException,
+            InstantiationException, IllegalAccessException {
+
+        String classPath;
+        if (name.endsWith(registryPostfix)) {
+            // rm .class from name
+            classPath = name.substring(0, name.length() - 6);
+            classPath = classPath.replaceAll("[\\|/]", ".");
+
+            Class<?> cls = Class.forName(classPath);
+            if ( ClassesRegistry.class.isAssignableFrom(cls) && !cls.equals(ClassesRegistry.class)) {
+                // https://docs.oracle.com/javase/9/docs/api/java/lang/Class.html#newInstance--
+                Object obj = cls.getDeclaredConstructor().newInstance();
+                registryList.add((ClassesRegistry) obj);
+            }
+        }
+    }
+
+
+    @Deprecated
     static List<ClassesRegistry> getRegistryClasses(String packageName) throws InstantiationException, IllegalAccessException {
         List<Class<?>> classesList = ClassesRegistry.getClassesInPackage(packageName);
         List<ClassesRegistry> registryList = new ArrayList<>();
@@ -37,17 +123,11 @@ public interface ClassesRegistry {
         return registryList;
     }
 
-    static String[] getAllClassPathEntries(){
-        return System.getProperty("java.class.path").split(
-                System.getProperty("path.separator")
-        );
-    }
-
-    //https://stackoverflow.com/questions/28678026/how-can-i-get-all-class-files-in-a-specific-package-in-java
     /**
      * @param packageName  a specific package.
      * @return   all {@link Class} files from "java.class.path".
      */
+    @Deprecated
     static List<Class<?>> getClassesInPackage(String packageName) {
         String path = packageName.replaceAll("\\.", File.separator);
         List<Class<?>> classes = new ArrayList<>();

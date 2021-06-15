@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class LPhyBEASTRegistry implements ClassesRegistry{
 
     // the first matching converter is used.
-    private final Class[] valuesToBEASTs = {
+    private final Class<?>[] valuesToBEASTs = {
             DoubleArrayValueToBEAST.class,  // KeyRealParameter
             IntegerArrayValueToBEAST.class, // KeyIntegerParameter
             NumberArrayValueToBEAST.class,
@@ -32,7 +32,7 @@ public class LPhyBEASTRegistry implements ClassesRegistry{
     };
 
     // the first matching converter is used.
-    private final Class[] generatorToBEASTs = {
+    private final Class<?>[] generatorToBEASTs = {
             BernoulliMultiToBEAST.class, // cannot be replaced by IID
             BetaToBEAST.class,
             BirthDeathSerialSamplingToBEAST.class,
@@ -73,12 +73,12 @@ public class LPhyBEASTRegistry implements ClassesRegistry{
 
 
     @Override
-    public Class[] getValuesToBEASTs() {
+    public Class<?>[] getValuesToBEASTs() {
         return valuesToBEASTs;
     }
 
     @Override
-    public Class[] getGeneratorToBEASTs() {
+    public Class<?>[] getGeneratorToBEASTs() {
         return generatorToBEASTs;
     }
 

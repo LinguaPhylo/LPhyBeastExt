@@ -43,6 +43,7 @@ import outercore.util.BEASTVector;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -92,8 +93,7 @@ public class BEASTContext {
     public BEASTContext(LPhyParser phyParser) {
         parser = phyParser;
 
-        //TODO: need to make the registry class path not hard-coded
-        final String registryClsPath = "lphybeast.registry";
+//        final String registryClsPath = "lphybeast.registry";
 
 //        Package[] packages = Package.getPackages();
 //        List<Package> packageList = new ArrayList<>();
@@ -103,10 +103,10 @@ public class BEASTContext {
 //                packageList.add(pkg);
 //        }
 
-//        String[] classPathEntries = ClassesRegistry.getAllClassPathEntries();
-
         try {
-            List<ClassesRegistry> registryList = ClassesRegistry.getRegistryClasses(registryClsPath);
+            List<ClassesRegistry> registryList = ClassesRegistry.getRegistryClasses();
+
+//            List<ClassesRegistry> registryList = ClassesRegistry.getRegistryClasses(registryClsPath);
 
             for (ClassesRegistry registry : registryList) {
                 final Class<?>[] valuesToBEASTs = registry.getValuesToBEASTs();
@@ -130,11 +130,12 @@ public class BEASTContext {
     private void registerValues(final Class<?>[] valuesToBEASTs) {
         for (Class<?> c : valuesToBEASTs) {
             try {
-                ValueToBEAST valueToBEAST = (ValueToBEAST) c.newInstance();
+                // https://docs.oracle.com/javase/9/docs/api/java/lang/Class.html#newInstance--
+                ValueToBEAST<?,?> valueToBEAST = (ValueToBEAST<?,?>) c.getDeclaredConstructor().newInstance();
                 if (valueToBEASTList.contains(valueToBEAST))
                     LoggerUtils.log.severe(valueToBEAST + " exists in the valueToBEASTList !");
                 valueToBEASTList.add(valueToBEAST);
-            } catch (InstantiationException | IllegalAccessException e) {
+            } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
                 e.printStackTrace();
             }
         }
@@ -142,13 +143,14 @@ public class BEASTContext {
 
     private void registerGenerators(final Class<?>[] generatorToBEASTs) {
 
-        for (Class c : generatorToBEASTs) {
+        for (Class<?> c : generatorToBEASTs) {
             try {
-                GeneratorToBEAST generatorToBEAST = (GeneratorToBEAST) c.newInstance();
+                // https://docs.oracle.com/javase/9/docs/api/java/lang/Class.html#newInstance--
+                GeneratorToBEAST<?,?> generatorToBEAST = (GeneratorToBEAST<?,?>) c.getDeclaredConstructor().newInstance();
                 if (generatorToBEASTMap.containsKey(generatorToBEAST))
                     LoggerUtils.log.severe(generatorToBEAST + " exists in the generatorToBEASTMap !");
                 generatorToBEASTMap.put(generatorToBEAST.getGeneratorClass(), generatorToBEAST);
-            } catch (InstantiationException | IllegalAccessException e) {
+            } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
                 e.printStackTrace();
             }
         }
