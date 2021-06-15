@@ -46,7 +46,8 @@ public final class BEASTFactory {
         return slice;
     }
 
-
+    // Use RealParameter getAsRealParameter(Value value)
+    @Deprecated
     public static Parameter<? extends Number> createKeyParameter(Value<? extends Number[]> value,
                                                                  Number lower, Number upper, boolean forceToDouble) {
 
