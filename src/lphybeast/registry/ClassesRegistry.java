@@ -48,7 +48,7 @@ public interface ClassesRegistry {
 
         String name;
         for (String classpathEntry : classPathEntries) {
-            if (classpathEntry.endsWith(".jar")) {
+            if (classpathEntry.toLowerCase().endsWith(".jar")) {
                 // this is for released jars
                 File jar = new File(classpathEntry);
                 try {
@@ -69,7 +69,7 @@ public interface ClassesRegistry {
                     // find all classes under the "prefix" folder, maxDepth to 10
                     List<Path> files = Files.find(Paths.get(prefix),
                             10, (p, bfa) ->
-                            (bfa.isRegularFile()) && p.toString().endsWith(".class")).toList();
+                            (bfa.isRegularFile()) && p.toString().toLowerCase().endsWith(".class")).toList();
 
                     for (Path path : files) {
                         name = path.toString();
@@ -87,7 +87,8 @@ public interface ClassesRegistry {
         return registryList;
     }
 
-    final String registryPostfix = "Registry.class";
+    // case insensitive
+    final String registryPostfix = "registry.class";
 
     // add ClassesRegistry child classes to registryList
     private static void addRegistryClass(String name, List<ClassesRegistry> registryList) throws
@@ -95,7 +96,7 @@ public interface ClassesRegistry {
             InstantiationException, IllegalAccessException {
 
         String classPath;
-        if (name.endsWith(registryPostfix)) {
+        if (name.toLowerCase().endsWith(registryPostfix)) {
             // rm .class from name
             classPath = name.substring(0, name.length() - 6);
             classPath = classPath.replaceAll("[\\|/]", ".");

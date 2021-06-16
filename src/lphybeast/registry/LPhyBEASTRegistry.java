@@ -93,6 +93,4 @@ public class LPhyBEASTRegistry implements ClassesRegistry{
         return dataTypeMap;
     }
 
-    private Map<SequenceType, DataType> dataTypeMap;
-
 }
