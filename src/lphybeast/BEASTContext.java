@@ -93,19 +93,7 @@ public class BEASTContext {
     public BEASTContext(LPhyParser phyParser) {
         parser = phyParser;
 
-//        final String registryClsPath = "lphybeast.registry";
-
-//        Package[] packages = Package.getPackages();
-//        List<Package> packageList = new ArrayList<>();
-//        for (Package pkg : packages) {
-//            String name = pkg.getName().toLowerCase();//.replaceAll("\\.", "-");
-//            if (name.contains("registry"))
-//                packageList.add(pkg);
-//        }
-
         List<ClassesRegistry> registryList = ClassesRegistry.getRegistryClasses();
-
-//            List<ClassesRegistry> registryList = ClassesRegistry.getRegistryClasses(registryClsPath);
 
         for (ClassesRegistry registry : registryList) {
             final Class<?>[] valuesToBEASTs = registry.getValuesToBEASTs();
