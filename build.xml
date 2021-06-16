@@ -21,8 +21,9 @@
     <!-- Note: if build involves calling another build.xml,  -->
     <!-- these directories cannot use ../${repoName}/ because of Docker -->
 
+    <!-- LPhyBEAST version is loaded from version.xml -->
     <property name="projName" value="LPhyBEAST"/>
-    <property name="projVersion" value="0.0.4"/>
+    <!-- used to locate the correct version of lphy jar -->
     <property name="lphyVersion" value="0.0.4"/>
 
     <!--*******************************************************************-->
@@ -109,6 +110,10 @@
 
             <manifest>
                 <attribute name="Main-Class" value="lphybeast.LPhyBEAST"/>
+                <attribute name="Version" value="${projVersion}"/>
+                <!--   ${user.name}    -->
+                <attribute name="Built-By" value="Walter Xie"/>
+                <attribute name="Built-On" value="${TODAY}"/>
             </manifest>
         </jar>
 
