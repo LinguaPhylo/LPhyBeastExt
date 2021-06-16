@@ -90,6 +90,12 @@ public class BEASTContext {
     LPhyParser parser;
 
 
+    /**
+     * Find all core classes {@link lphybeast.ValueToBEAST} and {@link lphybeast.GeneratorToBEAST},
+     * including {@link DataType} mapped to lphy {@link SequenceType},
+     * and then register them for XML creators.
+     * @param phyParser  the parsed lphy commands
+     */
     public BEASTContext(LPhyParser phyParser) {
         parser = phyParser;
 
@@ -125,7 +131,6 @@ public class BEASTContext {
     }
 
     private void registerGenerators(final Class<?>[] generatorToBEASTs) {
-
         for (Class<?> c : generatorToBEASTs) {
             try {
                 // https://docs.oracle.com/javase/9/docs/api/java/lang/Class.html#newInstance--
