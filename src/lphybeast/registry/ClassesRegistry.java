@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
+import java.util.regex.Pattern;
 
 /**
  * Implement this interface to register classes converting LPhy into BEAST,
@@ -98,7 +99,8 @@ public interface ClassesRegistry {
             String filePath = file.getAbsolutePath();
             if (filePath.toLowerCase().endsWith(".class")) {
                 // rm the classpath entry from filePath, so only java package left in filePath
-                filePath = filePath.replaceFirst(prefix, "");
+                // ignore escape characters
+                filePath = filePath.replaceFirst(Pattern.quote(prefix), "");
                 addRegistryClass(filePath, registryList);
             }
         }
@@ -109,7 +111,7 @@ public interface ClassesRegistry {
         String classPath;
         // rm .class from name
         classPath = name.substring(0, name.length() - 6);
-        classPath = classPath.replaceAll("[\\|/]", ".");
+        classPath = classPath.replaceAll("[\\\\|/]", ".");
 
         try {
             // if use Class.forName, it will have many Error thrown

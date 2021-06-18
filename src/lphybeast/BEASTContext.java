@@ -122,9 +122,9 @@ public class BEASTContext {
             try {
                 // https://docs.oracle.com/javase/9/docs/api/java/lang/Class.html#newInstance--
                 ValueToBEAST<?,?> valueToBEAST = (ValueToBEAST<?,?>) c.getDeclaredConstructor().newInstance();
-                if (valueToBEASTList.contains(valueToBEAST))
+                if (this.valueToBEASTList.contains(valueToBEAST))
                     LoggerUtils.log.severe(valueToBEAST + " exists in the valueToBEASTList !");
-                valueToBEASTList.add(valueToBEAST);
+                this.valueToBEASTList.add(valueToBEAST);
             } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
                 e.printStackTrace();
             }
@@ -136,9 +136,9 @@ public class BEASTContext {
             try {
                 // https://docs.oracle.com/javase/9/docs/api/java/lang/Class.html#newInstance--
                 GeneratorToBEAST<?,?> generatorToBEAST = (GeneratorToBEAST<?,?>) c.getDeclaredConstructor().newInstance();
-                if (generatorToBEASTMap.containsKey(generatorToBEAST))
+                if (this.generatorToBEASTMap.containsKey(generatorToBEAST))
                     LoggerUtils.log.severe(generatorToBEAST + " exists in the generatorToBEASTMap !");
-                generatorToBEASTMap.put(generatorToBEAST.getGeneratorClass(), generatorToBEAST);
+                this.generatorToBEASTMap.put(generatorToBEAST.getGeneratorClass(), generatorToBEAST);
             } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
                 e.printStackTrace();
             }
@@ -147,7 +147,7 @@ public class BEASTContext {
 
     private void registerDataTypes(final Map<SequenceType, DataType> dataTypeMap) {
         for (Map.Entry<SequenceType, DataType> entry : dataTypeMap.entrySet()) {
-            if (dataTypeMap.containsKey(entry.getKey()))
+            if (this.dataTypeMap.containsKey(entry.getKey()))
                 LoggerUtils.log.severe(entry.getKey() + " exists in the dataTypeMap !");
             this.dataTypeMap.put(entry.getKey(), entry.getValue());
         }
