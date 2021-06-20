@@ -99,7 +99,7 @@ public class BEASTContext {
     public BEASTContext(LPhyParser phyParser) {
         parser = phyParser;
 
-        //TODO how to handle same registry class from jar and development
+        //TODO check if PackageManager handling same class from jar and development
         List<ClassesRegistry> registryList = ClassesRegistry.getRegistryClasses();
 
         for (ClassesRegistry registry : registryList) {
