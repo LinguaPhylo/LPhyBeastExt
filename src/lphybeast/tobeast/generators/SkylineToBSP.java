@@ -33,7 +33,7 @@ public class SkylineToBSP implements
         if (i < 1)
             throw new IllegalArgumentException("Tracer requires the key of pop size parameter to start from 1, which cannot pick up 0");
         // set keys explicitly to show them in XML
-        String[] keys = thetaParam.getKeys();
+        List<String> keys = thetaParam.getKeysList();
         String keysStr = String.join(" ", keys);
         thetaParam.setInputValue("keys", keysStr);
 
@@ -61,7 +61,7 @@ public class SkylineToBSP implements
             throw new IllegalArgumentException("Tracer requires the key of group size parameter to start from 1, which cannot pick up 0");
 
         // set keys explicitly to show them in XML
-        keys = groupSizeParam.getKeys();
+        keys = groupSizeParam.getKeysList();
         keysStr = String.join(" ", keys);
         groupSizeParam.setInputValue("keys", keysStr);
 
