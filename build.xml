@@ -28,7 +28,7 @@
 
     <!--*******************************************************************-->
 
-    <property name="lphy" location="../linguaPhylo/"/>
+    <property name="lphy" location="../linguaPhylo/LPhy"/>
     <property name="outercore" location="../beast-outercore/"/>
 
     <import file="${lphy}/build.xml"/>
