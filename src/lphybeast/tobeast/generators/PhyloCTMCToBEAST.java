@@ -40,7 +40,7 @@ public class PhyloCTMCToBEAST implements GeneratorToBEAST<PhyloCTMC, GenericTree
 
     public GenericTreeLikelihood generatorToBEAST(PhyloCTMC phyloCTMC, BEASTInterface value, BEASTContext context) {
 
-        if (SequenceTypeFactory.isStandardDataType( phyloCTMC.getDataType() ) ) { // TODO morphology
+        if (SequenceTypeFactory.INSTANCE.isStandardDataType( phyloCTMC.getDataType() ) ) { // TODO morphology
             // for discrete phylogeography
             return createAncestralStateTreeLikelihood(phyloCTMC, value, context);
         } else {
