@@ -23,29 +23,19 @@
 
     <!-- LPhyBEAST version is loaded from version.xml -->
     <property name="projName" value="LPhyBEAST"/>
-    <!-- used to locate the correct version of lphy jar -->
-    <property name="lphyVersion" value="0.0.4"/>
 
     <!--*******************************************************************-->
 
     <property name="lphy" location="../linguaPhylo/LPhy"/>
     <property name="outercore" location="../beast-outercore/"/>
 
-    <import file="${lphy}/build.xml"/>
+    <import file="${lphy}/build.xml" as="lphy"/>
     <import file="${outercore}/build.xml" />
 
+    <!-- used to locate the correct version of lphy jar -->
+    <property name="lphyVersion" value="${lphy.projVersion}"/>
+
     <!--*******************************************************************-->
-
-    <path id="lphybe-clspath">
-        <pathelement path="${lphy}/build"/>
-        <fileset dir="${lphy}/lib" includes="*.jar"/>
-        <pathelement path="${outercore}/build"/>
-        <fileset dir="${outercore}/lib" includes="*.jar"/>
-        <pathelement path="${classpath}"/>
-        <fileset dir="${lib}" includes="*.jar"/>
-        <pathelement path="${build}"/>
-    </path>
-
 
     <!-- Revert to pristine state. -->
     <target name="clean">
@@ -75,13 +65,25 @@
 
     </target>
 
+
+    <path id="lphybe-clspath">
+        <pathelement path="${classpath}"/>
+        <pathelement path="${lphy}/build"/>
+        <pathelement path="${lphy}/resources"/>
+        <fileset dir="${lphy}/lib" includes="*.jar"/>
+        <pathelement path="${outercore}/build"/>
+        <fileset dir="${outercore}/lib" includes="*.jar"/>
+        <pathelement path="${build}"/>
+        <fileset dir="${lib}" includes="*.jar"/>
+    </path>
+
     <!-- Compile -->
     <target name="compile" depends="init">
-<!--        <pathconvert property="classpathproperty" refid="lphybe-clspath"/>-->
-<!--        <echo>${repoName} classpath is ${classpathproperty}</echo>-->
+        <echo>LPhy BEAST classpath is ${toString:lphybe-clspath}</echo>
 
-        <javac target="${targetVersion}" source="${sourceVersion}" srcdir="${src}" destdir="${build}"
-               classpathref="lphybe-clspath" includeantruntime="false">
+        <javac target="${targetVersion}" source="${sourceVersion}"
+               srcdir="${src}" destdir="${build}" includeantruntime="false">
+            <classpath refid="lphybe-clspath"/>
         </javac>
         <echo message="Successfully compiled ${projName}." />
     </target>
@@ -102,10 +104,10 @@
 
         <mkdir dir="${pack}"/>
 
-        <jar jarfile="${pack}/${fullName}.src.jar" basedir="${src}" />
+        <jar jarfile="${pack}/${jarFileName}.src.jar" basedir="${src}" />
 
         <!--   use as BEAST 2 plugin, but need lphy.jar     -->
-        <jar jarfile="${pack}/lib/${fullName}.jar">
+        <jar jarfile="${pack}/lib/${jarFileName}.jar">
             <fileset dir="${build}" includes="**/*.class"/>
 
             <manifest>
@@ -123,13 +125,11 @@
                 <include name="picocli*.jar"/>
                 <include name="guava*.jar"/>
                 <include name="jblas*.jar"/>
-                <!-- TODO cannot find phylonco release -->
-                <include name="phylonco*.jar"/>
             </fileset>
         </copy>
 
         <!--   copy lphy here     -->
-        <property name="lphyRelease" value="${lphy}/dist/package/lphy.v${lphyVersion}"/>
+        <property name="lphyRelease" value="${lphy}/dist/package/lphy-${lphyVersion}"/>
         <available property="file.exists" file="${lphyRelease}.jar"/>
         <copy file="${lphyRelease}.jar" todir="${pack}/lib" />
         <copy file="${lphyRelease}.src.jar" todir="${pack}" />
@@ -141,18 +141,18 @@
 
         <copy file="version.xml" todir="${pack}" />
 
-        <zip destfile="${dist}/${fullName}.zip" basedir="${pack}" />
+        <zip destfile="${dist}/${jarFileName}.zip" basedir="${pack}" />
 
 <!--        <delete dir="${pack}"/>-->
 
         <echo/>
         <echo>** Package ${dist}/${fullName}.zip created successfully! **</echo>
 
-        <copy file="${dist}/${fullName}.zip" todir="releases" />
+        <copy file="${dist}/${jarFileName}.zip" todir="releases" />
         <echo/>
         <echo>Copy ${dist}/${fullName}.zip to releases folder</echo>
 
-        <delete file="${dist}/${fullName}.zip"/>
+        <delete file="${dist}/${jarFileName}.zip"/>
         <echo/>
         <echo>Remove ${dist}/${fullName}.zip</echo>
 
@@ -191,11 +191,11 @@
         <mkdir dir="${test-reports}"/>
     </target>
 
-
     <!-- Compile unit tests -->
     <target name="compile-test" depends="init-test">
-        <javac target="${targetVersion}" source="${sourceVersion}" srcdir="${test}" destdir="${build-test}"
-               classpathref="lphybe-clspath"  includeantruntime="false">
+        <javac target="${targetVersion}" source="${sourceVersion}" srcdir="${test}"
+               destdir="${build-test}" includeantruntime="false">
+            <classpath refid="lphybe-clspath"/>
         </javac>
         <echo message="Successfully compiled ${projName} tests."/>
     </target>
@@ -203,6 +203,9 @@
 
     <!-- Run unit tests -->
     <target name="test" depends="compile, compile-test">
+        <pathconvert property="clsPath" refid="lphybe-clspath"/>
+        <echo>LPhy BEAST test classpath is ${clsPath}</echo>
+
         <junit printsummary="yes" failureproperty="testFailed">
             <classpath>
                 <path refid="lphybe-clspath"/>
@@ -211,6 +214,7 @@
             <batchtest fork="yes" todir="${test-reports}">
                 <fileset dir="${test}">
                     <include name="**/*Test.java"/>
+                    <exclude name="**/TutorialTest.java"/>
                 </fileset>
                 <formatter type="plain"/>
             </batchtest>
