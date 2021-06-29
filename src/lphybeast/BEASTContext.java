@@ -64,6 +64,9 @@ public class BEASTContext {
     // LPhy SequenceType => BEAST DataType
     Map<SequenceType, DataType> dataTypeMap = new ConcurrentHashMap<>();
 
+    List<Generator> excludedGeneratorList = new ArrayList<>();
+    List<Value> excludedValueList = new ArrayList<>();
+
     //*** to BEAST ***//
 
     List<StateNode> state = new ArrayList<>();
@@ -103,22 +106,27 @@ public class BEASTContext {
         List<ClassesRegistry> registryList = ClassesRegistry.getRegistryClasses();
 
         for (ClassesRegistry registry : registryList) {
-            final Class<?>[] valuesToBEASTs = registry.getValuesToBEASTs();
-            final Class<?>[] generatorToBEASTs = registry.getGeneratorToBEASTs();
+            final List<Class<? extends ValueToBEAST>> valuesToBEASTs = registry.getValuesToBEASTs();
+            final List<Class<? extends GeneratorToBEAST>> generatorToBEASTs = registry.getGeneratorToBEASTs();
             final Map<SequenceType, DataType> dataTypeMap = registry.getDataTypeMap();
+            final List<Class<? extends Generator>> excludedGenerators = registry.getExcludedGenerator();
+            final List<Class<? extends Value>> excludedValues = registry.getExcludedValue();
 
-            registerValues(valuesToBEASTs);
-            registerGenerators(generatorToBEASTs);
+            registerValueToBEAST(valuesToBEASTs);
+            registerGeneratorToBEAST(generatorToBEASTs);
             registerDataTypes(dataTypeMap);
+            registerExcludedGenerators(excludedGenerators);
         }
 
         System.out.println(valueToBEASTList.size() + " ValuesToBEAST = " + valueToBEASTList);
         System.out.println(generatorToBEASTMap.size() + " GeneratorToBEAST = " + generatorToBEASTMap);
         System.out.println(dataTypeMap.size() + " Data Type = " + dataTypeMap);
+        System.out.println(excludedGeneratorList.size() + " extra Generator(s) excluded = " + excludedGeneratorList);
+        System.out.println(excludedValueList.size() + " extra Value(s) excluded = " + excludedValueList);
     }
 
-    private void registerValues(final Class<?>[] valuesToBEASTs) {
-        for (Class<?> c : valuesToBEASTs) {
+    private void registerValueToBEAST(final List<Class<? extends ValueToBEAST>> valuesToBEASTs) {
+        for (Class<? extends ValueToBEAST> c : valuesToBEASTs) {
             try {
                 // https://docs.oracle.com/javase/9/docs/api/java/lang/Class.html#newInstance--
                 ValueToBEAST<?,?> valueToBEAST = (ValueToBEAST<?,?>) c.getDeclaredConstructor().newInstance();
@@ -131,8 +139,8 @@ public class BEASTContext {
         }
     }
 
-    private void registerGenerators(final Class<?>[] generatorToBEASTs) {
-        for (Class<?> c : generatorToBEASTs) {
+    private void registerGeneratorToBEAST(final List<Class<? extends GeneratorToBEAST>> generatorToBEASTs) {
+        for (Class<? extends GeneratorToBEAST> c : generatorToBEASTs) {
             try {
                 // https://docs.oracle.com/javase/9/docs/api/java/lang/Class.html#newInstance--
                 GeneratorToBEAST<?,?> generatorToBEAST = (GeneratorToBEAST<?,?>) c.getDeclaredConstructor().newInstance();
@@ -150,6 +158,32 @@ public class BEASTContext {
             if (this.dataTypeMap.containsKey(entry.getKey()))
                 LoggerUtils.log.severe(entry.getKey() + " exists in the dataTypeMap !");
             this.dataTypeMap.put(entry.getKey(), entry.getValue());
+        }
+    }
+
+    private void registerExcludedGenerators(final List<Class<? extends Generator>> excludedGenerators) {
+        for (Class<? extends Generator> c : excludedGenerators) {
+            try {
+                Generator<?> g = (Generator<?>) c.getDeclaredConstructor().newInstance();
+                if (this.excludedGeneratorList.contains(g))
+                    LoggerUtils.log.severe(g + " exists in the excludedGeneratorList !");
+                this.excludedGeneratorList.add(g);
+            } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void registerExcludedValues(final List<Class<? extends Value>> excludedValues) {
+        for (Class<? extends Value> c : excludedValues) {
+            try {
+                Value<?> v = (Value<?>) c.getDeclaredConstructor().newInstance();
+                if (this.excludedValueList.contains(v))
+                    LoggerUtils.log.severe(v + " exists in the excludedValueList !");
+                this.excludedValueList.add(v);
+            } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -615,7 +649,7 @@ public class BEASTContext {
 
             if (createGenerators) {
                 if (beastGenerator == null) {
-                    if (!Exclusion.isExcludedGenerator(generator)) {
+                    if (!isExcludedGenerator(generator)) {
                         throw new UnsupportedOperationException("Unhandled generator in generatorToBEAST(): " + generator.getClass());
                     }
                 } else {
@@ -623,6 +657,10 @@ public class BEASTContext {
                 }
             }
         }
+    }
+
+    private boolean isExcludedGenerator(Generator generator) {
+        return Exclusion.isExcludedGenerator(generator) || this.excludedGeneratorList.contains(generator);
     }
 
     private BEASTInterface valueToBEAST(Value<?> val) {

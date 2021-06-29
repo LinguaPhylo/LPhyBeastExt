@@ -3,6 +3,10 @@ package lphybeast.registry;
 import beast.evolution.datatype.DataType;
 import beast.util.PackageManager;
 import jebl.evolution.sequences.SequenceType;
+import lphy.graphicalModel.Generator;
+import lphy.graphicalModel.Value;
+import lphybeast.GeneratorToBEAST;
+import lphybeast.ValueToBEAST;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -18,12 +22,15 @@ import java.util.Map;
  */
 public interface ClassesRegistry {
 
-    Class<?>[] getValuesToBEASTs();
+    List<Class<? extends ValueToBEAST>> getValuesToBEASTs();
 
-    Class<?>[] getGeneratorToBEASTs();
+    List<Class<? extends GeneratorToBEAST>> getGeneratorToBEASTs();
 
     Map<SequenceType, DataType> getDataTypeMap();
 
+    List<Class<? extends Generator>> getExcludedGenerator();
+
+    List<Class<? extends Value>> getExcludedValue();
 
     static List<ClassesRegistry> getRegistryClasses() {
         //TODO check if PackageManager handling same class from jar and development

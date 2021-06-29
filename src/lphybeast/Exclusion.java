@@ -8,7 +8,6 @@ import lphy.core.distributions.WeightedDirichlet;
 import lphy.core.functions.*;
 import lphy.core.functions.datatype.BinaryDatatypeFunction;
 import lphy.core.functions.datatype.NucleotidesFunction;
-import lphy.core.functions.datatype.PhasedGenotypeFunction;
 import lphy.core.functions.datatype.StandardDatatypeFunction;
 import lphy.evolution.Taxa;
 import lphy.evolution.alignment.Alignment;
@@ -56,7 +55,7 @@ public class Exclusion {
                 generator instanceof DiscretizedGamma ||
                 // ignore all data types
                 generator instanceof NucleotidesFunction || generator instanceof StandardDatatypeFunction ||
-                generator instanceof BinaryDatatypeFunction || generator instanceof PhasedGenotypeFunction ||
+                generator instanceof BinaryDatatypeFunction || //generator instanceof PhasedGenotypeFunction ||
                 (generator instanceof IID && ((IID<?>) generator).getBaseDistribution() instanceof DiscretizedGamma) ||
                 generator instanceof ExpressionNodeWrapper;
     }
