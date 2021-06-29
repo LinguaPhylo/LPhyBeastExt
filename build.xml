@@ -1,31 +1,27 @@
 <project default="compile" basedir="." name="lphybeast">
 
-    <!-- Java 11 -->
-    <property name="sourceVersion" value="15"/>
-    <property name="targetVersion" value="15"/>
-
-    <!--*******************************************************************-->
-
     <!-- Ant build fails if the repo dir isn't named linguaPhylo -->
-    <property name="projName" value="LPhyBeast"/>
+    <property name="lphybeastName" value="LPhyBeast"/>
     <!-- source code dir separated from test   -->
-    <property name="src" location="src" />
+    <property name="lbSrc" location="src" />
     <!-- source code dir of test   -->
-    <property name="lib" location="lib" />
-    <property name="test" location="test" />
+    <property name="lbLib" location="lib" />
+    <property name="lbTest" location="test" />
     <!-- Names of temporary build/test directories, which are deleted before build -->
-    <property name="build" location="build" />
-    <property name="dist" location="dist" />
-    <property name="build-test" location="build-test"/>
-    <property name="test-reports" location="test-reports"/>
+    <property name="lbBuild" location="build" />
+    <property name="lbDist" location="dist" />
+    <property name="lb-build-test" location="build-test"/>
+    <property name="lb-test-reports" location="test-reports"/>
     <!-- Note: if build involves calling another build.xml,  -->
     <!-- these directories cannot use ../${projName}/ because of Docker -->
+
+    <!--*******************************************************************-->
 
     <!-- LPhyBEAST version is loaded from version.xml -->
     <xmlproperty file="version.xml" collapseAttributes="true"/>
 
     <property name="addonVersion" value="${addon.version}"/>
-    <property name="addonName" value="${projName}.v${addonVersion}"/>
+    <property name="addonName" value="${lphybeastName}.v${addonVersion}"/>
 
     <!--*******************************************************************-->
 
@@ -39,20 +35,20 @@
 
     <!-- Revert to pristine state. -->
     <target name="clean">
-        <delete dir="${build}"/>
-        <delete dir="${dist}"/>
-        <delete dir="${build-test}"/>
-        <delete dir="${test-reports}"/>
+        <delete dir="${lbBuild}"/>
+        <delete dir="${lbDist}"/>
+        <delete dir="${lb-build-test}"/>
+        <delete dir="${lb-test-reports}"/>
     </target>
 
     <!-- Compile dependencies, prepare to compile lphybeast -->
     <target name="init" depends="clean">
         <echo message="Java version: ${java.version}"/>
         <echo message="${ant.project.name}: ${ant.file}"/>
-        <echo message="Working dir is ${projName}." />
+        <echo message="Working dir is ${lphybeastName}." />
 
-        <mkdir dir="${build}"/>
-        <mkdir dir="${dist}"/>
+        <mkdir dir="${lbBuild}"/>
+        <mkdir dir="${lbDist}"/>
 
         <!-- call target from lphy and outercore build.xml -->
 
@@ -72,23 +68,23 @@
         <fileset dir="${lphy}/lib" includes="*.jar"/>
         <pathelement path="${outercore}/build"/>
         <fileset dir="${outercore}/lib" includes="*.jar"/>
-        <pathelement path="${build}"/>
-        <fileset dir="${lib}" includes="*.jar"/>
+        <pathelement path="${lbBuild}"/>
+        <fileset dir="${lbLib}" includes="*.jar"/>
     </path>
 
     <!-- Compile -->
     <target name="compile" depends="init">
         <echo>LPhy BEAST classpath is ${toString:lphybe-clspath}</echo>
-
+        <!-- imported from ${lphy}/build.xml -->
         <javac target="${targetVersion}" source="${sourceVersion}"
-               srcdir="${src}" destdir="${build}" includeantruntime="false">
+               srcdir="${lbSrc}" destdir="${lbBuild}" includeantruntime="false">
             <classpath refid="lphybe-clspath"/>
         </javac>
-        <echo message="Successfully compiled ${projName}." />
+        <echo message="Successfully compiled ${lphybeastName}." />
     </target>
 
     <!-- Release -->
-    <property name="pack" value="${dist}/package"/>
+    <property name="pack" value="${lbDist}/package"/>
 
     <!-- Create BEAST 2 package, no dist task here -->
     <target name="release" depends="compile" unless="file.exists"
@@ -101,7 +97,7 @@
 
         <!--   use as BEAST 2 plugin, but need lphy.jar     -->
         <jar jarfile="${pack}/lib/${addonName}.jar">
-            <fileset dir="${build}" includes="**/*.class"/>
+            <fileset dir="${lbBuild}" includes="**/*.class"/>
 
             <manifest>
                 <attribute name="Main-Class" value="lphybeast.LPhyBEAST"/>
@@ -116,7 +112,7 @@
 
         <!--   copy picocli libs     -->
         <copy todir="${pack}/lib">
-            <fileset dir="${lib}" >
+            <fileset dir="${lbLib}" >
                 <include name="picocli*.jar"/>
                 <include name="guava*.jar"/>
                 <include name="jblas*.jar"/>
@@ -132,18 +128,18 @@
         <copy file="README.md" tofile="${pack}/README" />
 <!--      TODO  <copy file="LICENSE" tofile="${pack}/LICENSE" />-->
         <copy file="version.xml" todir="${pack}" />
-        <zip destfile="${dist}/${addonName}.zip" basedir="${pack}" />
+        <zip destfile="${lbDist}/${addonName}.zip" basedir="${pack}" />
 
 <!--        <delete dir="${pack}"/>-->
 
         <echo/>
         <echo>** Package ${dist}/${addonName}.zip created successfully! **</echo>
 
-        <copy file="${dist}/${addonName}.zip" todir="releases" />
+        <copy file="${lbDist}/${addonName}.zip" todir="releases" />
         <echo/>
         <echo>Copy ${dist}/${addonName}.zip to releases folder</echo>
 
-        <delete file="${dist}/${addonName}.zip"/>
+        <delete file="${lbDist}/${addonName}.zip"/>
         <echo/>
         <echo>Remove ${dist}/${addonName}.zip</echo>
 
@@ -152,13 +148,13 @@
     <!-- bundle all jars from lib, not used by release -->
     <target name="dist-all-jar" depends="compile">
         <mkdir dir="${pack}"/>
-        <jar jarfile="${pack}/${projName}.src.jar">
+        <jar jarfile="${pack}/${lphybeastName}.src.jar">
             <fileset dir="src"/>
         </jar>
 
         <!-- lphybeast depends on lphy -->
-        <jar jarfile="${pack}/${projName}.v${addonVersion}.jar">
-            <fileset dir="${build}/**/*.class"/>
+        <jar jarfile="${pack}/${lphybeastName}.v${addonVersion}.jar">
+            <fileset dir="${lbBuild}/**/*.class"/>
             <fileset dir="${outercore}/build/**/*.class"/>
             <fileset dir="${lphy}/build/**/*.class"/>
 
@@ -172,7 +168,7 @@
             </manifest>
             <zipgroupfileset dir="${lphy}/lib" includes="*.jar"/>
             <zipgroupfileset dir="${outercore}/lib" includes="*.jar"/>
-            <zipgroupfileset dir="${lib}" includes="*.jar"/>
+            <zipgroupfileset dir="${lbLib}" includes="*.jar"/>
         </jar>
     </target>
 
@@ -181,19 +177,19 @@
     <target name="init-test">
         <echo message="Java version: ${java.version}"/>
         <echo message="${ant.project.name}: ${ant.file}"/>
-        <echo message="Working dir is ${projName}." />
+        <echo message="Working dir is ${lphybeastName}." />
 
-        <mkdir dir="${build-test}"/>
-        <mkdir dir="${test-reports}"/>
+        <mkdir dir="${lb-build-test}"/>
+        <mkdir dir="${lb-test-reports}"/>
     </target>
 
     <!-- Compile unit tests -->
     <target name="compile-test" depends="init-test">
-        <javac target="${targetVersion}" source="${sourceVersion}" srcdir="${test}"
-               destdir="${build-test}" includeantruntime="false">
+        <javac target="${targetVersion}" source="${sourceVersion}" srcdir="${lbTest}"
+               destdir="${lb-build-test}" includeantruntime="false">
             <classpath refid="lphybe-clspath"/>
         </javac>
-        <echo message="Successfully compiled ${projName} tests."/>
+        <echo message="Successfully compiled ${lphybeastName} tests."/>
     </target>
 
 
@@ -205,10 +201,10 @@
         <junit printsummary="yes" failureproperty="testFailed">
             <classpath>
                 <path refid="lphybe-clspath"/>
-                <pathelement path="${build-test}"/>
+                <pathelement path="${lb-build-test}"/>
             </classpath>
-            <batchtest fork="yes" todir="${test-reports}">
-                <fileset dir="${test}">
+            <batchtest fork="yes" todir="${lb-test-reports}">
+                <fileset dir="${lbTest}">
                     <include name="**/*Test.java"/>
                     <exclude name="**/TutorialTest.java"/>
                 </fileset>
@@ -216,11 +212,11 @@
             </batchtest>
         </junit>
 
-        <fail if="testFailed" status="1" message="Unit test of ${projName} failed."/>
+        <fail if="testFailed" status="1" message="Unit test of ${lphybeastName} failed."/>
     </target>
 
     <target name="github-actions" depends="compile, compile-test, test">
-        <fail if="testFailed" message="One or more ${projName} tests failed."/>
+        <fail if="testFailed" message="One or more ${lphybeastName} tests failed."/>
     </target>
 
 </project>
