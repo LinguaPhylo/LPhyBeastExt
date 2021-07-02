@@ -4,7 +4,7 @@ import beast.core.BEASTInterface;
 import beast.core.parameter.Parameter;
 import beast.math.distributions.Prior;
 import lphy.core.distributions.Poisson;
-import lphy.utils.LoggerUtils;
+import lphy.util.LoggerUtils;
 import lphybeast.BEASTContext;
 import lphybeast.GeneratorToBEAST;
 

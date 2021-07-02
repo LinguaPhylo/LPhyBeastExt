@@ -1,14 +1,14 @@
 package lphybeast;
 
-import lphy.app.GraphicalLPhyParser;
+import lphy.core.GraphicalLPhyParser;
 import lphy.core.LPhyParser;
 import lphy.core.Sampler;
 import lphy.core.TreeFileLogger;
 import lphy.core.VarFileLogger;
 import lphy.graphicalModel.RandomValueLogger;
 import lphy.parser.REPL;
-import lphy.utils.IOUtils;
-import lphy.utils.LoggerUtils;
+import lphy.util.IOUtils;
+import lphy.util.LoggerUtils;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;

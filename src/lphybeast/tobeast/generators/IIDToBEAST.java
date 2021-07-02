@@ -7,7 +7,7 @@ import lphy.core.distributions.Bernoulli;
 import lphy.core.distributions.IID;
 import lphy.graphicalModel.GenerativeDistribution;
 import lphy.graphicalModel.GraphicalModelNode;
-import lphy.utils.LoggerUtils;
+import lphy.util.LoggerUtils;
 import lphybeast.BEASTContext;
 import lphybeast.GeneratorToBEAST;
 import outercore.util.BEASTVector;
