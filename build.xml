@@ -1,19 +1,18 @@
 <project default="compile" basedir="." name="lphybeast">
 
-    <!-- Ant build fails if the repo dir isn't named ../LPhyBeast -->
     <property name="lbName" value="LPhyBeast"/>
+    <!-- Overwrite this if extension build.xml is in a different folder structure  -->
+    <property name="lbRepo" location=".."/>
     <!-- source code dir separated from test   -->
-    <property name="lbSrc" location="../${lbName}/src" />
+    <property name="lbSrc" location="${lbRepo}/${lbName}/src" />
     <!-- source code dir of test   -->
-    <property name="lbLib" location="../${lbName}/lib" />
-    <property name="lbTest" location="../${lbName}/test" />
+    <property name="lbLib" location="${lbRepo}/${lbName}/lib" />
+    <property name="lbTest" location="${lbRepo}/${lbName}/test" />
     <!-- Names of temporary build/test directories, which are deleted before build -->
-    <property name="lbBuild" location="../${lbName}/build" />
-    <property name="lbDist" location="../${lbName}/dist" />
-    <property name="lb-build-test" location="../${lbName}/build-test"/>
-    <property name="lb-test-reports" location="../${lbName}/test-reports"/>
-    <!-- Note: if build involves calling another build.xml,  -->
-    <!-- these directories cannot use ../${projName}/ because of Docker -->
+    <property name="lbBuild" location="${lbRepo}/${lbName}/build" />
+    <property name="lbDist" location="${lbRepo}/${lbName}/dist" />
+    <property name="lb-build-test" location="${lbRepo}/${lbName}/build-test"/>
+    <property name="lb-test-reports" location="${lbRepo}/${lbName}/test-reports"/>
 
     <!--*******************************************************************-->
 
@@ -25,11 +24,13 @@
 
     <!--*******************************************************************-->
 
-    <property name="lphy" location="../linguaPhylo/LPhy"/>
+    <!--  overwrite lphyRepo in the LPhy build to fit in a different folder structure -->
+    <property name="lphyRepo" location="../linguaPhylo"/>
+    <property name="lphy" location="${lphyRepo}/LPhy"/>
     <property name="outercore" location="../beast-outercore/"/>
 
-    <import file="${lphy}/build.xml"/>
-    <import file="../beast-outercore/build.xml" />
+    <include file="${lphy}/build.xml"/>
+    <include file="${outercore}/build.xml" />
 
     <!--*******************************************************************-->
 
@@ -53,7 +54,7 @@
 
         <!-- call target from lphy and outercore build.xml -->
 
-        <echo message="build ${lphy}/build.xml"/>
+        <echo message="dist jar from ${lphy}/build.xml"/>
         <!--   need lphy.jar     -->
         <ant antfile="${lphy}/build.xml" target="dist" inheritAll="false"/>
         <!--   outercore is beast2 package, install from package manager     -->
@@ -64,9 +65,10 @@
 
     <path id="lphybe-clspath">
         <pathelement path="${classpath}"/>
-        <pathelement path="${lphyBuild}"/>
-        <pathelement path="${lphyResources}"/>
-        <fileset dir="${lphyLib}" includes="*.jar"/>
+        <!--  modular JAR  -->
+        <fileset dir="${lphyDist}" includes="${lphyJar}.jar"/>
+
+        <!--  non-modular JARs  -->
         <pathelement path="${outcorBuild}"/>
         <fileset dir="${outcorLib}" includes="*.jar"/>
         <pathelement path="${lbBuild}"/>
