@@ -1,4 +1,4 @@
-package lphybeast.registry;
+package lphybeast.spi;
 
 import beast.evolution.datatype.DataType;
 import beast.util.PackageManager;
@@ -14,13 +14,15 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Implement this interface to register classes converting LPhy into BEAST,
+ * The service interface defined for SPI.
+ * Implement this interface to create one "Container" provider class
+ * for each module of LPhyBEAST or its extensions,
  * which should include {@link lphybeast.ValueToBEAST}, {@link lphybeast.GeneratorToBEAST},
  * and {@link DataType}.
  *
  * @author Walter Xie
  */
-public interface ClassesRegistry {
+public interface LPhyBEASTExt {
 
     List<Class<? extends ValueToBEAST>> getValuesToBEASTs();
 
@@ -32,16 +34,16 @@ public interface ClassesRegistry {
 
     List<Class<? extends Value>> getExcludedValue();
 
-    static List<ClassesRegistry> getRegistryClasses() {
+    static List<LPhyBEASTExt> getRegistryClasses() {
         //TODO check if PackageManager handling same class from jar and development
-        List<Class<?>> classList = PackageManager.find(ClassesRegistry.class, false);
+        List<Class<?>> classList = PackageManager.find(LPhyBEASTExt.class, false);
 
-        List<ClassesRegistry> registryList = new ArrayList<>();
+        List<LPhyBEASTExt> registryList = new ArrayList<>();
         for (Class<?> cls : classList) {
             // https://docs.oracle.com/javase/9/docs/api/java/lang/Class.html#newInstance--
             try {
                 Object obj = cls.getDeclaredConstructor().newInstance();
-                registryList.add((ClassesRegistry) obj);
+                registryList.add((LPhyBEASTExt) obj);
             } catch (InvocationTargetException | InstantiationException |
                     IllegalAccessException | NoSuchMethodException e) {
                 // do nothing

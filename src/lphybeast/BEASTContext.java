@@ -24,7 +24,6 @@ import com.google.common.collect.Multimap;
 import feast.function.Concatenate;
 import feast.function.Slice;
 import jebl.evolution.sequences.SequenceType;
-import lphy.util.Symbols;
 import lphy.core.LPhyParser;
 import lphy.core.distributions.Dirichlet;
 import lphy.core.distributions.IID;
@@ -36,7 +35,8 @@ import lphy.evolution.coalescent.StructuredCoalescent;
 import lphy.evolution.tree.TimeTree;
 import lphy.graphicalModel.*;
 import lphy.util.LoggerUtils;
-import lphybeast.registry.ClassesRegistry;
+import lphy.util.Symbols;
+import lphybeast.spi.LPhyBEASTExt;
 import lphybeast.tobeast.values.ValueToParameter;
 import org.xml.sax.SAXException;
 import outercore.util.BEASTVector;
@@ -103,9 +103,9 @@ public class BEASTContext {
         parser = phyParser;
 
         //TODO check if PackageManager handling same class from jar and development
-        List<ClassesRegistry> registryList = ClassesRegistry.getRegistryClasses();
+        List<LPhyBEASTExt> registryList = LPhyBEASTExt.getRegistryClasses();
 
-        for (ClassesRegistry registry : registryList) {
+        for (LPhyBEASTExt registry : registryList) {
             final List<Class<? extends ValueToBEAST>> valuesToBEASTs = registry.getValuesToBEASTs();
             final List<Class<? extends GeneratorToBEAST>> generatorToBEASTs = registry.getGeneratorToBEASTs();
             final Map<SequenceType, DataType> dataTypeMap = registry.getDataTypeMap();
