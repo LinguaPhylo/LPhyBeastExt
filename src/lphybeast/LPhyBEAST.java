@@ -1,10 +1,6 @@
 package lphybeast;
 
-import lphy.core.GraphicalLPhyParser;
-import lphy.core.LPhyParser;
-import lphy.core.Sampler;
-import lphy.core.TreeFileLogger;
-import lphy.core.VarFileLogger;
+import lphy.core.*;
 import lphy.graphicalModel.RandomValueLogger;
 import lphy.parser.REPL;
 import lphy.util.IOUtils;
@@ -29,7 +25,7 @@ import java.util.concurrent.Callable;
         "OS: ${os.name} ${os.version} ${os.arch}"})
 public class LPhyBEAST implements Callable<Integer> {
 
-    public static final String VERSION = "0.0.2 alpha";
+    public static final String VERSION = "0.1.0 beta";
 
     @Parameters(paramLabel = "LPhy_scripts", description = "File of the LPhy model specification")
     Path infile;

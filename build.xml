@@ -55,8 +55,8 @@
         <!-- call target from lphy and outercore build.xml -->
 
         <echo message="dist jar from ${lphy}/build.xml"/>
-        <!--   need lphy.jar     -->
-        <ant antfile="${lphy}/build.xml" target="dist" inheritAll="false"/>
+        <!--   need lphy-j8.jar     -->
+        <ant antfile="${lphy}/build.xml" target="dist-j8" inheritAll="false"/>
         <!--   outercore is beast2 package, install from package manager     -->
         <echo message="build ${outercore}/build.xml"/>
         <ant antfile="${outercore}/build.xml" target="compile" inheritAll="false"/>
@@ -64,9 +64,9 @@
 
 
     <path id="lphybe-clspath">
-        <pathelement path="${classpath}"/>
-        <!--  modular JAR  -->
-        <fileset dir="${lphyDist}" includes="${lphyJar}.jar"/>
+<!--        <pathelement path="${classpath}"/>-->
+        <!--  lphy JAR  -->
+        <fileset dir="${lphyDist}" includes="${lphyJ8Jar}.jar"/>
 
         <!--  non-modular JARs  -->
         <pathelement path="${outcorBuild}"/>
@@ -123,8 +123,8 @@
             </fileset>
         </copy>
 
-        <!--  copy lphy-?-?-.jar, ${lphyJar} is imported from  ${lphy}/build.xml -->
-        <property name="lphyRelease" value="${lphyDist}/${lphyJar}"/>
+        <!--  copy lphy-j8-?-?-?.jar, ${lphyJ8Jar} is imported from  ${lphy}/build.xml -->
+        <property name="lphyRelease" value="${lphyDist}/${lphyJ8Jar}"/>
         <available property="file.exists" file="${lphyRelease}.jar"/>
         <copy file="${lphyRelease}.jar" todir="${pack}/lib" />
         <echo>Copy and include ${lphyRelease}.jar to ${pack}/lib.</echo>
