@@ -33,6 +33,8 @@ jobs:
         run: |
           pwd
           find . -name "build.xml"
+          find . -name "lib"
+          ls LPhyBEAST
 
       - name: Run LPhy BEAST Ant
         # must run build from the folder where it is
