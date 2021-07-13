@@ -35,4 +35,4 @@ jobs:
           find . -name "build.xml"
 
       - name: Run Lphy BEAST Ant
-        run: ant -noinput -buildfile ./main/build.xml github-actions
+        run: ant -noinput -buildfile ./LphyBEAST/build.xml github-actions
