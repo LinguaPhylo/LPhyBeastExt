@@ -33,9 +33,10 @@ jobs:
         run: |
           pwd
           find . -name "build.xml"
-          # make working-directory same as current directory
-          working-directory: ./LPhyBEAST
-          pwd
 
       - name: Run LPhy BEAST Ant
-        run: ant -noinput -buildfile ./build.xml github-actions
+        run:
+          cd ./LPhyBEAST
+          pwd
+          # must run build from the folder where it is
+          ant -noinput -buildfile ./build.xml github-actions
