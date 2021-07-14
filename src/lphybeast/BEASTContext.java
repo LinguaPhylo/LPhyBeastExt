@@ -64,8 +64,8 @@ public class BEASTContext {
     // LPhy SequenceType => BEAST DataType
     Map<SequenceType, DataType> dataTypeMap = new ConcurrentHashMap<>();
 
-    List<Generator> excludedGeneratorList = new ArrayList<>();
-    List<Value> excludedValueList = new ArrayList<>();
+    List<Class<? extends Generator>> excludedGeneratorClasses = new ArrayList<>();
+    List<Class<? extends Value>> excludedValueClasses = new ArrayList<>();
 
     //*** to BEAST ***//
 
@@ -105,24 +105,25 @@ public class BEASTContext {
         //TODO check if PackageManager handling same class from jar and development
         List<LPhyBEASTExt> registryList = LPhyBEASTExt.getExtClasses();
 
-        for (LPhyBEASTExt registry : registryList) {
-            final List<Class<? extends ValueToBEAST>> valuesToBEASTs = registry.getValuesToBEASTs();
-            final List<Class<? extends GeneratorToBEAST>> generatorToBEASTs = registry.getGeneratorToBEASTs();
-            final Map<SequenceType, DataType> dataTypeMap = registry.getDataTypeMap();
-            final List<Class<? extends Generator>> excludedGenerators = registry.getExcludedGenerator();
-            final List<Class<? extends Value>> excludedValues = registry.getExcludedValue();
+        for (LPhyBEASTExt ext : registryList) {
+            final List<Class<? extends ValueToBEAST>> valuesToBEASTs = ext.getValuesToBEASTs();
+            final List<Class<? extends GeneratorToBEAST>> generatorToBEASTs = ext.getGeneratorToBEASTs();
+            final Map<SequenceType, DataType> dataTypeMap = ext.getDataTypeMap();
 
             registerValueToBEAST(valuesToBEASTs);
             registerGeneratorToBEAST(generatorToBEASTs);
             registerDataTypes(dataTypeMap);
-            registerExcludedGenerators(excludedGenerators);
+
+            excludedGeneratorClasses = ext.getExcludedGenerator();
+            excludedValueClasses = ext.getExcludedValue();
+
         }
 
         System.out.println(valueToBEASTList.size() + " ValuesToBEAST = " + valueToBEASTList);
         System.out.println(generatorToBEASTMap.size() + " GeneratorToBEAST = " + generatorToBEASTMap);
         System.out.println(dataTypeMap.size() + " Data Type = " + dataTypeMap);
-        System.out.println(excludedGeneratorList.size() + " extra Generator(s) excluded = " + excludedGeneratorList);
-        System.out.println(excludedValueList.size() + " extra Value(s) excluded = " + excludedValueList);
+        System.out.println(excludedGeneratorClasses.size() + " extra Generator(s) excluded = " + excludedGeneratorClasses);
+        System.out.println(excludedValueClasses.size() + " extra Value(s) excluded = " + excludedValueClasses);
     }
 
     private void registerValueToBEAST(final List<Class<? extends ValueToBEAST>> valuesToBEASTs) {
@@ -158,32 +159,6 @@ public class BEASTContext {
             if (this.dataTypeMap.containsKey(entry.getKey()))
                 LoggerUtils.log.severe(entry.getKey() + " exists in the dataTypeMap !");
             this.dataTypeMap.put(entry.getKey(), entry.getValue());
-        }
-    }
-
-    private void registerExcludedGenerators(final List<Class<? extends Generator>> excludedGenerators) {
-        for (Class<? extends Generator> c : excludedGenerators) {
-            try {
-                Generator<?> g = (Generator<?>) c.getDeclaredConstructor().newInstance();
-                if (this.excludedGeneratorList.contains(g))
-                    LoggerUtils.log.severe(g + " exists in the excludedGeneratorList !");
-                this.excludedGeneratorList.add(g);
-            } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    private void registerExcludedValues(final List<Class<? extends Value>> excludedValues) {
-        for (Class<? extends Value> c : excludedValues) {
-            try {
-                Value<?> v = (Value<?>) c.getDeclaredConstructor().newInstance();
-                if (this.excludedValueList.contains(v))
-                    LoggerUtils.log.severe(v + " exists in the excludedValueList !");
-                this.excludedValueList.add(v);
-            } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
-                e.printStackTrace();
-            }
         }
     }
 
@@ -660,7 +635,12 @@ public class BEASTContext {
     }
 
     private boolean isExcludedGenerator(Generator generator) {
-        return Exclusion.isExcludedGenerator(generator) || this.excludedGeneratorList.contains(generator);
+        if (Exclusion.isExcludedGenerator(generator))
+            return true;
+        for (Class<? extends Generator> gCls : excludedGeneratorClasses)
+            if (generator.getClass().isAssignableFrom(gCls))
+                return true;
+        return false;
     }
 
     private BEASTInterface valueToBEAST(Value<?> val) {
@@ -673,7 +653,7 @@ public class BEASTContext {
             beastValue = toBEAST.valueToBEAST(val, this);
         }
         if (beastValue == null) {
-            if (!Exclusion.isExcludedValue(val))
+            if (!isExcludedValue(val))
                 throw new UnsupportedOperationException("Unhandled value" + (!val.isAnonymous() ? " named " + val.getId() : "") + " in valueToBEAST(): \"" +
                         val + "\" of type " + val.value().getClass());
         } else {
@@ -683,6 +663,15 @@ public class BEASTContext {
             addToContext(val, beastValue);
         }
         return beastValue;
+    }
+
+    private boolean isExcludedValue(Value value) {
+        if (Exclusion.isExcludedValue(value))
+            return true;
+        for (Class<? extends Value> vCls : excludedValueClasses)
+            if (value.getClass().isAssignableFrom(vCls))
+                return true;
+        return false;
     }
 
     // fill in beastObjects, BEASTToLPHYMap, elements, and state
