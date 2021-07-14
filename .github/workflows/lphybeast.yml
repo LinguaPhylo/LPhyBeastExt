@@ -10,7 +10,7 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 16
-      # must under LPhyBEAST folder, otherwise build will failed
+      # must under LPhyBeast folder, otherwise build will failed
       - name: Checkout main
         uses: actions/checkout@v2
         with:
@@ -42,4 +42,4 @@ jobs:
 
  # |
  # pwd
- # cd ./LPhyBEAST
+ # cd ./LPhyBeast
