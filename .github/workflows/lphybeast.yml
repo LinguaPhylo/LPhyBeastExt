@@ -40,6 +40,3 @@ jobs:
         # must run build from the folder where it is
         run: ant -noinput -buildfile ./build.xml github-actions
 
- # |
- # pwd
- # cd ./LPhyBeast
