@@ -2,7 +2,7 @@
 
     <property name="lbName" value="LPhyBeast"/>
     <!-- Overwrite this if extension build.xml is in a different folder structure  -->
-    <property name="lbRepo" location=".."/>
+    <property name="lbRepo" value=".."/>
     <!-- source code dir separated from test   -->
     <property name="lbSrc" location="${lbRepo}/${lbName}/src" />
     <!-- source code dir of test   -->
