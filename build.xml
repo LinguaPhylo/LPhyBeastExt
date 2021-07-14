@@ -2,17 +2,17 @@
 
     <property name="lbName" value="LPhyBeast"/>
     <!-- Overwrite this if extension build.xml is in a different folder structure  -->
-    <property name="lbRepo" location=".."/>
+    <property name="lbRepo" value=".."/>
     <!-- source code dir separated from test   -->
-    <property name="lbSrc" location="${lbRepo}/${lbName}/src" />
+    <property name="lbSrc" location="../LPhyBeast/src" />
+    <property name="lbLib" location="../LPhyBeast/lib" />
     <!-- source code dir of test   -->
-    <property name="lbLib" location="${lbRepo}/${lbName}/lib" />
-    <property name="lbTest" location="${lbRepo}/${lbName}/test" />
+    <property name="lbTest" location="../LPhyBeast/test" />
     <!-- Names of temporary build/test directories, which are deleted before build -->
-    <property name="lbBuild" location="${lbRepo}/${lbName}/build" />
-    <property name="lbDist" location="${lbRepo}/${lbName}/dist" />
-    <property name="lb-build-test" location="${lbRepo}/${lbName}/build-test"/>
-    <property name="lb-test-reports" location="${lbRepo}/${lbName}/test-reports"/>
+    <property name="lbBuild" location="../LPhyBeast/build" />
+    <property name="lbDist" location="../LPhyBeast/dist" />
+    <property name="lb-build-test" location="../LPhyBeast/build-test"/>
+    <property name="lb-test-reports" location="../LPhyBeast/test-reports"/>
 
     <!--*******************************************************************-->
 

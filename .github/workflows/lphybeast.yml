@@ -14,7 +14,7 @@ jobs:
       - name: Checkout main
         uses: actions/checkout@v2
         with:
-          path: main
+          path: LPhyBeast
 
       - name: Checkout Lphy
         uses: actions/checkout@v2
