@@ -19,8 +19,8 @@
     <!-- LPhyBEAST version is loaded from version.xml -->
     <xmlproperty file="version.xml" collapseAttributes="true"/>
 
-    <property name="addonVersion" value="${addon.version}"/>
-    <property name="addonName" value="${lbName}.v${addonVersion}"/>
+    <property name="lbVersion" value="${addon.version}"/>
+    <property name="lbJarName" value="${lbName}.v${lbVersion}"/>
 
     <!--*******************************************************************-->
 
@@ -28,6 +28,8 @@
     <property name="lphyRepo" location="../linguaPhylo"/>
     <property name="lphy" location="${lphyRepo}/LPhy"/>
     <property name="outercore" location="../beast-outercore/"/>
+    <!-- Release overwrite pkgDir in outercore -->
+    <property name="pkgDir" location="${lbDist}/package"/>
 
     <include file="${lphy}/build.xml"/>
     <include file="${outercore}/build.xml" />
@@ -52,16 +54,10 @@
         <mkdir dir="${lbBuild}"/>
 <!--        <mkdir dir="${lbDist}"/>-->
 
-        <!-- call target from lphy and outercore build.xml -->
-
-        <echo message="dist jar from ${lphy}/build.xml"/>
-        <!--   need lphy-j8.jar     -->
-        <ant antfile="${lphy}/build.xml" target="dist-j8" inheritAll="false"/>
-        <!--   outercore is beast2 package, install from package manager     -->
-        <echo message="build ${outercore}/build.xml"/>
-        <ant antfile="${outercore}/build.xml" target="compile" inheritAll="false"/>
+        <!-- depend on targets from lphy and outercore in compile -->
     </target>
 
+    <!--****** BEAST 2 package pipeline ******-->
 
     <path id="lphybe-clspath">
 <!--        <pathelement path="${classpath}"/>-->
@@ -75,9 +71,11 @@
         <fileset dir="${lbLib}" includes="*.jar"/>
     </path>
 
-    <!-- Compile -->
-    <target name="compile" depends="init">
-        <echo>LPhy BEAST classpath is ${toString:lphybe-clspath}</echo>
+    <!-- Compile, depend on lphy.dist-j8 and outercore.compile -->
+    <target name="compile" depends="init, lphy.dist-j8, outercore.compile">
+        <echo>LPhyBEAST lib path = ${lbLib}</echo>
+        <echo>LPhyBEAST classpath = ${toString:lphybe-clspath}</echo>
+
         <!-- imported from ${lphy}/build.xml -->
         <javac target="${targetVersion}" source="${sourceVersion}"
                srcdir="${lbSrc}" destdir="${lbBuild}" includeantruntime="false">
@@ -86,27 +84,32 @@
         <echo message="Successfully compiled ${lbName}." />
     </target>
 
-    <!-- Release -->
-    <property name="pack" value="${lbDist}/package"/>
 
-    <!-- Create BEAST 2 package, no dist task here -->
-    <target name="release" depends="compile" unless="file.exists"
-            description="release as BEAST 2 package">
+    <!-- jar -->
+    <target name="dist" depends="compile">
         <echo>name=${addon.name}, version=${addon.version}</echo>
         <echo>depends=${addon.depends.on}, atleast=${addon.depends.atleast}</echo>
         <echo>LPhy BEAST file name = ${addonName}</echo>
 
         <mkdir dir="${lbDist}"/>
-        <mkdir dir="${pack}"/>
+        <mkdir dir="${pkgDir}"/>
+
+        <!-- manifest -->
+        <tstamp/>
+        <echo message="Version ${lphyVersion}" />
+<!--        <echo message="Class-Path ${lbJarName}.jar" />-->
+        <echo message="Created-By ${createBy}" />
+        <echo message="Built-By ${builtBy}" />
+        <echo message="Built-Date ${TODAY}" />
 
         <!--   use as BEAST 2 plugin, but need lphy.jar     -->
-        <jar jarfile="${pack}/lib/${addonName}.jar">
+        <jar jarfile="${pkgDir}/lib/${lbJarName}.jar">
             <fileset dir="${lbBuild}" includes="**/*.class"/>
 
             <manifest>
                 <attribute name="Main-Class" value="lphybeast.LPhyBEAST"/>
-                <attribute name="Version" value="${addonVersion}"/>
-<!--                <attribute name="Class-Path" value="${addonName}.jar"/>-->
+                <attribute name="Version" value="${lbVersion}"/>
+                <!--                <attribute name="Class-Path" value="${lbJarName}.jar"/>-->
                 <attribute name="Created-By" value="${createBy}"/>
                 <!--   ${user.name}    -->
                 <attribute name="Built-By" value="${builtBy}"/>
@@ -114,8 +117,17 @@
             </manifest>
         </jar>
 
+        <echo message="Successfully create ${lbJarName}.jar in ${pkgDir}/lib/" />
+    </target>
+
+    <!-- Create BEAST 2 package -->
+    <target name="release" depends="dist" unless="file.exists"
+            description="release as BEAST 2 package">
+
+        <available property="file.exists" file="${pkgDir}/lib/${lbJarName}.jar"/>
+
         <!--   copy picocli libs     -->
-        <copy todir="${pack}/lib">
+        <copy todir="${pkgDir}/lib">
             <fileset dir="${lbLib}" >
                 <include name="picocli*.jar"/>
                 <include name="guava*.jar"/>
@@ -126,56 +138,52 @@
         <!--  copy lphy-j8-?-?-?.jar, ${lphyJ8Jar} is imported from  ${lphy}/build.xml -->
         <property name="lphyRelease" value="${lphyDist}/${lphyJ8Jar}"/>
         <available property="file.exists" file="${lphyRelease}.jar"/>
-        <copy file="${lphyRelease}.jar" todir="${pack}/lib" />
-        <echo>Copy and include ${lphyRelease}.jar to ${pack}/lib.</echo>
+        <copy file="${lphyRelease}.jar" todir="${pkgDir}/lib" />
 
-        <copy file="README.md" tofile="${pack}/README" />
+        <copy file="README.md" tofile="${pkgDir}/README" />
 <!--      TODO  <copy file="LICENSE" tofile="${pack}/LICENSE" />-->
-        <copy file="version.xml" todir="${pack}" />
-        <zip destfile="${lbDist}/${addonName}.zip" basedir="${pack}" />
+        <copy file="version.xml" todir="${pkgDir}" />
+        <zip destfile="${lbDist}/${lbJarName}.zip" basedir="${pkgDir}" />
 
-<!--        <delete dir="${pack}"/>-->
+<!--        <delete dir="${pkgDir}"/>-->
 
         <echo/>
-        <echo>** Package ${lbDist}/${addonName}.zip created successfully! **</echo>
+        <echo>Package ${lbDist}/${lbJarName}.zip created successfully! </echo>
 
-        <copy file="${lbDist}/${addonName}.zip" todir="releases" />
-        <echo/>
-        <echo>Copy ${lbDist}/${addonName}.zip to releases folder</echo>
+        <copy file="${lbDist}/${lbJarName}.zip" todir="releases" />
+        <echo>Copy ${lbDist}/${lbJarName}.zip to releases folder</echo>
 
-        <delete file="${lbDist}/${addonName}.zip"/>
-        <echo/>
-        <echo>Remove ${lbDist}/${addonName}.zip</echo>
+        <delete file="${lbDist}/${lbJarName}.zip"/>
+        <echo>Remove ${lbDist}/${lbJarName}.zip</echo>
 
     </target>
 
     <!-- bundle all jars from lib, not used by release -->
-    <target name="dist-all-jar" depends="compile">
-        <mkdir dir="${pack}"/>
-        <jar jarfile="${pack}/${lbName}.src.jar">
-            <fileset dir="src"/>
-        </jar>
+    <target name="dist-allin1-jar" depends="dist" unless="file.exists" >
+        <!--lphybeast jar-->
+        <available property="file.exists" file="${pkgDir}/lib/${lbJarName}.jar"/>
 
-        <!-- lphybeast depends on lphy -->
-        <jar jarfile="${pack}/${lbName}.v${addonVersion}.jar">
-            <fileset dir="${lbBuild}/**/*.class"/>
-            <fileset dir="${lphyBuild}/**/*.class"/>
-            <fileset dir="${outcorBuild}/**/*.class"/>
+        <!--lphy jar-->
+        <available property="file.exists" file="${lphyDist}/${lphyJ8Jar}.jar"/>
 
-            <manifest>
-                <attribute name="Main-Class" value="lphybeast.LPhyBEAST"/>
-                <attribute name="Version" value="${addonVersion}"/>
-<!--                <attribute name="Class-Path" value="${projName}.v${addonVersion}.jar"/>-->
-                <attribute name="Created-By" value="${project.groupId} team"/>
-                <attribute name="Built-By" value="${builtBy}"/>
-                <attribute name="Built-Date" value="${TODAY}"/>
-            </manifest>
-            <zipgroupfileset dir="${lphyLib}" includes="*.jar"/>
-            <zipgroupfileset dir="${outcorLib}" includes="*.jar"/>
+        <property name="lbAllIn1JarName" value="${lbName}-allin1-${lbVersion}"/>
+        <!-- all jars -->
+        <jar jarfile="${pkgDir}/${lbAllIn1JarName}.jar">
+            <!--lphybeast-->
+            <zipgroupfileset dir="${pkgDir}/lib" includes="${lbJarName}.jar"/>
             <zipgroupfileset dir="${lbLib}" includes="*.jar"/>
+            <!--lphy-->
+            <zipgroupfileset dir="${lphyDist}" includes="${lphyJ8Jar}.jar"/>
+            <zipgroupfileset dir="${lphyLib}" includes="*.jar"/>
+            <!--outercore-->
+            <fileset dir="${outcorBuild}" includes="**/*.class"/>
+            <zipgroupfileset dir="${outcorLib}" includes="*.jar"/>
         </jar>
+
+        <echo message="Successfully create ${lbAllIn1JarName}.jar in ${pkgDir}" />
     </target>
 
+    <!--****** github-actions ******-->
 
     <!-- Prepare for unit test compilation -->
     <target name="init-test">
@@ -200,8 +208,7 @@
 
     <!-- Run unit tests -->
     <target name="test" depends="compile, compile-test">
-        <pathconvert property="clsPath" refid="lphybe-clspath"/>
-        <echo>LPhy BEAST test classpath is ${clsPath}</echo>
+        <echo>LPhyBEAST test classpath = ${toString:lphybe-clspath}:${lb-build-test}</echo>
 
         <junit printsummary="yes" failureproperty="testFailed">
             <classpath>

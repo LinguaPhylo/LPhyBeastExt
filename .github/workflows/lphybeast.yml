@@ -34,12 +34,13 @@ jobs:
           pwd
           find . -name "build.xml"
           find . -name "lib"
-          ls LPhyBEAST
+          ls LPhyBEAST/lib
 
       - name: Run LPhy BEAST Ant
+        working-directory: ./LPhyBEAST
         # must run build from the folder where it is
-        run: |
-          pwd
-          cd ./LPhyBEAST
-          ant -noinput -buildfile ./build.xml github-actions
+        run: ant -noinput -buildfile ./build.xml github-actions
 
+ # |
+ # pwd
+ # cd ./LPhyBEAST

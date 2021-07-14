@@ -103,7 +103,7 @@ public class BEASTContext {
         parser = phyParser;
 
         //TODO check if PackageManager handling same class from jar and development
-        List<LPhyBEASTExt> registryList = LPhyBEASTExt.getRegistryClasses();
+        List<LPhyBEASTExt> registryList = LPhyBEASTExt.getExtClasses();
 
         for (LPhyBEASTExt registry : registryList) {
             final List<Class<? extends ValueToBEAST>> valuesToBEASTs = registry.getValuesToBEASTs();
