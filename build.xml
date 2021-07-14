@@ -74,7 +74,7 @@
     <!-- Compile, depend on lphy.dist-j8 and outercore.compile -->
     <target name="compile" depends="init, lphy.dist-j8, outercore.compile">
         <echo>LPhyBEAST lib path = ${lbLib}</echo>
-        <echo>LPhyBEAST classpath = ${toString:lphybe-clspath}</echo>
+<!--        <echo>LPhyBEAST classpath = ${toString:lphybe-clspath}</echo>-->
 
         <!-- imported from ${lphy}/build.xml -->
         <javac target="${targetVersion}" source="${sourceVersion}"
@@ -208,7 +208,7 @@
 
     <!-- Run unit tests -->
     <target name="test" depends="compile, compile-test">
-        <echo>LPhyBEAST test classpath = ${toString:lphybe-clspath}:${lb-build-test}</echo>
+<!--        <echo>LPhyBEAST test classpath = ${toString:lphybe-clspath}:${lb-build-test}</echo>-->
 
         <junit printsummary="yes" failureproperty="testFailed">
             <classpath>
