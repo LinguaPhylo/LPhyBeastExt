@@ -3,6 +3,7 @@ package lphybeast.tobeast.generators;
 import beast.core.BEASTInterface;
 import beast.core.parameter.Parameter;
 import beast.math.distributions.Prior;
+import beast.util.BEASTVector;
 import lphy.core.distributions.Bernoulli;
 import lphy.core.distributions.IID;
 import lphy.graphicalModel.GenerativeDistribution;
@@ -10,7 +11,6 @@ import lphy.graphicalModel.GraphicalModelNode;
 import lphy.util.LoggerUtils;
 import lphybeast.BEASTContext;
 import lphybeast.GeneratorToBEAST;
-import outercore.util.BEASTVector;
 
 import java.util.ArrayList;
 import java.util.List;

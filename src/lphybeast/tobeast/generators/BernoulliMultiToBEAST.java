@@ -1,10 +1,10 @@
 package lphybeast.tobeast.generators;
 
 import beast.core.BEASTInterface;
+import beast.math.distributions.BernoulliDistribution;
 import lphy.core.distributions.BernoulliMulti;
 import lphybeast.BEASTContext;
 import lphybeast.GeneratorToBEAST;
-import outercore.math.distributions.BernoulliDistribution;
 
 // Note: because there is a optional condition "minSuccesses",
 // it cannot be replaced by {@link IID}.

@@ -3,12 +3,12 @@ package lphybeast.tobeast.generators;
 import beast.core.BEASTInterface;
 import beast.core.BEASTObject;
 import beast.core.parameter.RealParameter;
+import beast.util.BEASTVector;
 import lphy.core.functions.VectorizedFunction;
 import lphy.graphicalModel.DeterministicFunction;
 import lphy.graphicalModel.GraphicalModelNode;
 import lphybeast.BEASTContext;
 import lphybeast.GeneratorToBEAST;
-import outercore.util.BEASTVector;
 
 import java.util.ArrayList;
 import java.util.List;

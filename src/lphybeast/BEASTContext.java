@@ -18,6 +18,7 @@ import beast.mascot.distribution.Mascot;
 import beast.mascot.logger.StructuredTreeLogger;
 import beast.math.distributions.ParametricDistribution;
 import beast.math.distributions.Prior;
+import beast.util.BEASTVector;
 import beast.util.XMLProducer;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -39,7 +40,6 @@ import lphy.util.Symbols;
 import lphybeast.spi.LPhyBEASTExt;
 import lphybeast.tobeast.values.ValueToParameter;
 import org.xml.sax.SAXException;
-import outercore.util.BEASTVector;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;

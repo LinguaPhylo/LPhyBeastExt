@@ -5,16 +5,15 @@ import beast.evolution.alignment.Taxon;
 import beast.evolution.alignment.TaxonSet;
 import beast.evolution.tree.TraitSet;
 import beast.evolution.tree.Tree;
+import beast.util.BEASTVector;
 import lphy.evolution.Taxa;
 import lphy.evolution.alignment.Alignment;
 import lphy.evolution.coalescent.MultispeciesCoalescent;
-import lphy.evolution.likelihood.PhyloCTMC;
 import lphy.evolution.tree.TimeTree;
 import lphy.graphicalModel.GraphicalModelNode;
 import lphy.graphicalModel.Value;
 import lphybeast.BEASTContext;
 import lphybeast.GeneratorToBEAST;
-import outercore.util.BEASTVector;
 import starbeast2.GeneTree;
 import starbeast2.PopulationModel;
 import starbeast2.SpeciesTree;
@@ -23,8 +22,6 @@ import starbeast2.StarBeastTaxonSet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import static java.util.Arrays.*;
 
 public class MultispeciesCoalescentToStarBEAST2 implements
         GeneratorToBEAST<MultispeciesCoalescent, starbeast2.MultispeciesCoalescent> {

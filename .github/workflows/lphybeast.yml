@@ -22,11 +22,17 @@ jobs:
           repository: LinguaPhylo/linguaPhylo
           path: linguaPhylo
 
-      - name: Checkout outercore
+      - name: Checkout beast2
         uses: actions/checkout@v2
         with:
-          repository: LinguaPhylo/beast-outercore
-          path: beast-outercore
+          repository: CompEvol/beast2
+          path: beast2
+
+      - name: Checkout BEASTLabs
+        uses: actions/checkout@v2
+        with:
+          repository: BEAST2-Dev/BEASTLabs
+          path: BEASTLabs
 
       - name: Find build.xml
         run: |

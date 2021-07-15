@@ -1,12 +1,12 @@
 package lphybeast.tobeast.generators;
 
 import beast.core.BEASTInterface;
+import beast.util.BEASTVector;
 import lphy.core.distributions.VectorizedDistribution;
 import lphy.graphicalModel.GenerativeDistribution;
 import lphy.graphicalModel.GraphicalModelNode;
 import lphybeast.BEASTContext;
 import lphybeast.GeneratorToBEAST;
-import outercore.util.BEASTVector;
 
 import java.util.ArrayList;
 import java.util.List;

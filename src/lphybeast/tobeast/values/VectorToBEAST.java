@@ -1,13 +1,13 @@
 package lphybeast.tobeast.values;
 
 import beast.core.BEASTInterface;
+import beast.util.BEASTVector;
 import lphy.core.distributions.VectorizedDistribution;
 import lphy.core.functions.VectorizedFunction;
 import lphy.graphicalModel.Value;
 import lphy.graphicalModel.Vector;
 import lphybeast.BEASTContext;
 import lphybeast.ValueToBEAST;
-import outercore.util.BEASTVector;
 
 import java.util.ArrayList;
 import java.util.List;

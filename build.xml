@@ -27,12 +27,11 @@
     <!--  overwrite lphyRepo in the LPhy build to fit in a different folder structure -->
     <property name="lphyRepo" location="../linguaPhylo"/>
     <property name="lphy" location="${lphyRepo}/LPhy"/>
-    <property name="outercore" location="../beast-outercore/"/>
+
     <!-- Release overwrite pkgDir in outercore -->
     <property name="pkgDir" location="${lbDist}/package"/>
 
     <include file="${lphy}/build.xml"/>
-    <include file="${outercore}/build.xml" />
 
     <!--*******************************************************************-->
 
@@ -57,22 +56,78 @@
         <!-- depend on targets from lphy and outercore in compile -->
     </target>
 
-    <!--****** BEAST 2 package pipeline ******-->
+    <!--****** build beast2 and beastlabs ******-->
+    <property name="beast2" location="../beast2/"/>
+    <property name="beast2build" location="${beast2}/build"/>
+    <property name="blabs" location="../BEASTLabs/"/>
+    <property name="blabsbuild" location="${blabs}/build"/>
+
+    <path id="beast-clspath">
+        <fileset dir="${beast2}/lib" includes="jam.jar"/>
+        <fileset dir="${beast2}/lib" includes="beagle.jar"/>
+        <fileset dir="${beast2}/lib" includes="fest.jar"/>
+        <fileset dir="${beast2}/lib" includes="colt.jar"/>
+        <fileset dir="${beast2}/lib" includes="antlr-runtime-4.7.jar"/>
+        <fileset dir="${beast2}/lib" includes="commons-math3-3.1.1.jar"/>
+        <fileset dir="${beast2}/lib" includes="junit-4.8.2.jar"/>
+        <pathelement path="${beast2build}"/>
+    </path>
+
+<!--    <target name="build-beast" >-->
+<!--        &lt;!&ndash;  BEASTLabs.jar include beast2      &ndash;&gt;-->
+<!--        <ant target="build_jar_all_BEASTlabs_NoJUnitTest" antfile="build.xml" dir="${blabs}" inheritAll="false"/>-->
+<!--    </target>-->
+
+    <property name="nashorn.jar"
+              location="/Library/Java/JavaVirtualMachines/jdk1.8.0_261.jdk/Contents/Home/jre/lib/ext/nashorn.jar"/>
+
+    <!-- Cannot use beast2 build because of Java 1.6 code  -->
+    <target name="compile-beastlabs">
+        <echo>Building BEAST 2</echo>
+        <echo>BEAST 2 classpath = ${toString:beast-clspath}</echo>
+
+        <delete dir="${beast2build}"/>
+        <mkdir dir="${beast2build}"/>
+
+        <!-- Compile the java code from ${src} into ${build} /bin -->
+        <javac source="1.8" target="1.8" srcdir="${beast2}/src" destdir="${beast2build}"
+               classpathref="beast-clspath" fork="true" includeAntRuntime='false' nowarn="on">
+            <include name="beast/**/**"/>
+            <!-- apache commons math -->
+            <include name="org/**/**"/>
+            <!-- TODO bad dependencies -->
+            <include name="test/beast/**" />
+        </javac>
+
+        <echo>Building BEAST Labs</echo>
+        <delete dir="${blabsbuild}"/>
+        <mkdir dir="${blabsbuild}"/>
+
+        <javac source="1.8" target="1.8" srcdir="${blabs}/src" destdir="${blabsbuild}"
+               classpathref="beast-clspath" fork="true" includeAntRuntime='false' nowarn="on">
+            <!--  beast.util.Script depends on  jdk.nashorn.api.scripting.ScriptObjectMirror   -->
+            <compilerarg value="-Xbootclasspath/a:${nashorn.jar}"/>
+            <include name="beast/**/**"/>
+        </javac>
+    </target>
+
+    <!--****** release BEAST 2 package pipeline ******-->
 
     <path id="lphybe-clspath">
 <!--        <pathelement path="${classpath}"/>-->
-        <!--  lphy JAR  -->
+        <!--  non-modular lphy JAR  -->
         <fileset dir="${lphyDist}" includes="${lphyJ8Jar}.jar"/>
 
-        <!--  non-modular JARs  -->
-        <pathelement path="${outcorBuild}"/>
-        <fileset dir="${outcorLib}" includes="*.jar"/>
+        <!--  BEASTLabs.jar include beast2  -->
+        <path refid="beast-clspath"/>
+        <pathelement path="${blabsbuild}"/>
+
         <pathelement path="${lbBuild}"/>
         <fileset dir="${lbLib}" includes="*.jar"/>
     </path>
 
     <!-- Compile, depend on lphy.dist-j8 and outercore.compile -->
-    <target name="compile" depends="init, lphy.dist-j8, outercore.compile">
+    <target name="compile" depends="init, lphy.dist-j8, compile-beastlabs">
         <echo>LPhyBEAST lib path = ${lbLib}</echo>
         <echo>LPhyBEAST classpath = ${toString:lphybe-clspath}</echo>
 
@@ -158,13 +213,54 @@
 
     </target>
 
+    <!--****** all in 1 jar ******-->
+
+    <!-- make the BEASTLabs.jar -->
+    <property name="blabsdist" location="${blabsbuild}/dist"/>
+    <property name="blabsJarName" value="BEASTLabs"/>
+
+    <target name="dist-beastlabs" depends="compile-beastlabs"
+            description="create BEASTlabs jar including beast 2 classes.">
+
+        <delete dir="${blabsdist}"/>
+        <!-- Create the distribution directory -->
+        <mkdir dir="${blabsdist}" />
+
+        <!-- Put everything in ${buildlabs} into the beast.jar file -->
+        <jar jarfile="${blabsdist}/${blabsJarName}.jar">
+            <manifest>
+                <attribute name="Built-By" value="${user.name}" />
+                <attribute name="Main-Class" value="beast.app.BeastMCMC" />
+            </manifest>
+            <fileset dir="${blabsdist}">
+                <include name="beast/**/*.class" />
+            </fileset>
+            <fileset dir="${beast2build}">
+                <include name="beast/**/*.class" />
+                <include name="beast/**/*.properties" />
+                <include name="beast/**/*.png" />
+                <include name="beagle/**/*.class" />
+                <include name="org/**/*.class" />
+            </fileset>
+            <zipgroupfileset dir="${beast2}/lib" includes="jam.jar" />
+            <zipgroupfileset dir="${beast2}/lib" includes="beagle.jar" />
+            <zipgroupfileset dir="${beast2}/lib" includes="colt.jar" />
+            <zipgroupfileset dir="${beast2}/lib" includes="commons-math3-3.1.1.jar" />
+            <zipgroupfileset dir="${beast2}/lib" includes="antlr-runtime-4.7.jar"/>
+        </jar>
+        <echo message="Successfully create ${blabsJarName}.jar in ${blabsdist}" />
+    </target>
+
     <!-- bundle all jars from lib, not used by release -->
-    <target name="dist-allin1-jar" depends="dist" unless="file.exists" >
+    <target name="dist-allin1-jar" depends="dist-beastlabs, dist" unless="file.exists"
+            description="create all in one jar.">
         <!--lphybeast jar-->
         <available property="file.exists" file="${pkgDir}/lib/${lbJarName}.jar"/>
 
         <!--lphy jar-->
         <available property="file.exists" file="${lphyDist}/${lphyJ8Jar}.jar"/>
+
+        <available property="file.exists" file="${blabsdist}/BEASTLabs.jar"/>
 
         <property name="lbAllIn1JarName" value="${lbName}-allin1-${lbVersion}"/>
         <!-- all jars -->
@@ -175,9 +271,8 @@
             <!--lphy-->
             <zipgroupfileset dir="${lphyDist}" includes="${lphyJ8Jar}.jar"/>
             <zipgroupfileset dir="${lphyLib}" includes="*.jar"/>
-            <!--outercore-->
-            <fileset dir="${outcorBuild}" includes="**/*.class"/>
-            <zipgroupfileset dir="${outcorLib}" includes="*.jar"/>
+            <!--  BEASTLabs.jar include beast2  -->
+            <zipgroupfileset dir="${blabsdist}" includes="${blabsJarName}.jar"/>
         </jar>
 
         <echo message="Successfully create ${lbAllIn1JarName}.jar in ${pkgDir}" />
