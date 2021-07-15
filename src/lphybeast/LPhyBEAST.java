@@ -80,11 +80,14 @@ public class LPhyBEAST implements Callable<Integer> {
         if (wd != null)
             IOUtils.setUserDir(wd.toAbsolutePath().toString());
         // if the relative path, then concatenate user.dir before it
-        final Path inPath = IOUtils.getPath(infile);
+        final Path inPath = IOUtils.getUserPath(infile);
+        // if no -wd, set user.dir to the folder containing infile
+        if (wd == null)
+            IOUtils.setUserDir(inPath.getParent().toString());
 
         Path outPath = null;
         if (outfile != null) {
-            outPath = IOUtils.getPath(outfile);
+            outPath = IOUtils.getUserPath(outfile);
         } else {
             if (wd != null) {
                 String infileNoExt = fileName.substring(0, fileName.lastIndexOf("."));
@@ -121,8 +124,6 @@ public class LPhyBEAST implements Callable<Integer> {
         BufferedReader reader = null;
         try {
             reader = new BufferedReader(new FileReader(inPath.toFile()));
-            // set user.dir to the folder containing example file
-            IOUtils.setUserDir(inPath.getParent().toString());
 
         } catch (FileNotFoundException e) {
             throw new CommandLine.PicocliException("Fail to read LPhy scripts from " +
