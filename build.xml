@@ -78,9 +78,6 @@
 <!--        <ant target="build_jar_all_BEASTlabs_NoJUnitTest" antfile="build.xml" dir="${blabs}" inheritAll="false"/>-->
 <!--    </target>-->
 
-    <property name="nashorn.jar"
-              location="/Library/Java/JavaVirtualMachines/jdk1.8.0_261.jdk/Contents/Home/jre/lib/ext/nashorn.jar"/>
-
     <!-- Cannot use beast2 build because of Java 1.6 code  -->
     <target name="compile-beastlabs">
         <echo>Building BEAST 2</echo>
@@ -103,9 +100,11 @@
         <delete dir="${blabsbuild}"/>
         <mkdir dir="${blabsbuild}"/>
 
+        <!--  beast.util.Script depends on  jdk.nashorn.api.scripting.ScriptObjectMirror   -->
+        <property name="nashorn.jar" location="${lbLib}/nashorn.jar"/>
+
         <javac source="1.8" target="1.8" srcdir="${blabs}/src" destdir="${blabsbuild}"
                classpathref="beast-clspath" fork="true" includeAntRuntime='false' nowarn="on">
-            <!--  beast.util.Script depends on  jdk.nashorn.api.scripting.ScriptObjectMirror   -->
             <compilerarg value="-Xbootclasspath/a:${nashorn.jar}"/>
             <include name="beast/**/**"/>
         </javac>
