@@ -101,7 +101,7 @@
         <mkdir dir="${blabsbuild}"/>
 
         <!--  beast.util.Script depends on  jdk.nashorn.api.scripting.ScriptObjectMirror   -->
-        <property name="nashorn.jar" location="${lbLib}/nashorn.jar"/>
+        <property name="nashorn.jar" location="${lbRepo}/${lbName}/libext/nashorn.jar"/>
 
         <javac source="1.8" target="1.8" srcdir="${blabs}/src" destdir="${blabsbuild}"
                classpathref="beast-clspath" fork="true" includeAntRuntime='false' nowarn="on">
