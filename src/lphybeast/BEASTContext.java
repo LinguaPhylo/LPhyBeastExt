@@ -813,9 +813,9 @@ public class BEASTContext {
         if (fileName != null) {
             List<TreeInterface> trees = getTrees();
             for (TreeInterface tree : trees) {
-// <log id="TreeHeight" spec="beast.evolution.tree.TreeStatLogger" tree="@Tree"/>
                 TreeStatLogger treeStatLogger = new TreeStatLogger();
-                treeStatLogger.initByName("tree", tree, "logLength", false);
+                // use default, which will log the length
+                treeStatLogger.initByName("tree", tree);
                 nonTrees.add(treeStatLogger);
             }
         }
