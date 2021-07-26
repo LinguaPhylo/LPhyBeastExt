@@ -2,8 +2,8 @@ package lphybeast.tobeast.generators;
 
 import beast.core.BEASTInterface;
 import beast.core.Function;
+import beast.core.util.Slice;
 import feast.function.Concatenate;
-import feast.function.Slice;
 import lphy.core.functions.SliceDoubleArray;
 import lphy.graphicalModel.GraphicalModelNode;
 import lphy.graphicalModel.Value;

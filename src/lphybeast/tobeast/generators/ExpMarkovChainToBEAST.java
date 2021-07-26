@@ -1,8 +1,8 @@
 package lphybeast.tobeast.generators;
 
 import beast.core.BEASTInterface;
+import beast.core.util.Slice;
 import beast.math.distributions.MarkovChainDistribution;
-import feast.function.Slice;
 import lphy.core.distributions.ExpMarkovChain;
 import lphy.graphicalModel.Generator;
 import lphy.graphicalModel.GraphicalModelNode;
