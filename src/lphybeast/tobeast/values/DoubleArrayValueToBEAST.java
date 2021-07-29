@@ -3,6 +3,7 @@ package lphybeast.tobeast.values;
 import beast.core.BEASTInterface;
 import beast.core.Function;
 import beast.core.Operator;
+import beast.core.parameter.IntegerParameter;
 import beast.core.parameter.Parameter;
 import beast.core.parameter.RealParameter;
 import beast.evolution.operators.DeltaExchangeOperator;
@@ -26,13 +27,10 @@ public class DoubleArrayValueToBEAST implements ValueToBEAST<Double[], BEASTInte
 
         if (value.getGenerator() instanceof WeightedDirichlet) {
 
-            WeightedDirichlet weightedDirichlet = (WeightedDirichlet) value.getGenerator();
-
             Concatenate concatenatedParameters = new Concatenate();
-            List<Function> args = new ArrayList<>();
-
             Double[] values = value.value();
 
+            List<Function> args = new ArrayList<>();
             for (int i = 0; i < values.length; i++) {
                 RealParameter parameter = BEASTContext.createRealParameter(value.getCanonicalId() + VectorUtils.INDEX_SEPARATOR + i, values[i]);
                 context.addStateNode(parameter, value, false);
@@ -43,14 +41,7 @@ public class DoubleArrayValueToBEAST implements ValueToBEAST<Double[], BEASTInte
 
             ValueToParameter.setID(concatenatedParameters, value);
 
-            Operator operator = new DeltaExchangeOperator();
-            operator.setInputValue("parameter", args);
-            operator.setInputValue("weight", getOperatorWeight(args.size() - 1));
-            operator.setInputValue("weightvector", context.getAsIntegerParameter(weightedDirichlet.getWeights()));
-            operator.setInputValue("delta", 1.0 / value.value().length);
-            operator.initAndValidate();
-            operator.setID(value.getCanonicalId() + ".deltaExchange");
-            context.addExtraOperator(operator);
+            addDeltaExchangeOperator(value, args, context);
 
             return concatenatedParameters;
         }
@@ -83,5 +74,19 @@ public class DoubleArrayValueToBEAST implements ValueToBEAST<Double[], BEASTInte
     @Override
     public Class<BEASTInterface> getBEASTClass() {
         return BEASTInterface.class;
+    }
+
+    private void addDeltaExchangeOperator(Value<Double[]> value, List<Function> args, BEASTContext context) {
+        WeightedDirichlet weightedDirichlet = (WeightedDirichlet) value.getGenerator();
+        IntegerParameter weightIntParam = context.getAsIntegerParameter(weightedDirichlet.getWeights());
+
+        Operator operator = new DeltaExchangeOperator();
+        operator.setInputValue("parameter", args);
+        operator.setInputValue("weight", getOperatorWeight(args.size() - 1));
+        operator.setInputValue("weightvector", weightIntParam);
+        operator.setInputValue("delta", 1.0 / value.value().length);
+        operator.initAndValidate();
+        operator.setID(value.getCanonicalId() + ".deltaExchange");
+        context.addExtraOperator(operator);
     }
 }
