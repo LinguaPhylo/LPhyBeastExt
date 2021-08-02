@@ -13,8 +13,6 @@ public class WeightedDirichletToBEAST implements GeneratorToBEAST<WeightedDirich
     public Prior generatorToBEAST(WeightedDirichlet generator, BEASTInterface value, BEASTContext context) {
 
         Value<Number[]> concentration = generator.getConcentration();
-        // no prior for Dirichlet[1,1,...,1]
-        if (allOne(concentration)) return null;
 
         beast.math.distributions.WeightedDirichlet beastDirichlet = new beast.math.distributions.WeightedDirichlet();
         beastDirichlet.setInputValue("alpha", context.getAsRealParameter(concentration));
@@ -34,10 +32,10 @@ public class WeightedDirichletToBEAST implements GeneratorToBEAST<WeightedDirich
         return Prior.class;
     }
 
-    private boolean allOne(Value<Number[]> concentration) {
-        Number[] conc = concentration.value();
-        for (Number num : conc)
-            if (num.doubleValue() != 1.0) return false;
-        return true;
-    }
+//    private boolean allOne(Value<Number[]> concentration) {
+//        Number[] conc = concentration.value();
+//        for (Number num : conc)
+//            if (num.doubleValue() != 1.0) return false;
+//        return true;
+//    }
 }
