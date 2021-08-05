@@ -114,8 +114,8 @@ public class BEASTContext {
             registerGeneratorToBEAST(generatorToBEASTs);
             registerDataTypes(dataTypeMap);
 
-            excludedGeneratorClasses = ext.getExcludedGenerator();
-            excludedValueClasses = ext.getExcludedValue();
+            excludedGeneratorClasses.addAll(ext.getExcludedGenerator());
+            excludedValueClasses.addAll(ext.getExcludedValue());
 
         }
 
