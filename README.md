@@ -19,10 +19,13 @@ the LPhy script [RSV2.lphy](https://github.com/LinguaPhylo/linguaPhylo/blob/mast
 LPhyBEAST tutorials/RSV2.lphy
 ```
 
-Create 10 XMLs for simulations:
+Create 10 BEAST 2 XMLs for a simple 
+[HKY+Coalescent](https://github.com/LinguaPhylo/linguaPhylo/blob/master/examples/hkyCoalescent.lphy) 
+simulation study:
+
 
 ```bash
-LPhyBEAST -r 10 tutorials/RSV2.lphy
+LPhyBEAST -r 10 examples/hkyCoalescent
 ```
 
 More usage details are [here](https://linguaphylo.github.io/setup/).
