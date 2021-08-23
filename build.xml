@@ -175,6 +175,11 @@
     </target>
 
     <!-- Create BEAST 2 package -->
+    <!-- 1. update version number in version.xml and LPhyBEAST -->
+    <!-- 2. commit all changes -->
+    <!-- 3. ant release : create LPhyBeast.v?.?.?.zip -->
+    <!-- 4. cp to "releases" folder and commit  -->
+    <!-- 5. release to CBAN and update github release page -->
     <target name="release" depends="dist" unless="file.exists"
             description="release as BEAST 2 package">
 
