@@ -204,7 +204,7 @@
         <echo/>
         <echo>Package ${lbDist}/${lbJarName}.zip created successfully! </echo>
 
-        <copy file="${lbDist}/${lbJarName}.zip" todir="releases" />
+        <copy file="${lbDist}/${lbJarName}.zip" todir="../releases" />
         <echo>Copy ${lbDist}/${lbJarName}.zip to releases folder</echo>
 
         <delete file="${lbDist}/${lbJarName}.zip"/>

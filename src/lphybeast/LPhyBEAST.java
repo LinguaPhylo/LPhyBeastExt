@@ -25,7 +25,7 @@ import java.util.concurrent.Callable;
         "OS: ${os.name} ${os.version} ${os.arch}"})
 public class LPhyBEAST implements Callable<Integer> {
 
-    public static final String VERSION = "0.1.0 beta";
+    public static final String VERSION = "0.1.0";
 
     @Parameters(paramLabel = "LPhy_scripts", description = "File of the LPhy model specification")
     Path infile;
