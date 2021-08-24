@@ -81,23 +81,18 @@ public class LPhyBEAST implements Callable<Integer> {
             IOUtils.setUserDir(wd.toAbsolutePath().toString());
         // if the relative path, then concatenate user.dir before it
         final Path inPath = IOUtils.getUserPath(infile);
-        // if no -wd, set user.dir to the folder containing infile
+        // still need to set user.dir, if no -wd, in case LPhy script uses relative path
         if (wd == null)
+            // set user.dir to the folder containing lphy script
             IOUtils.setUserDir(inPath.getParent().toString());
 
-        Path outPath = null;
+        Path outPath;
         if (outfile != null) {
             outPath = IOUtils.getUserPath(outfile);
         } else {
-            if (wd != null) {
-                String infileNoExt = fileName.substring(0, fileName.lastIndexOf("."));
-                // add wd before file stem
-                outPath = Paths.get(wd.toAbsolutePath().toString(), infileNoExt + ".xml");
-            } else {
-                // use input file stem with file path
-                String infilePathNoExt = inPath.toString().substring(0, inPath.toString().lastIndexOf("."));
-                outPath = Paths.get(infilePathNoExt + ".xml");
-            }
+            String infileNoExt = fileName.substring(0, fileName.lastIndexOf("."));
+            // add wd before file stem
+            outPath = Paths.get(IOUtils.getUserDir().toString(), infileNoExt + ".xml");
         }
 
         // add rep after file stem
