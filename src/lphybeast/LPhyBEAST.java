@@ -19,7 +19,9 @@ import java.util.Objects;
 import java.util.concurrent.Callable;
 
 @Command(name = "lphybeast", footer = "Copyright(c) 2020",
-        description = "LPhyBEAST takes an LPhy model specification, and some data and produces a BEAST 2 XML file.",
+        description = "LPhyBEAST takes an LPhy model specification and some data, " +
+                "and produces a BEAST 2 XML file. The installation and usage is available at " +
+                "https://linguaphylo.github.io/setup/",
         version = { "LPhyBEAST " + LPhyBEAST.VERSION,
         "JVM: ${java.version} (${java.vendor} ${java.vm.name} ${java.vm.version})",
         "OS: ${os.name} ${os.version} ${os.arch}"})
