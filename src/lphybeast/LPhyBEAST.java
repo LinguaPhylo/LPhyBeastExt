@@ -59,7 +59,7 @@ public class LPhyBEAST implements Callable<Integer> {
 //            description = "LPhy var <=> Nexus keyword")
 
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
 
         int exitCode = new CommandLine(new LPhyBEAST()).execute(args);
 
@@ -155,7 +155,7 @@ public class LPhyBEAST implements Callable<Integer> {
      * @see BEASTContext#toBEASTXML(String, long, int)
      * @throws IOException
      */
-    public String toBEASTXML(BufferedReader reader, String filePathNoExt, long chainLength, int preBurnin) throws CommandLine.PicocliException {
+    private String toBEASTXML(BufferedReader reader, String filePathNoExt, long chainLength, int preBurnin) throws CommandLine.PicocliException {
         //*** Parse LPhy file ***//
         LPhyParser parser = new REPL();
         try {
@@ -163,6 +163,9 @@ public class LPhyBEAST implements Callable<Integer> {
         } catch (IOException e) {
             throw new CommandLine.PicocliException("Cannot parse LPhy scripts in " +
                     filePathNoExt + ".lphy", e);
+        } catch (ExceptionInInitializerError e) {
+            throw new CommandLine.PicocliException("An unexpected exception " +
+                    "from a static initializer : ", e);
         }
 
         // log true values and tree

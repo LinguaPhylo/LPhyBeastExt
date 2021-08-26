@@ -163,7 +163,7 @@
             <manifest>
                 <attribute name="Main-Class" value="lphybeast.LPhyBEAST"/>
                 <attribute name="Version" value="${lbVersion}"/>
-                <!--                <attribute name="Class-Path" value="${lbJarName}.jar"/>-->
+                <!--  <attribute name="Class-Path" value="${lbJarName}.jar"/>-->
                 <attribute name="Created-By" value="${createBy}"/>
                 <!--   ${user.name}    -->
                 <attribute name="Built-By" value="${builtBy}"/>
@@ -194,6 +194,11 @@
             </fileset>
         </copy>
 
+        <!-- copy script  -->
+        <mkdir dir="${pkgDir}/bin"/>
+        <copy file="scripts/lphybeast" todir="${pkgDir}/bin"/>
+        <chmod dir="${pkgDir}/bin" perm="755" includes="**/**"/>
+
         <!--  copy lphy-j8-?-?-?.jar, ${lphyJ8Jar} is imported from  ${lphy}/build.xml -->
         <property name="lphyRelease" value="${lphyDist}/${lphyJ8Jar}"/>
         <available property="file.exists" file="${lphyRelease}.jar"/>
@@ -212,8 +217,8 @@
         <copy file="${lbDist}/${lbJarName}.zip" todir="releases" />
         <echo>Copy ${lbDist}/${lbJarName}.zip to releases folder</echo>
 
-<!--        <delete file="${lbDist}/${lbJarName}.zip"/>-->
-<!--        <echo>Remove ${lbDist}/${lbJarName}.zip</echo>-->
+        <delete file="${lbDist}/${lbJarName}.zip"/>
+        <echo>Delete ${lbDist}/${lbJarName}.zip</echo>
 
     </target>
 
