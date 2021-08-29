@@ -191,6 +191,8 @@
                 <include name="picocli*.jar"/>
                 <include name="guava*.jar"/>
                 <include name="jblas*.jar"/>
+                <!-- https://github.com/fkmendes/bdtree -->
+                <include name="bdtree.jar"/>
             </fileset>
         </copy>
 
