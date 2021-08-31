@@ -1,6 +1,7 @@
 #!/bin/bash
 
-# in LPhyBEAST/scripts
+# cd ~/WorkSpace/LPhyBEAST
+# ./scripts/pullAll.sh
 
 CURR_PATH="$(pwd)"
 echo "Current path is $CURR_PATH"
