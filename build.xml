@@ -11,6 +11,8 @@
     <!-- Names of temporary build/test directories, which are deleted before build -->
     <property name="lbBuild" location="${lbRepo}/${lbName}/build" />
     <property name="lbDist" location="${lbRepo}/${lbName}/dist" />
+    <property name="pkgDir" location="${lbDist}/package"/>
+
     <property name="lb-build-test" location="${lbRepo}/${lbName}/build-test"/>
     <property name="lb-test-reports" location="${lbRepo}/${lbName}/test-reports"/>
 
@@ -27,9 +29,6 @@
     <!--  overwrite lphyRepo in the LPhy build to fit in a different folder structure -->
     <property name="lphyRepo" location="../linguaPhylo"/>
     <property name="lphy" location="${lphyRepo}/LPhy"/>
-
-    <!-- Release overwrite pkgDir in outercore -->
-    <property name="pkgDir" location="${lbDist}/package"/>
 
     <include file="${lphy}/build.xml"/>
 
@@ -125,7 +124,8 @@
         <fileset dir="${lbLib}" includes="*.jar"/>
     </path>
 
-    <!-- Compile, depend on lphy.dist-j8 and outercore.compile -->
+    <!-- Compile, depend on lphy.dist-j8 and beastlabs compile -->
+    <!-- need non-modular lphy JAR to trigger SPI  -->
     <target name="compile" depends="init, lphy.dist-j8, compile-beastlabs">
         <echo>LPhyBEAST lib path = ${lbLib}</echo>
         <echo>LPhyBEAST classpath = ${toString:lphybe-clspath}</echo>
@@ -143,21 +143,21 @@
     <target name="dist" depends="compile">
         <echo>name=${addon.name}, version=${addon.version}</echo>
         <echo>depends=${addon.depends.on}, atleast=${addon.depends.atleast}</echo>
-        <echo>LPhy BEAST file name = ${addonName}</echo>
 
         <mkdir dir="${lbDist}"/>
         <mkdir dir="${pkgDir}"/>
 
         <!-- manifest -->
         <tstamp/>
-        <echo message="Version ${lphyVersion}" />
+        <echo message="Version ${lbVersion}" />
 <!--        <echo message="Class-Path ${lbJarName}.jar" />-->
         <echo message="Created-By ${createBy}" />
         <echo message="Built-By ${builtBy}" />
         <echo message="Built-Date ${TODAY}" />
 
+        <property name="pkgLib" location="${pkgDir}/lib"/>
         <!--   use as BEAST 2 plugin, but need lphy.jar     -->
-        <jar jarfile="${pkgDir}/lib/${lbJarName}.jar">
+        <jar jarfile="${pkgLib}/${lbJarName}.jar">
             <fileset dir="${lbBuild}" includes="**/*.class"/>
 
             <manifest>
@@ -171,7 +171,7 @@
             </manifest>
         </jar>
 
-        <echo message="Successfully create ${lbJarName}.jar in ${pkgDir}/lib/" />
+        <echo message="Successfully create ${lbJarName}.jar in ${pkgLib}" />
     </target>
 
     <!-- Create BEAST 2 package -->
