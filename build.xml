@@ -29,7 +29,7 @@
     <!--  overwrite lphyRepo in the LPhy build to fit in a different folder structure -->
     <property name="lphyRepo" location="../linguaPhylo"/>
     <property name="lphy" location="${lphyRepo}/LPhy"/>
-
+    <property name="createBy" value="LPhy BEAST build script"/>
     <include file="${lphy}/build.xml"/>
 
     <!--*******************************************************************-->
@@ -150,8 +150,7 @@
         <!-- manifest -->
         <tstamp/>
         <echo message="Version ${lbVersion}" />
-<!--        <echo message="Class-Path ${lbJarName}.jar" />-->
-        <echo message="Created-By ${createBy}" />
+        <echo message="Implementation-Vendor ${implVendor}" />
         <echo message="Built-By ${builtBy}" />
         <echo message="Built-Date ${TODAY}" />
 
@@ -162,12 +161,17 @@
 
             <manifest>
                 <attribute name="Main-Class" value="lphybeast.LPhyBEAST"/>
-                <attribute name="Version" value="${lbVersion}"/>
-                <!--  <attribute name="Class-Path" value="${lbJarName}.jar"/>-->
+                <!-- attributes defined for package versioning -->
+                <attribute name="Implementation-Title" value="${lbName}"/>
+                <attribute name="Implementation-Version" value="${lbVersion}"/>
+                <attribute name="Implementation-URL" value="https://github.com/LinguaPhylo/LPhyBeast"/>
+                <attribute name="Implementation-Vendor" value="${implVendor}"/>
+                <!-- general main attributes -->
                 <attribute name="Created-By" value="${createBy}"/>
                 <!--   ${user.name}    -->
                 <attribute name="Built-By" value="${builtBy}"/>
-                <attribute name="Built-On" value="${TODAY}"/>
+                <attribute name="Build-Jdk" value="${targetVersion}"/>
+                <attribute name="Built-Date" value="${TODAY}"/>
             </manifest>
         </jar>
 
