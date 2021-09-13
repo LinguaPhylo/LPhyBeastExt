@@ -111,22 +111,25 @@
 
     <!--****** release BEAST 2 package pipeline ******-->
 
+    <!-- TODO beast2 and beastLabs master branch is changed, so use jar in the lib -->
     <path id="lphybe-clspath">
 <!--        <pathelement path="${classpath}"/>-->
         <!--  non-modular lphy JAR  -->
         <fileset dir="${lphyDist}" includes="${lphyJ8Jar}.jar"/>
 
         <!--  BEASTLabs.jar include beast2  -->
-        <path refid="beast-clspath"/>
-        <pathelement path="${blabsbuild}"/>
+<!--        <path refid="beast-clspath"/>-->
+<!--        <pathelement path="${blabsbuild}"/>-->
 
         <pathelement path="${lbBuild}"/>
+        <!-- temp solution to include beast2 and BEASTLabs.jar  -->
         <fileset dir="${lbLib}" includes="*.jar"/>
     </path>
 
     <!-- Compile, depend on lphy.dist-j8 and beastlabs compile -->
     <!-- need non-modular lphy JAR to trigger SPI  -->
-    <target name="compile" depends="init, lphy.dist-j8, compile-beastlabs">
+    <!-- TODO compile-beastlabs removed temporarily  -->
+    <target name="compile" depends="init, lphy.dist-j8">
         <echo>LPhyBEAST lib path = ${lbLib}</echo>
         <echo>LPhyBEAST classpath = ${toString:lphybe-clspath}</echo>
 
