@@ -44,6 +44,7 @@ public class Exclusion {
                 generator instanceof ExpressionNode || generator instanceof RandomComposition ||
                 generator instanceof NTaxaFunction || generator instanceof NCharFunction ||
                 generator instanceof CreateTaxa || generator instanceof TaxaFunction ||
+                generator instanceof lphy.core.functions.NodeCount ||
                 generator instanceof Species || generator instanceof TaxaAgesFromFunction ||
                 generator instanceof ReadNexus || generator instanceof ReadFasta ||
                 generator instanceof ExtractTrait || generator instanceof Unique ||
