@@ -169,6 +169,7 @@ public class PhyloCTMCToBEAST implements GeneratorToBEAST<PhyloCTMC, GenericTree
                 relaxedClockModel.setInputValue("rates", beastBranchRates);
                 relaxedClockModel.setInputValue("tree", tree);
                 relaxedClockModel.setInputValue("distr", logNormalPrior.distInput.get());
+                relaxedClockModel.setID("relaxedClock");
                 relaxedClockModel.initAndValidate();
                 treeLikelihood.setInputValue("branchRateModel", relaxedClockModel);
 
@@ -262,6 +263,7 @@ public class PhyloCTMCToBEAST implements GeneratorToBEAST<PhyloCTMC, GenericTree
         inConstantDistanceOperator.setInputValue("rates", rates);
         inConstantDistanceOperator.setInputValue("twindowSize", tWindowSize);
         inConstantDistanceOperator.setInputValue("weight", BEASTContext.getOperatorWeight(tree.getNodeCount()));
+        inConstantDistanceOperator.setID(relaxedClockModel.getID() + ".inConstantDistanceOperator");
         inConstantDistanceOperator.initAndValidate();
         context.addExtraOperator(inConstantDistanceOperator);
 
@@ -271,6 +273,7 @@ public class PhyloCTMCToBEAST implements GeneratorToBEAST<PhyloCTMC, GenericTree
         simpleDistance.setInputValue("rates", rates);
         simpleDistance.setInputValue("twindowSize", tWindowSize);
         simpleDistance.setInputValue("weight", BEASTContext.getOperatorWeight(2));
+        simpleDistance.setID(relaxedClockModel.getID() + ".simpleDistance");
         simpleDistance.initAndValidate();
         context.addExtraOperator(simpleDistance);
 
@@ -280,6 +283,7 @@ public class PhyloCTMCToBEAST implements GeneratorToBEAST<PhyloCTMC, GenericTree
         bigPulley.setInputValue("twindowSize", tWindowSize);
         bigPulley.setInputValue("dwindowSize", 0.1);
         bigPulley.setInputValue("weight", BEASTContext.getOperatorWeight(2));
+        bigPulley.setID(relaxedClockModel.getID() + ".bigPulley");
         bigPulley.initAndValidate();
         context.addExtraOperator(bigPulley);
 
@@ -289,6 +293,7 @@ public class PhyloCTMCToBEAST implements GeneratorToBEAST<PhyloCTMC, GenericTree
         smallPulley.setInputValue("rates", rates);
         smallPulley.setInputValue("dwindowSize", 0.1);
         smallPulley.setInputValue("weight", BEASTContext.getOperatorWeight(2));
+        smallPulley.setID(relaxedClockModel.getID() + ".smallPulley");
         smallPulley.initAndValidate();
         context.addExtraOperator(smallPulley);
     }

@@ -1319,6 +1319,10 @@ public class BEASTContext {
         return xml;
     }
 
+    public void addSkipOperator(StateNode stateNode) {
+        skipOperators.add(stateNode);
+    }
+
     public void addExtraOperator(Operator operator) {
         extraOperators.add(operator);
     }
