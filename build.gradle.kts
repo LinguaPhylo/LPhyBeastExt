@@ -1,9 +1,3 @@
-// buildSrc is a trap, use composite builds
-// https://docs.gradle.org/current/userguide/structuring_software_products.html
-
-// this is the umbrella build to define cross-build lifecycle tasks.
-// https://docs.gradle.org/current/userguide/structuring_software_products_details.html
-
 import java.text.SimpleDateFormat
 import java.util.Calendar
 
@@ -13,14 +7,10 @@ allprojects {
         mavenCentral()
 //        mavenLocal() // only for testing
     }
-
-    apply(plugin = "java-library")
 }
 
 // Configures the sub-projects of this project.
 subprojects {
-    apply(plugin = "maven-publish")
-
 //    tasks.withType<JavaCompile> {
 //        options.isWarnings = true
 //    }
