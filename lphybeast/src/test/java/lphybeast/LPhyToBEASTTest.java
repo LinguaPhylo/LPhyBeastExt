@@ -4,8 +4,6 @@ import org.junit.Before;
 import org.junit.Test;
 import picocli.CommandLine;
 
-import java.io.IOException;
-
 import static org.junit.Assert.assertTrue;
 
 

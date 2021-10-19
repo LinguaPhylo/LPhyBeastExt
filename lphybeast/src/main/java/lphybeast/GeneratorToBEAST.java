@@ -3,7 +3,6 @@ package lphybeast;
 import beast.core.BEASTInterface;
 import lphy.graphicalModel.Generator;
 
-import javax.naming.OperationNotSupportedException;
 import java.util.List;
 
 public interface GeneratorToBEAST<T extends Generator,S extends BEASTInterface> {

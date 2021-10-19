@@ -18,8 +18,6 @@ import lphybeast.ValueToBEAST;
 import java.util.ArrayList;
 import java.util.List;
 
-import static lphybeast.BEASTContext.getOperatorWeight;
-
 public class DoubleArrayValueToBEAST implements ValueToBEAST<Double[], BEASTInterface> {
 
     @Override
@@ -82,7 +80,7 @@ public class DoubleArrayValueToBEAST implements ValueToBEAST<Double[], BEASTInte
 
         Operator operator = new DeltaExchangeOperator();
         operator.setInputValue("parameter", args);
-        operator.setInputValue("weight", getOperatorWeight(args.size() - 1));
+        operator.setInputValue("weight", BEASTContext.getOperatorWeight(args.size() - 1));
         operator.setInputValue("weightvector", weightIntParam);
         operator.setInputValue("delta", 1.0 / value.value().length);
         operator.initAndValidate();

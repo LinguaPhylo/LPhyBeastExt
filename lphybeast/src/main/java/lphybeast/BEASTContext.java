@@ -94,7 +94,7 @@ public class BEASTContext {
 
 
     /**
-     * Find all core classes {@link lphybeast.ValueToBEAST} and {@link lphybeast.GeneratorToBEAST},
+     * Find all core classes {@link ValueToBEAST} and {@link GeneratorToBEAST},
      * including {@link DataType} mapped to lphy {@link SequenceType},
      * and then register them for XML creators to use.
      * @param phyParser  the parsed lphy commands

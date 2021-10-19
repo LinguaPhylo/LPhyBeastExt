@@ -1,11 +1,9 @@
 package lphybeast.tobeast.generators;
 
 import beast.core.BEASTInterface;
-import beast.core.BEASTObject;
 import beast.core.parameter.IntegerParameter;
 import beast.core.parameter.RealParameter;
 import beast.math.distributions.Prior;
-import lphy.core.distributions.Normal;
 import lphy.core.distributions.Uniform;
 import lphybeast.BEASTContext;
 import lphybeast.GeneratorToBEAST;

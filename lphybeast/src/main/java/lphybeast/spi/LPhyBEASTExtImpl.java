@@ -19,8 +19,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * The "Container" provider class of SPI
- * which include a list of {@link lphybeast.ValueToBEAST},
- * {@link lphybeast.GeneratorToBEAST}, and {@link DataType}
+ * which include a list of {@link ValueToBEAST},
+ * {@link GeneratorToBEAST}, and {@link DataType}
  * to extend.
  * It requires a public no-args constructor.
  *

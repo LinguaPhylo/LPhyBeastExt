@@ -10,6 +10,9 @@
 *.iml
 
 # build
+gradle/
+**/.gradle/
+build-cache/
 out/
 build/
 dist/

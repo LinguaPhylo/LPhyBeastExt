@@ -3,7 +3,6 @@ package lphybeast.tobeast.generators;
 import beast.core.BEASTInterface;
 import beast.evolution.tree.TreeStatLogger;
 import lphy.core.functions.TreeLength;
-import lphy.evolution.substitutionmodel.K80;
 import lphybeast.BEASTContext;
 import lphybeast.GeneratorToBEAST;
 

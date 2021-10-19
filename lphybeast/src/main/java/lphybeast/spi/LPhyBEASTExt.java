@@ -17,7 +17,7 @@ import java.util.Map;
  * The service interface defined for SPI.
  * Implement this interface to create one "Container" provider class
  * for each module of LPhyBEAST or its extensions,
- * which should include {@link lphybeast.ValueToBEAST}, {@link lphybeast.GeneratorToBEAST},
+ * which should include {@link ValueToBEAST}, {@link GeneratorToBEAST},
  * and {@link DataType}.
  *
  * @author Walter Xie
