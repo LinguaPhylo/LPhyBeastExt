@@ -67,12 +67,6 @@ tasks.test {
 }
 
 
-tasks.register("showCache") {
-    doLast {
-        configurations.compileClasspath.get().forEach { println(it) }
-    }
-}
-
 //val releaseDir = "releases"
 //tasks.withType<AbstractPublishToMaven>().configureEach {
 //    doFirst {
