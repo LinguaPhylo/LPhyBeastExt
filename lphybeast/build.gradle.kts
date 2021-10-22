@@ -19,17 +19,17 @@ dependencies {
     implementation("info.picocli:picocli:4.5.2")
 
     // not in maven
-    compileOnly(files("libs/beast-2.6.6.jar"))
+    implementation(files("libs/beast-2.6.6.jar")) // compileOnly
 //    compileOnly(project(":beast2"))
-    compileOnly(files("libs/BEASTlabs-1.9.7.jar"))
-    compileOnly(files("libs/BEAST_CLASSIC.addon.v1.5.0.jar"))
-    compileOnly(files("libs/FastRelaxedClockLogNormal.addon.v1.1.1.jar"))
-    compileOnly(files("libs/SSM.v1.1.0.jar"))
+    implementation(files("libs/BEASTlabs-1.9.7.jar"))
+    implementation(files("libs/BEAST_CLASSIC.addon.v1.5.0.jar"))
+    implementation(files("libs/FastRelaxedClockLogNormal.addon.v1.1.1.jar"))
+    implementation(files("libs/SSM.v1.1.0.jar"))
 
-    compileOnly(files("libs/feast-7.9.1.jar"))
-    compileOnly(files("libs/Mascot.v2.1.2.jar"))
-    compileOnly(files("libs/MM.addon.v1.1.1.jar"))
-    compileOnly(files("libs/SA.v2.0.2.jar"))
+    implementation(files("libs/feast-7.9.1.jar"))
+    implementation(files("libs/Mascot.v2.1.2.jar"))
+    implementation(files("libs/MM.addon.v1.1.1.jar"))
+    implementation(files("libs/SA.v2.0.2.jar"))
     // not released
     implementation(files("libs/bdtree.jar"))
 
