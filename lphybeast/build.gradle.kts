@@ -12,26 +12,26 @@ version = "0.2-SNAPSHOT"
 dependencies {
     implementation(project(":lphy")) // compileOnly
     //TODO
-//    implementation(files("libs/lphy-1.1-SNAPSHOT.jar"))
-//    implementation(files("$projectDir/../linguaPhylo/lphy/libs/jebl-3.0.1.jar"))
+//    implementation(files("lib/lphy-1.1-SNAPSHOT.jar"))
+//    implementation(files("$projectDir/../linguaPhylo/lphy/lib/jebl-3.0.1.jar"))
     implementation("com.google.guava:guava:23.6-jre")
     implementation("org.jblas:jblas:1.2.3")
     implementation("info.picocli:picocli:4.5.2")
 
     // not in maven
-    implementation(files("libs/beast-2.6.6.jar")) // compileOnly
+    implementation(files("lib/beast-2.6.6.jar")) // compileOnly
 //    compileOnly(project(":beast2"))
-    implementation(files("libs/BEASTlabs-1.9.7.jar"))
-    implementation(files("libs/BEAST_CLASSIC.addon.v1.5.0.jar"))
-    implementation(files("libs/FastRelaxedClockLogNormal.addon.v1.1.1.jar"))
-    implementation(files("libs/SSM.v1.1.0.jar"))
+    implementation(files("lib/BEASTlabs-1.9.7.jar"))
+    implementation(files("lib/BEAST_CLASSIC.addon.v1.5.0.jar"))
+    implementation(files("lib/FastRelaxedClockLogNormal.addon.v1.1.1.jar"))
+    implementation(files("lib/SSM.v1.1.0.jar"))
 
-    implementation(files("libs/feast-7.9.1.jar"))
-    implementation(files("libs/Mascot.v2.1.2.jar"))
-    implementation(files("libs/MM.addon.v1.1.1.jar"))
-    implementation(files("libs/SA.v2.0.2.jar"))
+    implementation(files("lib/feast-7.9.1.jar"))
+    implementation(files("lib/Mascot.v2.1.2.jar"))
+    implementation(files("lib/MM.addon.v1.1.1.jar"))
+    implementation(files("lib/SA.v2.0.2.jar"))
     // not released
-    implementation(files("libs/bdtree.jar"))
+    implementation(files("lib/bdtree.jar"))
 
     //implementation(fileTree("lib") { exclude("junit-*.jar") })
 
