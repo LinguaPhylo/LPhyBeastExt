@@ -10,7 +10,7 @@ version = "0.2-SNAPSHOT"
 
 
 dependencies {
-    implementation(project(":lphy")) // compileOnly
+    implementation(project(mapOf( "path" to ":lphy", "configuration" to "coreJars"))) // compileOnly
     //TODO
 //    implementation(files("lib/lphy-1.1-SNAPSHOT.jar"))
 //    implementation(files("$projectDir/../linguaPhylo/lphy/lib/jebl-3.0.1.jar"))
