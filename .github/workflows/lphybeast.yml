@@ -30,14 +30,12 @@ jobs:
         run: |
           pwd
           find . -name "lib"
+          ls LPhyBeast
           ls LPhyBeast/lphybeast/lib
-      - name: correct building path
-        # so gradle will work
-        run: |
-          cd ./LPhyBeast
-          ls
 
       - name: Run unit tests
+        # change working dir, so gradle will work
+        working-directory: ./LPhyBeast
         # only available in lphy at the moment
         run: ./gradlew :lphybeast:test --no-daemon
 
@@ -45,4 +43,4 @@ jobs:
         uses: EnricoMi/publish-unit-test-result-action@v1
         if: always()
         with:
-          files: lphybeast/build/test-results/**/*.xml
+          files: ./LPhyBeast/lphybeast/build/test-results/**/*.xml
