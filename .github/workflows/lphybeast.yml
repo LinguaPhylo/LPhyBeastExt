@@ -26,11 +26,11 @@ jobs:
 
       #./linguaPhylo/lphy/lib
       #./LPhyBeast/lphybeast/lib
-      - name: ls libs
+      - name: Check file paths
         run: |
           pwd
-          find . -name "lib"
           ls LPhyBeast
+          find . -name "lib"
           ls LPhyBeast/lphybeast/lib
 
       - name: Run unit tests
