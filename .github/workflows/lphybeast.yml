@@ -24,11 +24,18 @@ jobs:
           distribution: 'adopt'
           cache: 'gradle'
 
+      #./linguaPhylo/lphy/lib
+      #./LPhyBeast/lphybeast/lib
       - name: ls libs
         run: |
           pwd
           find . -name "lib"
           ls LPhyBeast/lphybeast/lib
+      - name: correct building path
+        # so gradle will work
+        run: |
+          cd ./LPhyBeast
+          ls
 
       - name: Run unit tests
         # only available in lphy at the moment
