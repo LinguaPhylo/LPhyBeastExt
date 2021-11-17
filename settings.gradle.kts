@@ -1,16 +1,13 @@
 
 rootProject.name = "LPhyBEAST"
 
-// must follow this folder structure
-var lphyPath = "../linguaPhylo"
-// this will import IntelliJ module as well
-includeBuild(lphyPath)
+// Comment out 3 lines below, if use project(":lphy") in dependencies
+// must follow this folder structure, and it will import IntelliJ module as well
+//includeBuild("../linguaPhylo")
+//include("lphy")
 // bad change of Gradle 8 to deprecate including sub-projects from outside the root project
 // watching https://github.com/gradle/gradle/issues/18644
-var lphyNameStr = "lphy"
-//includeBuild("$lphyPath/$lphyNameStr")
-include(lphyNameStr)
-project(":${lphyNameStr}").projectDir = file("${lphyPath}/${lphyNameStr}")
+//project(":lphy").projectDir = file("../linguaPhylo/lphy")
 
 include("lphybeast")
 
