@@ -54,3 +54,6 @@ BEAST 2 packages:
 All released BEAST 2 packages are listed in
 [Package Viewer](https://compevol.github.io/CBAN/).
 
+BEASTLabs `beast.util.Script` depends on `jdk.nashorn.api.scripting.ScriptObjectMirror`.
+If there is `NoClassDefFoundError` for it, you can add "-Xbootclasspath/a:${nashorn_path}" to your javac, 
+where `${nashorn_path}=/my/path/to/libext/nashorn.jar`.
