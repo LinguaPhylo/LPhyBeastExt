@@ -5,7 +5,7 @@ rootProject.name = "LPhyBEAST"
 // must follow this folder structure, and it will import IntelliJ module as well
 //includeBuild("../linguaPhylo")
 //include("lphy")
-// bad change of Gradle 8 to deprecate including sub-projects from outside the root project
+// Gradle 8 to deprecate including sub-projects from outside the root project
 // watching https://github.com/gradle/gradle/issues/18644
 //project(":lphy").projectDir = file("../linguaPhylo/lphy")
 

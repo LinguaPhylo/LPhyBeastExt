@@ -1,22 +1,3 @@
-# Compiled class file
-*.class
-
-# Log file
-*.log
-
-# Intellij
-*.ipr
-*.iws
-*.iml
-
-# build
-gradle/
-**/.gradle/
-build-cache/
-out/
-build/
-dist/
-
 # But not releases
 !releases/*.zip
 
