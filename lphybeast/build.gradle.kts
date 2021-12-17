@@ -22,8 +22,6 @@ val feast = files("lib/feast-7.9.1.jar")
 val mascot = files("lib/Mascot.v2.1.2.jar")
 val mm = files("lib/MM.addon.v1.1.1.jar")
 val sa = files("lib/SA.v2.0.2.jar")
-// not released
-val bdtree = files("lib/bdtree.jar")
 
 dependencies {
 
@@ -36,8 +34,13 @@ dependencies {
 //    implementation(project(mapOf( "path" to ":lphy", "configuration" to "coreJars")))
 
     // implementation will include jars during distribution
+    // BEAST Launcher
+//    implementation(files("lib/launcher-2.6.6.jar"))
+    // not released, so must include in lphybeast release
+    implementation(files("lib/bdtree.jar"))
+    // TODO compileOnly not working, probably BEAST classes did not load correctly
     // beast 2 libs
-    implementation(beast2) // compileOnly(project(":beast2"))
+    implementation(beast2)
     implementation(beastLabs)
     implementation(beastClsc)
     implementation(fastRlxClkLN)
@@ -46,7 +49,6 @@ dependencies {
     implementation(mascot)
     implementation(mm)
     implementation(sa)
-    implementation(bdtree) // must include in lphybeast release
 
     // tests
     testImplementation("junit:junit:4.13.2")

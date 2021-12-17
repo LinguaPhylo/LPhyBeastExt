@@ -37,15 +37,12 @@ import lphy.evolution.tree.TimeTree;
 import lphy.graphicalModel.*;
 import lphy.util.LoggerUtils;
 import lphy.util.Symbols;
-import lphybeast.spi.LPhyBEASTExt;
 import lphybeast.tobeast.values.ValueToParameter;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import static java.lang.Math.toIntExact;
@@ -58,14 +55,14 @@ public class BEASTContext {
 
     //*** registry ***//
 
-    List<ValueToBEAST> valueToBEASTList = new ArrayList<>();
+    List<ValueToBEAST> valueToBEASTList;
     //use LinkedHashMap to keep inserted ordering, so the first matching converter is used.
-    Map<Class, GeneratorToBEAST> generatorToBEASTMap = new LinkedHashMap<>();
+    Map<Class, GeneratorToBEAST> generatorToBEASTMap;
     // LPhy SequenceType => BEAST DataType
-    Map<SequenceType, DataType> dataTypeMap = new ConcurrentHashMap<>();
+    Map<SequenceType, DataType> dataTypeMap;
 
-    List<Class<? extends Generator>> excludedGeneratorClasses = new ArrayList<>();
-    List<Class<? extends Value>> excludedValueClasses = new ArrayList<>();
+    List<Class<? extends Generator>> excludedGeneratorClasses;
+    List<Class<? extends Value>> excludedValueClasses;
 
     //*** to BEAST ***//
 
@@ -101,65 +98,17 @@ public class BEASTContext {
      */
     public BEASTContext(LPhyParser phyParser) {
         parser = phyParser;
-
-        //TODO check if PackageManager handling same class from jar and development
-        List<LPhyBEASTExt> registryList = LPhyBEASTExt.getExtClasses();
-
-        for (LPhyBEASTExt ext : registryList) {
-            final List<Class<? extends ValueToBEAST>> valuesToBEASTs = ext.getValuesToBEASTs();
-            final List<Class<? extends GeneratorToBEAST>> generatorToBEASTs = ext.getGeneratorToBEASTs();
-            final Map<SequenceType, DataType> dataTypeMap = ext.getDataTypeMap();
-
-            registerValueToBEAST(valuesToBEASTs);
-            registerGeneratorToBEAST(generatorToBEASTs);
-            registerDataTypes(dataTypeMap);
-
-            excludedGeneratorClasses.addAll(ext.getExcludedGenerator());
-            excludedValueClasses.addAll(ext.getExcludedValue());
-
-        }
-
-        System.out.println(valueToBEASTList.size() + " ValuesToBEAST = " + valueToBEASTList);
-        System.out.println(generatorToBEASTMap.size() + " GeneratorToBEAST = " + generatorToBEASTMap);
-        System.out.println(dataTypeMap.size() + " Data Type = " + dataTypeMap);
-        System.out.println(excludedGeneratorClasses.size() + " extra Generator(s) excluded = " + excludedGeneratorClasses);
-        System.out.println(excludedValueClasses.size() + " extra Value(s) excluded = " + excludedValueClasses);
+        LPhyBEASTExtFactory factory = LPhyBEASTExtFactory.getInstance();
+        setRegisteredClasses(factory);
     }
 
-    private void registerValueToBEAST(final List<Class<? extends ValueToBEAST>> valuesToBEASTs) {
-        for (Class<? extends ValueToBEAST> c : valuesToBEASTs) {
-            try {
-                // https://docs.oracle.com/javase/9/docs/api/java/lang/Class.html#newInstance--
-                ValueToBEAST<?,?> valueToBEAST = (ValueToBEAST<?,?>) c.getDeclaredConstructor().newInstance();
-                if (this.valueToBEASTList.contains(valueToBEAST))
-                    LoggerUtils.log.severe(valueToBEAST + " exists in the valueToBEASTList !");
-                this.valueToBEASTList.add(valueToBEAST);
-            } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
-                e.printStackTrace();
-            }
-        }
-    }
+    private void setRegisteredClasses(LPhyBEASTExtFactory factory){
+        valueToBEASTList = factory.valueToBEASTList;
+        generatorToBEASTMap = factory.generatorToBEASTMap;
+        dataTypeMap = factory.dataTypeMap;
 
-    private void registerGeneratorToBEAST(final List<Class<? extends GeneratorToBEAST>> generatorToBEASTs) {
-        for (Class<? extends GeneratorToBEAST> c : generatorToBEASTs) {
-            try {
-                // https://docs.oracle.com/javase/9/docs/api/java/lang/Class.html#newInstance--
-                GeneratorToBEAST<?,?> generatorToBEAST = (GeneratorToBEAST<?,?>) c.getDeclaredConstructor().newInstance();
-                if (this.generatorToBEASTMap.containsKey(generatorToBEAST))
-                    LoggerUtils.log.severe(generatorToBEAST + " exists in the generatorToBEASTMap !");
-                this.generatorToBEASTMap.put(generatorToBEAST.getGeneratorClass(), generatorToBEAST);
-            } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    private void registerDataTypes(final Map<SequenceType, DataType> dataTypeMap) {
-        for (Map.Entry<SequenceType, DataType> entry : dataTypeMap.entrySet()) {
-            if (this.dataTypeMap.containsKey(entry.getKey()))
-                LoggerUtils.log.severe(entry.getKey() + " exists in the dataTypeMap !");
-            this.dataTypeMap.put(entry.getKey(), entry.getValue());
-        }
+        excludedGeneratorClasses = factory.excludedGeneratorClasses;
+        excludedValueClasses = factory.excludedValueClasses;
     }
 
     public Map<SequenceType, DataType> getDataTypeMap() {

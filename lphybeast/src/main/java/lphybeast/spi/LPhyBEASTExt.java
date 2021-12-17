@@ -8,8 +8,6 @@ import lphy.graphicalModel.Value;
 import lphybeast.GeneratorToBEAST;
 import lphybeast.ValueToBEAST;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -39,7 +37,7 @@ public interface LPhyBEASTExt {
      * which include all extended classes.
      * This mechanism will be replaced by Java module system and SPI in future.
      * @return  the list of container classes (one per extension).
-     */
+// Move to LPhyBEASTExtFactory
     static List<LPhyBEASTExt> getExtClasses() {
 
         List<Class<?>> classList = PackageManager.find(LPhyBEASTExt.class, false);
@@ -57,6 +55,6 @@ public interface LPhyBEASTExt {
 //        catch (Throwable e) { e.printStackTrace(); }
         }
         return extensionList;
-    }
+    }     */
 
 }
