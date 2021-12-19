@@ -53,13 +53,6 @@ public class LPhyBEAST implements Callable<Integer> {
     @Option(names = {"-r", "--replicates"}, defaultValue = "1", description = "the number of replicates (XML) given one LPhy script, " +
             "usually to create simulations for well-calibrated study.") int rep;
 
-//    @Option(names = {"-n", "--nex"},    description = "BEAST 2 partitions defined in Nexus file")
-//    Path nexfile;
-//    Map<String, String> partitionMap; // d1=primates.nex:noncoding|d2=primates.nex:coding   //
-//    @Option(names = {"-m", "--mapping"}, description = "mapping file") Path mapfile;
-//    @Option(names = {"-p", "--partition"}, split = "\\|", splitSynopsisLabel = "|",
-//            description = "LPhy var <=> Nexus keyword")
-
 
     public static void main(String[] args) {
 
