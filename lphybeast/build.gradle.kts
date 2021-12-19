@@ -4,14 +4,16 @@ import java.util.Calendar
 plugins {
     application
     distribution
-    `maven-publish`
-    signing
-    id("io.github.linguaphylo.platforms.lphy-java") version "0.1.1"
-    id("io.github.linguaphylo.platforms.lphy-publish") version "0.1.1"
 }
 
 group = "io.github.linguaphylo"
 version = "0.2-SNAPSHOT"
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_16
+    targetCompatibility = JavaVersion.VERSION_16
+    withSourcesJar()
+}
 
 val beast2 = files("lib/beast-2.6.6.jar")
 val beastLabs = files("lib/BEASTlabs-1.9.7.jar")
@@ -103,28 +105,6 @@ tasks.jar {
         }
     }
 }
-
-publishing {
-    publications {
-        // project.name contains "lphy" substring
-        create<MavenPublication>(project.name) {
-            artifactId = project.base.archivesName.get()
-            pom {
-                description.set("The GUI for LPhy language.")
-                developers {
-                    developer {
-                        name.set("Alexei Drummond")
-                    }
-                    developer {
-                        name.set("Walter Xie")
-                    }
-                }
-            }
-        }
-
-    }
-}
-
 
 
 //TODO
