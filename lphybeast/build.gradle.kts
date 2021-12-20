@@ -1,6 +1,3 @@
-import java.text.SimpleDateFormat
-import java.util.Calendar
-
 plugins {
     application
     distribution
@@ -35,22 +32,19 @@ dependencies {
     implementation("io.github.linguaphylo:lphy:1.1.0-SNAPSHOT")
 //    implementation(project(mapOf( "path" to ":lphy", "configuration" to "coreJars")))
 
-    // implementation will include jars during distribution
-    // BEAST Launcher
-//    implementation(files("lib/launcher-2.6.6.jar"))
     // not released, so must include in lphybeast release
     implementation(files("lib/bdtree.jar"))
     // TODO compileOnly not working, probably BEAST classes did not load correctly
     // beast 2 libs
-    implementation(beast2)
-    implementation(beastLabs)
-    implementation(beastClsc)
-    implementation(fastRlxClkLN)
-    implementation(ssm)
-    implementation(feast)
-    implementation(mascot)
-    implementation(mm)
-    implementation(sa)
+    compileOnly(beast2)
+    compileOnly(beastLabs)
+    compileOnly(beastClsc)
+    compileOnly(fastRlxClkLN)
+    compileOnly(ssm)
+    compileOnly(feast)
+    compileOnly(mascot)
+    compileOnly(mm)
+    compileOnly(sa)
 
     // tests
     testImplementation("junit:junit:4.13.2")
@@ -82,20 +76,11 @@ tasks.withType<JavaExec>() {
 
 
 tasks.jar {
-    var calendar: Calendar? = Calendar.getInstance()
-    var formatter = SimpleDateFormat("dd-MMM-yyyy HH:mm:ss")
-
     manifest {
         // shared attr in the root build
         attributes(
             "Main-Class" to maincls,
-            "Implementation-Title" to "LPhyBEAST",
-            "Implementation-Vendor" to "Alexei Drummond and Walter Xie",
-            "Implementation-Version" to archiveVersion,
-            "Implementation-URL" to "https://github.com/LinguaPhylo/LPhyBeast/",
-            "Built-By" to "Walter Xie", //System.getProperty("user.name"),
-            "Build-Jdk" to JavaVersion.current().majorVersion.toInt(),
-            "Built-Date" to formatter.format(calendar?.time)
+            "Implementation-Title" to "LPhyBEAST"
         )
     }
     // copy LICENSE to META-INF
@@ -107,7 +92,7 @@ tasks.jar {
 }
 
 
-//TODO
+//TODO dist beast2 package
 distributions {
     main {
         contents {

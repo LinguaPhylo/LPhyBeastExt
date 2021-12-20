@@ -11,3 +11,38 @@ allprojects {
 //        mavenLocal() // only for testing
     }
 }
+
+subprojects {
+    group = "io.github.linguaphylo"
+    val webSteam = "github.com/LinguaPhylo/LPhyBeast"
+    val web = "https://${webSteam}"
+
+    var calendar: java.util.Calendar? = java.util.Calendar.getInstance()
+    var formatter = java.text.SimpleDateFormat("dd-MMM-yyyy HH:mm:ss")
+
+    // shared attributes
+    tasks.withType<Jar>() {
+        // this includes pom.xml in the jar
+//        dependsOn(copyPom)
+
+        manifest {
+            attributes(
+                "Implementation-Vendor" to "Alexei Drummond and Walter Xie",
+                "Implementation-Version" to archiveVersion,
+                "Implementation-URL" to web,
+                "Built-By" to "Walter Xie", //System.getProperty("user.name"),
+                "Build-Jdk" to JavaVersion.current().majorVersion.toInt(),
+                "Built-Date" to formatter.format(calendar?.time)
+            )
+        }
+        // copy LICENSE to META-INF
+        metaInf {
+            from(rootDir) {
+                include("README.md")
+                include("LICENSE")
+            }
+        }
+
+    }
+
+}
