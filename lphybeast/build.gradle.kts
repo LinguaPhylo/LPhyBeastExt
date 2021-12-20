@@ -36,15 +36,15 @@ dependencies {
     implementation(files("lib/bdtree.jar"))
     // TODO compileOnly not working, probably BEAST classes did not load correctly
     // beast 2 libs
-    compileOnly(beast2)
-    compileOnly(beastLabs)
-    compileOnly(beastClsc)
-    compileOnly(fastRlxClkLN)
-    compileOnly(ssm)
-    compileOnly(feast)
-    compileOnly(mascot)
-    compileOnly(mm)
-    compileOnly(sa)
+    implementation(beast2)
+    implementation(beastLabs)
+    implementation(beastClsc)
+    implementation(fastRlxClkLN)
+    implementation(ssm)
+    implementation(feast)
+    implementation(mascot)
+    implementation(mm)
+    implementation(sa)
 
     // tests
     testImplementation("junit:junit:4.13.2")
