@@ -22,7 +22,7 @@ dependencies {
 
     implementation("com.google.guava:guava:23.6-jre")
     implementation("org.jblas:jblas:1.2.3")
-    implementation("info.picocli:picocli:4.5.2")
+    implementation("info.picocli:picocli:4.6.2")
 
     // io.github.linguaphylo
     implementation("io.github.linguaphylo:lphy:1.1.0-SNAPSHOT")
@@ -92,7 +92,6 @@ distributions {
             // TODO better solution?
             exclude("**/beast-*.jar", "**/BEAST*.jar", "**/*addon*.jar",
                 "**/feast-*.jar", "**/SSM.*.jar", "**/SA.*.jar", "**/Mascot.*.jar")
-            include("**/bdtree.jar")
         }
     }
 }
