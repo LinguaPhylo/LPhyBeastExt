@@ -11,23 +11,22 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
 import java.io.*;
+import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Callable;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 
 @Command(name = "lphybeast", footer = "Copyright(c) 2020",
         description = "LPhyBEAST takes an LPhy model specification and some data, " +
                 "and produces a BEAST 2 XML file. The installation and usage is available at " +
-                "https://linguaphylo.github.io/setup/",
-        version = { "LPhyBEAST " + LPhyBEAST.VERSION,
-        "JVM: ${java.version} (${java.vendor} ${java.vm.name} ${java.vm.version})",
-        "OS: ${os.name} ${os.version} ${os.arch}"})
+                "https://linguaphylo.github.io/setup/")
 public class LPhyBEAST implements Callable<Integer> {
-
-    public static final String VERSION = "0.2.0";
 
     @Parameters(paramLabel = "LPhy_scripts", description = "File of the LPhy model specification")
     Path infile;
@@ -199,6 +198,50 @@ public class LPhyBEAST implements Callable<Integer> {
         return toBEASTXML(reader, fileNameStem, chainLength, preBurnin);
     }
 
+//    @Override
+//    public void run() {
+//        CommandLine.usage(this, System.out);
+//    }
+    /**
+     * This function is modified from picocli demo {@code VersionProviderDemo2}.
+     * {@link CommandLine.IVersionProvider} implementation that returns version information
+     * from the lphybeast-x.x.x.jar file's {@code /META-INF/MANIFEST.MF} file.
+     */
+    static class ManifestVersionProvider implements CommandLine.IVersionProvider {
+        public String[] getVersion() throws Exception {
+            Enumeration<URL> resources = CommandLine.class.getClassLoader().getResources("META-INF/MANIFEST.MF");
+            while (resources.hasMoreElements()) {
+                URL url = resources.nextElement();
+                try {
+                    Manifest manifest = new Manifest(url.openStream());
+                    if (isApplicableManifest(manifest)) {
+                        Attributes attr = manifest.getMainAttributes();
+                        return new String[] { get(attr, "Implementation-Title") + " version \"" +
+                                get(attr, "Implementation-Version") + "\"" };
+                    }
+                } catch (IOException ex) {
+                    return new String[] { "Unable to read from " + url + ": " + ex };
+                }
+            }
+            return new String[0];
+        }
+
+        private boolean isApplicableManifest(Manifest manifest) {
+            Attributes attributes = manifest.getMainAttributes();
+            return "LPhyBEAST".equalsIgnoreCase(get(attributes, "Implementation-Title").toString());
+        }
+
+        // no null, so .toString is safe
+        private static Object get(Attributes attributes, String key) {
+            Object o = attributes.get(new Attributes.Name(key));
+            if (o != null) return o;
+            return "";
+        }
+    }
+
+//    version = { "LPhyBEAST " + LPhyBEAST.VERSION,
+//            "JVM: ${java.version} (${java.vendor} ${java.vm.name} ${java.vm.version})",
+//            "OS: ${os.name} ${os.version} ${os.arch}"}
 
 //    private static void source(BufferedReader reader, LPhyParser parser)
 //            throws IOException {

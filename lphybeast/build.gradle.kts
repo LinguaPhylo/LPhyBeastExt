@@ -4,6 +4,7 @@ plugins {
 }
 
 group = "io.github.linguaphylo"
+// version has to be manually adjusted to keep same between version.xml and here
 version = "0.2-SNAPSHOT"
 
 java {
@@ -12,10 +13,10 @@ java {
     withSourcesJar()
 }
 
-val beast2 = files("lib/beast-2.6.6.jar")
-val beastPkgs = files("lib/BEASTlabs-1.9.7.jar","lib/BEAST_CLASSIC.addon.v1.5.0.jar",
-    "lib/FastRelaxedClockLogNormal.addon.v1.1.1.jar","lib/SSM.v1.1.0.jar","lib/feast-7.9.1.jar")
-val beastPkgs2 = files("lib/Mascot.v2.1.2.jar","lib/MM.addon.v1.1.1.jar","lib/SA.v2.0.2.jar")
+//val beast2 = files("lib/beast-2.6.6.jar")
+//val beastPkgs = files("lib/BEASTlabs-1.9.7.jar","lib/BEAST_CLASSIC.addon.v1.5.0.jar",
+//    "lib/FastRelaxedClockLogNormal.addon.v1.1.1.jar","lib/SSM.v1.1.0.jar","lib/feast-7.9.1.jar")
+//val beastPkgs2 = files("lib/Mascot.v2.1.2.jar","lib/MM.addon.v1.1.1.jar","lib/SA.v2.0.2.jar")
 
 dependencies {
 
@@ -29,11 +30,10 @@ dependencies {
 
     // not released, so must include in lphybeast release
     implementation(files("lib/bdtree.jar"))
-    // TODO compileOnly not working, probably BEAST classes did not load correctly
-    // beast 2 libs
-    implementation(beast2)
-    implementation(beastPkgs)
-    implementation(beastPkgs2)
+    // all released beast 2 libs
+    implementation(fileTree("lib") {
+        exclude("**/starbeast2-*.jar")
+    })
 
     // tests
     testImplementation("junit:junit:4.13.2")
@@ -76,7 +76,7 @@ tasks.getByName<Tar>("distTar").enabled = false
 // exclude start scripts
 tasks.getByName<CreateStartScripts>("startScripts").enabled = false
 
-// dist beast2 package
+// dist as a beast2 package, so all released b2 packages are excluded.
 distributions {
     main {
         contents {
@@ -92,6 +92,7 @@ distributions {
             // TODO better solution?
             exclude("**/beast-*.jar", "**/BEAST*.jar", "**/*addon*.jar",
                 "**/feast-*.jar", "**/SSM.*.jar", "**/SA.*.jar", "**/Mascot.*.jar")
+            include("**/bdtree.jar")
         }
     }
 }
