@@ -39,16 +39,8 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
 
 //    testRuntimeOnly(beast2)
-//    testRuntimeOnly(beastLabs)
-//    testRuntimeOnly(beastClsc)
-//    testRuntimeOnly(fastRlxClkLN)
-//    testRuntimeOnly(ssm)
-//
-//    testRuntimeOnly(feast)
-//    testRuntimeOnly(mascot)
-//    testRuntimeOnly(mm)
-//    testRuntimeOnly(sa)
-
+//    testRuntimeOnly(beastPkgs)
+//    testRuntimeOnly(beastPkgs2)
 }
 
 var maincls : String = "lphybeast.LPhyBEAST"
@@ -80,20 +72,26 @@ tasks.jar {
     }
 }
 
+tasks.getByName<Tar>("distTar").enabled = false
+// exclude start scripts
+tasks.getByName<CreateStartScripts>("startScripts").enabled = false
 
-//TODO dist beast2 package
+// dist beast2 package
 distributions {
     main {
         contents {
-            from("$rootDir") {
-                include("README.md")
-                include("version.xml")
-            }
             // include src jar
             from(layout.buildDirectory.dir("libs")) {
                 include("*-sources.jar")
                 into("src")
             }
+            from("$rootDir") {
+                include("README.md")
+                include("version.xml")
+            }
+            // TODO better solution?
+            exclude("**/beast-*.jar", "**/BEAST*.jar", "**/*addon*.jar",
+                "**/feast-*.jar", "**/SSM.*.jar", "**/SA.*.jar", "**/Mascot.*.jar")
         }
     }
 }
