@@ -13,14 +13,9 @@ java {
 }
 
 val beast2 = files("lib/beast-2.6.6.jar")
-val beastLabs = files("lib/BEASTlabs-1.9.7.jar")
-val beastClsc = files("lib/BEAST_CLASSIC.addon.v1.5.0.jar")
-val fastRlxClkLN = files("lib/FastRelaxedClockLogNormal.addon.v1.1.1.jar")
-val ssm = files("lib/SSM.v1.1.0.jar")
-val feast = files("lib/feast-7.9.1.jar")
-val mascot = files("lib/Mascot.v2.1.2.jar")
-val mm = files("lib/MM.addon.v1.1.1.jar")
-val sa = files("lib/SA.v2.0.2.jar")
+val beastPkgs = files("lib/BEASTlabs-1.9.7.jar","lib/BEAST_CLASSIC.addon.v1.5.0.jar",
+    "lib/FastRelaxedClockLogNormal.addon.v1.1.1.jar","lib/SSM.v1.1.0.jar","lib/feast-7.9.1.jar")
+val beastPkgs2 = files("lib/Mascot.v2.1.2.jar","lib/MM.addon.v1.1.1.jar","lib/SA.v2.0.2.jar")
 
 dependencies {
 
@@ -37,14 +32,8 @@ dependencies {
     // TODO compileOnly not working, probably BEAST classes did not load correctly
     // beast 2 libs
     implementation(beast2)
-    implementation(beastLabs)
-    implementation(beastClsc)
-    implementation(fastRlxClkLN)
-    implementation(ssm)
-    implementation(feast)
-    implementation(mascot)
-    implementation(mm)
-    implementation(sa)
+    implementation(beastPkgs)
+    implementation(beastPkgs2)
 
     // tests
     testImplementation("junit:junit:4.13.2")
