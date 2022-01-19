@@ -13,25 +13,25 @@ java {
     withSourcesJar()
 }
 
-//val beast2 = files("lib/beast-2.6.6.jar")
-//val beastPkgs = files("lib/BEASTlabs-1.9.7.jar","lib/BEAST_CLASSIC.addon.v1.5.0.jar",
-//    "lib/FastRelaxedClockLogNormal.addon.v1.1.1.jar","lib/SSM.v1.1.0.jar","lib/feast-7.9.1.jar")
-//val beastPkgs2 = files("lib/Mascot.v2.1.2.jar","lib/MM.addon.v1.1.1.jar","lib/SA.v2.0.2.jar")
+// TODO 3 versions: here, LPhyBEAST, version.xml
+var lphyVersion = "1.1.0-SNAPSHOT"
 
 dependencies {
-
     implementation("com.google.guava:guava:23.6-jre")
     implementation("org.jblas:jblas:1.2.3")
     implementation("info.picocli:picocli:4.6.2")
 
     // io.github.linguaphylo
-    implementation("io.github.linguaphylo:lphy:1.1.0-SNAPSHOT")
+//    implementation("io.github.linguaphylo:lphy:${lphyVersion}")
 //    implementation(project(mapOf( "path" to ":lphy", "configuration" to "coreJars")))
-
-    // not released, so must include in lphybeast release
-    implementation(files("lib/bdtree.jar"))
-    // all released beast 2 libs
     implementation(fileTree("lib") {
+        include("lphy-*-all.jar")
+        // not released, so must include in lphybeast release
+        include("bdtree.jar")
+    })
+
+    // all released beast 2 libs
+    implementation(fileTree("lib2") {
         exclude("**/starbeast2-*.jar")
     })
 
@@ -76,7 +76,10 @@ tasks.getByName<Tar>("distTar").enabled = false
 // exclude start scripts
 tasks.getByName<CreateStartScripts>("startScripts").enabled = false
 
-// dist as a beast2 package, so all released b2 packages are excluded.
+// dist as a beast2 package:
+// 1. all released b2 packages are excluded;
+// 2. lphy-*-all.jar is excluded, because SPI is not working with BEAST;
+// 3. cannot use modular jar, because BEAST uses a customised non-module system.
 distributions {
     main {
         contents {
@@ -92,10 +95,12 @@ distributions {
             // TODO better solution?
             exclude("**/beast-*.jar", "**/BEAST*.jar", "**/*addon*.jar",
                 "**/feast-*.jar", "**/SSM.*.jar", "**/SA.*.jar", "**/Mascot.*.jar")
+//            exclude(fileTree("lib2").toList().map(File::getAbsolutePath)) // not working
+            // SPI not working in BEAST2
+            exclude("**/lphy-*-all.jar")
         }
     }
 }
-
 
 tasks.test {
     useJUnit()
