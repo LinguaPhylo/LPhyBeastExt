@@ -1,6 +1,9 @@
 plugins {
     application
     distribution
+    `maven-publish`
+    signing
+    id("io.github.linguaphylo.platforms.lphy-publish") version "0.1.1"
 }
 
 group = "io.github.linguaphylo"
@@ -106,6 +109,58 @@ distributions {
 //            exclude(fileTree("lib2").toList().map(File::getAbsolutePath)) // not working
             // SPI not working in BEAST2
             exclude("**/lphy-*-all.jar")
+        }
+    }
+}
+
+val webSteam = "github.com/LinguaPhylo/LPhyBeast"
+publishing {
+    publications {
+        // project.name contains "lphy" substring
+        create<MavenPublication>(project.name) {
+            artifactId = project.base.archivesName.get()
+            artifact(tasks.distZip.get())
+            // Configures the version mapping strategy
+            versionMapping {
+                usage("java-api") {
+                    fromResolutionOf("runtimeClasspath")
+                }
+                usage("java-runtime") {
+                    fromResolutionResult()
+                }
+            }
+            pom {
+                name.set(project.name)
+                description.set("A command-line program that takes an LPhy model specification " +
+                        "including a data block, and produces a BEAST 2 XML input file.")
+                developers {
+                    developer {
+                        name.set("Alexei Drummond and Walter Xie")
+                    }
+                }
+                // compulsory
+                url.set("https://linguaphylo.github.io/")
+                packaging = "zip"
+                properties.set(
+                    mapOf(
+                        "maven.compiler.source" to java.sourceCompatibility.majorVersion,
+                        "maven.compiler.target" to java.targetCompatibility.majorVersion
+                    )
+                )
+                licenses {
+                    license {
+                        name.set("GNU Lesser General Public License, version 3")
+                        url.set("https://www.gnu.org/licenses/lgpl-3.0.txt")
+                    }
+                }
+                // https://central.sonatype.org/publish/requirements/
+                scm {
+                    connection.set("scm:git:git://${webSteam}.git")
+                    developerConnection.set("scm:git:ssh://${webSteam}.git")
+                    url.set("https://${webSteam}")
+                }
+            }
+            println("Define MavenPublication ${name} and set shared contents in POM")
         }
     }
 }
