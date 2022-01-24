@@ -92,6 +92,14 @@ distributions {
                 include("README.md")
                 include("version.xml")
             }
+            from("${layout.projectDirectory.dir("bin")}") {
+                include("lphybeast")
+                into("bin")
+                eachFile {
+                    // fileMode 755 not working
+                    file.setExecutable(true, true)
+                }
+            }
             // TODO better solution?
             exclude("**/beast-*.jar", "**/BEAST*.jar", "**/*addon*.jar",
                 "**/feast-*.jar", "**/SSM.*.jar", "**/SA.*.jar", "**/Mascot.*.jar")
