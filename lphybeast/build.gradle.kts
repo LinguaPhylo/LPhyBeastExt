@@ -9,7 +9,7 @@ plugins {
 group = "io.github.linguaphylo"
 // TODO 3 versions: here, LPhyBEAST, version.xml
 // version has to be manually adjusted to keep same between version.xml and here
-version = "0.2.0"
+version = "0.2.1"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_16
@@ -45,7 +45,7 @@ dependencies {
 //    testRuntimeOnly(beastPkgs2)
 }
 
-var maincls : String = "lphybeast.LPhyBEAST"
+var maincls: String = "lphybeast.LPhyBEAST"
 application {
     // use classpath, beast2 not use module
     mainClass.set(maincls)
@@ -54,7 +54,7 @@ application {
 tasks.withType<JavaExec>() {
     // set version into system property
     systemProperty("lphy.beast.version", version)
-    systemProperty("user.dir", rootDir)
+//    systemProperty("user.dir", rootDir)
 }
 
 
@@ -68,7 +68,7 @@ tasks.jar {
     }
     // copy LICENSE to META-INF
     metaInf {
-        from (rootDir) {
+        from(rootDir) {
             include("LICENSE")
         }
     }
@@ -85,6 +85,8 @@ tasks.getByName<CreateStartScripts>("startScripts").enabled = false
 distributions {
     main {
         contents {
+//            eachFile {  println(relativePath)  }
+            includeEmptyDirs = false
             // include src jar
             from(layout.buildDirectory.dir("libs")) {
                 include("*-sources.jar")
@@ -112,6 +114,21 @@ distributions {
     }
 }
 
+// beast 2 will remove version from Zip file name, and then decompress
+// rm lphybeast-$version from the relative path of files inside Zip to make it working
+tasks.withType<Zip>() {
+    doFirst {
+        if ( name.equals("distZip") ) {
+            // only activate in distZip, otherwise will affect all jars and zips,
+            // e.g. main class not found in lphybeast-$version.jar.
+            eachFile {
+                relativePath = RelativePath(true, *relativePath.segments.drop(1).toTypedArray())
+                println(relativePath)
+            }
+        }
+    }
+}
+
 val webSteam = "github.com/LinguaPhylo/LPhyBeast"
 publishing {
     publications {
@@ -130,8 +147,10 @@ publishing {
             }
             pom {
                 name.set(project.name)
-                description.set("A command-line program that takes an LPhy model specification " +
-                        "including a data block, and produces a BEAST 2 XML input file.")
+                description.set(
+                    "A command-line program that takes an LPhy model specification " +
+                            "including a data block, and produces a BEAST 2 XML input file."
+                )
                 // compulsory
                 url.set("https://linguaphylo.github.io/")
                 packaging = "zip"
