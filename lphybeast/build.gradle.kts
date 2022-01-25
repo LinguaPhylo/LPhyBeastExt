@@ -7,8 +7,9 @@ plugins {
 }
 
 group = "io.github.linguaphylo"
+// TODO 3 versions: here, LPhyBEAST, version.xml
 // version has to be manually adjusted to keep same between version.xml and here
-version = "0.2-SNAPSHOT"
+version = "0.2.0"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_16
@@ -16,18 +17,16 @@ java {
     withSourcesJar()
 }
 
-// TODO 3 versions: here, LPhyBEAST, version.xml
-var lphyVersion = "1.1.0-SNAPSHOT"
-
 dependencies {
     implementation("com.google.guava:guava:23.6-jre")
     implementation("org.jblas:jblas:1.2.3")
     implementation("info.picocli:picocli:4.6.2")
 
     // io.github.linguaphylo
-//    implementation("io.github.linguaphylo:lphy:${lphyVersion}")
+//    implementation("io.github.linguaphylo:lphy:1.1.0-SNAPSHOT")
 //    implementation(project(mapOf( "path" to ":lphy", "configuration" to "coreJars")))
     implementation(fileTree("lib") {
+        // non-modular lphy jar incl. all dependencies
         include("lphy-*-all.jar")
         // not released, so must include in lphybeast release
         include("bdtree.jar")
@@ -133,14 +132,14 @@ publishing {
                 name.set(project.name)
                 description.set("A command-line program that takes an LPhy model specification " +
                         "including a data block, and produces a BEAST 2 XML input file.")
+                // compulsory
+                url.set("https://linguaphylo.github.io/")
+                packaging = "zip"
                 developers {
                     developer {
                         name.set("Alexei Drummond and Walter Xie")
                     }
                 }
-                // compulsory
-                url.set("https://linguaphylo.github.io/")
-                packaging = "zip"
                 properties.set(
                     mapOf(
                         "maven.compiler.source" to java.sourceCompatibility.majorVersion,
