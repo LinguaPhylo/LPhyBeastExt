@@ -12,14 +12,18 @@ express and communicate BEAST2 analyses.
 
 ## Setup and usage
 
+LPhyBEAST is implemented as an application in the BEAST 2 package "lphybeast". 
+But you need to add the extra repository
+`https://raw.githubusercontent.com/CompEvol/CBAN/master/packages-extra.xml`
+to the Package Manager to view it.
 Follow the [instruction](https://linguaphylo.github.io/setup/) to set up,
-and then use the following commands:
+and then use the script `lphybeast` to create the XML:
 
 A simple usage of LPhyBEAST to create `RSV2.xml` given 
 the LPhy script [RSV2.lphy](https://github.com/LinguaPhylo/linguaPhylo/blob/master/tutorials/RSV2.lphy).
 
 ```bash
-lphybeast tutorials/RSV2.lphy
+$BEAST_FOLDER/bin/lphybeast tutorials/RSV2.lphy
 ```
 
 Create 10 BEAST 2 XMLs for a simple 
@@ -28,7 +32,7 @@ simulation study:
 
 
 ```bash
-lphybeast -r 10 examples/hkyCoalescent
+$BEAST_FOLDER/bin/lphybeast -r 10 examples/hkyCoalescent
 ```
 
 More scripts are available in 
@@ -36,7 +40,7 @@ More scripts are available in
 
 ## Tutorials
 
-LPhyBEAST [Tutorials](https://linguaphylo.github.io/tutorials/)
+LPhy and LPhyBEAST [Tutorials](https://linguaphylo.github.io/tutorials/)
 
 
 ## Dependencies
@@ -51,7 +55,7 @@ BEAST 2 packages:
 - [BEAST_CLASSIC](https://github.com/BEAST2-Dev/beast-classic/)
 - [SMM](https://github.com/BEAST2-Dev/substmodels/)
 
-All released BEAST 2 packages are listed in
+The details are in [version.xml](./version.xml). All released BEAST 2 packages are listed in
 [Package Viewer](https://compevol.github.io/CBAN/).
 
 BEASTLabs `beast.util.Script` depends on `jdk.nashorn.api.scripting.ScriptObjectMirror`.
