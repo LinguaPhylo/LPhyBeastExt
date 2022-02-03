@@ -18,6 +18,10 @@ java {
     withSourcesJar()
 }
 
+// if the project dependencies ues impl, then impl(proj(..)) will only have source code,
+// which is equivalent to project-version.jar.
+// if api is used, then all dependencies will pass to here,
+// but do not use api unless you have to.
 dependencies {
     implementation("com.google.guava:guava:23.6-jre")
     implementation("org.jblas:jblas:1.2.3")
