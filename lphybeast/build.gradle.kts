@@ -1,4 +1,5 @@
 plugins {
+    `java-library`
     application
     distribution
     `maven-publish`
