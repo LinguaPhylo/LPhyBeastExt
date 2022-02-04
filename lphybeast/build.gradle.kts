@@ -99,6 +99,7 @@ distributions {
             }
             from("$rootDir") {
                 include("README.md")
+                include("LICENSE")
                 include("version.xml")
             }
             from("${layout.projectDirectory.dir("bin")}") {
