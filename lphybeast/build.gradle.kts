@@ -71,12 +71,6 @@ tasks.jar {
             "Implementation-Title" to "LPhyBEAST"
         )
     }
-    // copy LICENSE to META-INF
-    metaInf {
-        from(rootDir) {
-            include("LICENSE")
-        }
-    }
 }
 
 tasks.getByName<Tar>("distTar").enabled = false
@@ -93,8 +87,7 @@ distributions {
 //            eachFile {  println(relativePath)  }
             includeEmptyDirs = false
             // include src jar
-            from(layout.buildDirectory.dir("libs")) {
-                include("*-sources.jar")
+            from(tasks.getByName<Jar>("sourcesJar")) {
                 into("src")
             }
             from("$rootDir") {
