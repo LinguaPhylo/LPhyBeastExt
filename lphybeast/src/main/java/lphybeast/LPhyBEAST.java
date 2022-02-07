@@ -29,7 +29,10 @@ public class LPhyBEAST implements Callable<Integer> {
 
     public static final String VERSION = "0.2.1";
 
-    @Parameters(paramLabel = "LPhy_scripts", description = "File of the LPhy model specification")
+    @Parameters(paramLabel = "LPhy_scripts", description = "File of the LPhy model specification. " +
+            "If it contains relative path, then concatenate 'user.dir' to the front of the path. " +
+            "Please make sure the data path in the LPhy script is correct, " +
+            "if it is also the relative path.")
     Path infile;
 
     @Option(names = {"-V", "--version"}, versionHelp = true, description = "display version info")
@@ -37,11 +40,14 @@ public class LPhyBEAST implements Callable<Integer> {
     @Option(names = {"-h", "--help"}, usageHelp = true, description = "display this help message")
     boolean usageHelpRequested;
 
-    @Option(names = {"-o", "--out"},     description = "BEAST 2 XML")  Path outfile;
-    // not change the current directory
-    @Option(names = {"-wd", "--workdir"}, description = "set 'user.dir' and concatenate to the front of " +
-            "the input and output path (if the relative path is provided), which can be used for batch processing. " +
-            "If either LPhy script path or output is a absolute path, then this option will be ignored.") Path wd;
+    @Option(names = {"-o", "--out"},     description = "BEAST 2 XML. " +
+            "If it contains relative path, then concatenate 'user.dir' to the front of the path.")
+    Path outfile;
+    // 'user.dir' is default to the current directory
+    @Option(names = {"-wd", "--workdir"}, description = "Set 'user.dir' " +
+            "and concatenate it to the front of the input and output path " +
+            "(if the relative path is provided), which can be used for batch processing.")
+    Path wd;
 
     //MCMC
     @Option(names = {"-l", "--chainLength"}, defaultValue = "-1", description = "define the total chain length of MCMC, default to 1 million.")
