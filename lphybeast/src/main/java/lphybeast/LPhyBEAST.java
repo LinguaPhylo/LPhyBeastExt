@@ -30,9 +30,8 @@ public class LPhyBEAST implements Callable<Integer> {
     public static final String VERSION = "0.2.1";
 
     @Parameters(paramLabel = "LPhy_scripts", description = "File of the LPhy model specification. " +
-            "If it contains relative path, then concatenate 'user.dir' to the front of the path. " +
-            "Please make sure the data path in the LPhy script is correct, " +
-            "if it is also the relative path.")
+            "If it is a relative path, then concatenate 'user.dir' to the front of the path. " +
+            "But if `-wd` is NOT given, the 'user.dir' will set to the path where the LPhy script is.")
     Path infile;
 
     @Option(names = {"-V", "--version"}, versionHelp = true, description = "display version info")
@@ -71,6 +70,13 @@ public class LPhyBEAST implements Callable<Integer> {
     }
 
 
+    /**
+     * 1. If the input/output is a relative path, then concatenate 'user.dir'
+     * to the front of the path.
+     * 2. Use '-wd' to set 'user.dir'. But if `-wd` is NOT given,
+     * the 'user.dir' will be set to the path where the LPhy script is.
+     * @throws CommandLine.PicocliException
+     */
     @Override
     public Integer call() throws CommandLine.PicocliException { // business logic goes here...
 
