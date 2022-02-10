@@ -56,7 +56,7 @@ fi
 
 ### lphy lib must be loaded to classpath
 
-LPHY_LIB="$BEAST/lphy"
+LPHY_LIB="$BEAST/lphy/lib"
 ARG="-Dlauncher.wait.for.exit=true -Xms256m -Xmx8g -Duser.language=en"
 LPHY_BEAST="beast.app.tools.AppLauncherLauncher lphybeast"
 if [ -n "$BEAST_EXTRA_LIBS" ]; then
