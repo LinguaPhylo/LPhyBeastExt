@@ -18,6 +18,11 @@ java {
     withSourcesJar()
 }
 
+val isRuntime: String by project
+val beast2Jars = fileTree("lib2") {
+    exclude("**/starbeast2-*.jar")
+}
+
 // if the project dependencies ues impl, then impl(proj(..)) will only have source code,
 // which is equivalent to project-version.jar.
 // if api is used, then all dependencies will pass to here,
@@ -29,7 +34,9 @@ dependencies {
 
     // io.github.linguaphylo
     implementation("io.github.linguaphylo:lphy:1.1.0")
-//    implementation(project(mapOf( "path" to ":lphy", "configuration" to "coreJars")))
+    // all released beast 2 libs
+    implementation(beast2Jars)
+
     implementation(fileTree("lib") {
         // non-modular lphy jar incl. all dependencies
 //        include("lphy-*-all.jar")
@@ -37,17 +44,16 @@ dependencies {
         include("bdtree.jar")
     })
 
-    // all released beast 2 libs
-    implementation(fileTree("lib2") {
-        exclude("**/starbeast2-*.jar")
-    })
-
     // tests
     testImplementation("junit:junit:4.13.2")
 
-//    testRuntimeOnly(beast2)
-//    testRuntimeOnly(beastPkgs)
-//    testRuntimeOnly(beastPkgs2)
+//    testRuntimeOnly("io.github.linguaphylo:lphy:1.1.0")
+//    testRuntimeOnly(beast2Jars)
+
+//    if (project.hasProperty("isRuntime")) {
+//        runtimeOnly("io.github.linguaphylo:lphy:1.1.0")
+//        runtimeOnly(beast2Jars)
+//    }
 }
 
 var maincls: String = "lphybeast.LPhyBEAST"
@@ -55,13 +61,6 @@ application {
     // use classpath, beast2 not use module
     mainClass.set(maincls)
 }
-
-tasks.withType<JavaExec>() {
-    // set version into system property
-    systemProperty("lphy.beast.version", version)
-//    systemProperty("user.dir", rootDir)
-}
-
 
 tasks.jar {
     manifest {
@@ -103,12 +102,13 @@ distributions {
                     file.setExecutable(true, true)
                 }
             }
-            // TODO better solution?
-            exclude("**/beast-*.jar", "**/BEAST*.jar", "**/*addon*.jar",
-                "**/feast-*.jar", "**/SSM.*.jar", "**/SA.*.jar", "**/Mascot.*.jar")
-//            exclude(fileTree("lib2").toList().map(File::getAbsolutePath)) // not working
-            // SPI not working in BEAST2
-            exclude("**/lphy-*-all.jar")
+            // beast 2 and packages
+            exclude(beast2Jars.files.map { it.name })
+
+            // all lphy jars, SPI not working in BEAST2 class loader
+            exclude("lphy-*.jar","lphy-studio-*.jar","markdowngenerator-*.jar",
+                "ext-manager-*.jar","jebl-3.1.0.jar","commons-*.jar",
+                "antlr4-runtime-*.jar","jlatexmath-*.jar","json-*.jar")
         }
     }
 }
