@@ -28,11 +28,11 @@ dependencies {
     implementation("info.picocli:picocli:4.6.2")
 
     // io.github.linguaphylo
-//    implementation("io.github.linguaphylo:lphy:1.1.0-SNAPSHOT")
+    implementation("io.github.linguaphylo:lphy:1.1.0")
 //    implementation(project(mapOf( "path" to ":lphy", "configuration" to "coreJars")))
     implementation(fileTree("lib") {
         // non-modular lphy jar incl. all dependencies
-        include("lphy-*-all.jar")
+//        include("lphy-*-all.jar")
         // not released, so must include in lphybeast release
         include("bdtree.jar")
     })
