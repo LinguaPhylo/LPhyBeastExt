@@ -15,8 +15,6 @@ import beast.evolution.likelihood.AncestralStateTreeLikelihood;
 import beast.evolution.operators.*;
 import beast.evolution.substitutionmodel.Frequencies;
 import beast.evolution.tree.*;
-import beast.mascot.distribution.Mascot;
-import beast.mascot.logger.StructuredTreeLogger;
 import beast.math.distributions.ParametricDistribution;
 import beast.math.distributions.Prior;
 import beast.util.BEASTVector;
@@ -770,8 +768,18 @@ public class BEASTContext {
         }
 
         // not in screen logging
-        if (fileName != null)
-            nonTrees.addAll(extraLoggables);
+        if (fileName != null) {
+//            nonTrees.addAll(extraLoggables);
+            for (Loggable loggable : extraLoggables) {
+                if (loggable instanceof ExtraLogger extraLogger) {
+                    // if extra logger, then get the original beast2 loggable class
+                    // otherwise logger.setInputValue("log", nonTrees) will fail.
+                    nonTrees.add(extraLogger.getLoggable());
+                } else {
+                    nonTrees.add(loggable);
+                }
+            }
+        }
 
 //        for (Loggable loggable : extraLoggables) {
 //            // fix StructuredCoalescent log
@@ -866,28 +874,10 @@ public class BEASTContext {
         // extraLoggables are used to retain all tree-likelihoods
         for (Loggable loggable : extraLoggables) {
 
-            if (loggable instanceof beast.mascot.distribution.Mascot) { // TODO
+            if (loggable instanceof ExtraLogger extraLogger) { // TODO
                 // Mascot StructuredTreeLogger
-                TreeInterface tree = ((Mascot) loggable).treeInput.get();
-
-                StructuredTreeLogger structuredTreeLogger = new StructuredTreeLogger();
-                // not logging tree directly
-                structuredTreeLogger.setInputValue("mascot", loggable);
-
-                Logger logger = new Logger();
-                logger.setInputValue("logEvery", logEvery);
-                logger.setInputValue("log", structuredTreeLogger);
-
-                String treeFNSteam = Objects.requireNonNull(fileNameStem);
-                // ((Mascot) loggable).getID() == null
-                if (multipleTrees) // multi-partitions and unlink trees
-                    treeFNSteam = fileNameStem + "_" + tree.getID();
-                String fileName = treeFNSteam + ".mascot.trees";
-                logger.setInputValue("fileName", fileName);
-                logger.setID("StructuredTreeLogger" + (multipleTrees ? "." + treeFNSteam : ""));
-
-                logger.setInputValue("mode", "tree");
-                logger.initAndValidate();
+                extraLogger.setMultiTrees(multipleTrees);
+                Logger logger = extraLogger.createExtraLogger(logEvery, fileNameStem);
 
                 treeLoggers.add(logger);
                 elements.put(logger, null);

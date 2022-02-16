@@ -27,7 +27,6 @@ subprojects {
 
         manifest {
             attributes(
-                "Implementation-Vendor" to "Alexei Drummond and Walter Xie",
                 "Implementation-Version" to archiveVersion,
                 "Implementation-URL" to web,
                 "Built-By" to "Walter Xie", //System.getProperty("user.name"),

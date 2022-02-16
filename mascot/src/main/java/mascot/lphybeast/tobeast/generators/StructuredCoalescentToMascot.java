@@ -1,4 +1,4 @@
-package lphybeast.tobeast.generators;
+package mascot.lphybeast.tobeast.generators;
 
 import beast.core.BEASTInterface;
 import beast.core.parameter.RealParameter;
@@ -15,6 +15,7 @@ import lphy.graphicalModel.Value;
 import lphybeast.BEASTContext;
 import lphybeast.GeneratorToBEAST;
 import lphybeast.tobeast.values.TimeTreeToBEAST;
+import mascot.lphybeast.tobeast.loggers.MascotExtraTreeLogger;
 
 import java.util.Arrays;
 import java.util.List;
@@ -140,7 +141,8 @@ public class StructuredCoalescentToMascot implements
             // <log idref="Constant"/>
 //            context.addExtraLogger(dynamics);
             // extra logging
-            context.addExtraLogger(mascot);
+            MascotExtraTreeLogger extraTreeLogger = new MascotExtraTreeLogger(mascot);
+            context.addExtraLogger(extraTreeLogger);
 
             return mascot;
         }

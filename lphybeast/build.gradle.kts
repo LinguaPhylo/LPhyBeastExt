@@ -41,9 +41,9 @@ dependencies {
 //    implementation(lblibs)
 
     // io.github.linguaphylo
-    implementation("io.github.linguaphylo:lphy:1.1.0")
+    api("io.github.linguaphylo:lphy:1.1.0")
     // all released beast 2 libs
-    implementation(beast2Jars)
+    api(beast2Jars)
     // other jars must be included
     implementation(notReleasedJars)
 
@@ -59,13 +59,15 @@ dependencies {
 //    }
 }
 
-var maincls: String = "lphybeast.LPhyBEAST"
+val maincls = "lphybeast.LPhyBEAST"
+val developers = "LPhyBEAST developer team"
 tasks.jar {
     manifest {
         // shared attr in the root build
         attributes(
             "Main-Class" to maincls,
-            "Implementation-Title" to "LPhyBEAST"
+            "Implementation-Title" to "LPhyBEAST",
+            "Implementation-Vendor" to developers,
         )
     }
 }
@@ -170,7 +172,7 @@ publishing {
                 packaging = "zip"
                 developers {
                     developer {
-                        name.set("Alexei Drummond and Walter Xie")
+                        name.set(developers)
                     }
                 }
                 properties.set(
