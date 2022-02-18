@@ -6,8 +6,8 @@ version = "0.0.1-SNAPSHOT"
 base.archivesName.set("mascot-lb")
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_16
-    targetCompatibility = JavaVersion.VERSION_16
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
     withSourcesJar()
 }
 
@@ -28,7 +28,7 @@ tasks.jar {
 }
 
 // launch lphybeast
-tasks.register("runLPhyBEAST", JavaExec::class.java) {
+tasks.register("runMascotLB", JavaExec::class.java) {
     // use classpath
     jvmArgs = listOf("-cp", sourceSets.main.get().runtimeClasspath.asPath)
     println("clspath = ${sourceSets.main.get().runtimeClasspath.asPath}")

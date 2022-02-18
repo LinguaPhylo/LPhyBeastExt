@@ -4,16 +4,16 @@ plugins {
     distribution
     `maven-publish`
     signing
-    id("io.github.linguaphylo.platforms.lphy-publish") version "0.1.1"
+    id("io.github.linguaphylo.platforms.lphy-publish") version "0.1.2"
 }
 
 // TODO 3 versions: here, LPhyBEAST, version.xml
 // version has to be manually adjusted to keep same between version.xml and here
-version = "0.2.1"
+version = "0.3.0"
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_16
-    targetCompatibility = JavaVersion.VERSION_16
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
     withSourcesJar()
 }
 
@@ -105,6 +105,10 @@ distributions {
                 from(tasks.jar)
                 // bdtree
                 from(notReleasedJars)
+                //TODO
+                from(project(":mascot").layout.buildDirectory.dir("libs")){
+                    exclude("*-sources.jar")
+                }
             }
             into("."){
                 from("$rootDir") {
@@ -116,6 +120,10 @@ distributions {
             // include src jar
             into("src") {
                 from(tasks.getByName<Jar>("sourcesJar"))
+                //TODO
+                from(project(":mascot").layout.buildDirectory.dir("libs")){
+                    include("*-sources.jar")
+                }
             }
             // lphybeast script
             from("${layout.projectDirectory.dir("bin")}") {
