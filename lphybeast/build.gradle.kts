@@ -41,7 +41,7 @@ dependencies {
 //    implementation(lblibs)
 
     // io.github.linguaphylo
-    api("io.github.linguaphylo:lphy:1.1.0")
+    api("io.github.linguaphylo:lphy:1.2.0")
     // all released beast 2 libs
     api(beast2Jars)
     // other jars must be included
