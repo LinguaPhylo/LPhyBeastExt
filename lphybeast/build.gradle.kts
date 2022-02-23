@@ -9,7 +9,7 @@ plugins {
 
 // TODO 3 versions: here, LPhyBEAST, version.xml
 // version has to be manually adjusted to keep same between version.xml and here
-version = "0.3.0"
+version = "0.3.1"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17
@@ -105,7 +105,7 @@ distributions {
                 from(tasks.jar)
                 // bdtree
                 from(notReleasedJars)
-                //TODO
+                //TODO require to run distZip after build to copy mascot jar
                 from(project(":mascot").layout.buildDirectory.dir("libs")){
                     exclude("*-sources.jar")
                 }
