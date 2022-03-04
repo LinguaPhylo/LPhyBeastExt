@@ -9,7 +9,7 @@ plugins {
 
 // TODO 3 versions: here, LPhyBEAST, version.xml
 // version has to be manually adjusted to keep same between version.xml and here
-version = "0.3.1"
+version = "0.3.2-SNAPSHOT"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17
