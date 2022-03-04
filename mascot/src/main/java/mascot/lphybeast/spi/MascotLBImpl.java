@@ -20,8 +20,6 @@ import java.util.concurrent.ConcurrentHashMap;
  * which include a list of {@link ValueToBEAST},
  * {@link GeneratorToBEAST}, and {@link DataType}
  * to extend.
- * It requires a public no-args constructor.
- *
  * @author Walter Xie
  */
 public class MascotLBImpl implements LPhyBEASTExt {
