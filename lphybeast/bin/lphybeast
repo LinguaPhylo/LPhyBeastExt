@@ -1,7 +1,7 @@
 #!/bin/sh
 
 ### copy this to $BEAST/bin
-### copy lphy-j8-?.?.?.jar and extensions to $BEAST/lib/lphy
+### check if lphy-?.?.?.jar and extension jars are available in $BEAST/lphy/lib
 
 if [ -z "$BEAST" ]; then
 	## resolve links - $0 may be a link to application
