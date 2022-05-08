@@ -3,7 +3,7 @@ package lphybeast;
 import lphy.core.*;
 import lphy.graphicalModel.RandomValueLogger;
 import lphy.parser.REPL;
-import lphy.util.IOUtils;
+import lphy.system.UserDir;
 import lphy.util.LoggerUtils;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
@@ -27,7 +27,7 @@ import java.util.concurrent.Callable;
                 "OS: ${os.name} ${os.version} ${os.arch}"})
 public class LPhyBEAST implements Callable<Integer> {
 
-    public static final String VERSION = "0.3.2";
+    public static final String VERSION = "1.0.0";
 
     @Parameters(paramLabel = "LPhy_scripts", description = "File of the LPhy model specification. " +
             "If it is a relative path, then concatenate 'user.dir' to the front of the path. " +
@@ -87,21 +87,21 @@ public class LPhyBEAST implements Callable<Integer> {
             throw new CommandLine.InitializationException("Invalid LPhy file: the postfix has to be '.lphy'");
 
         if (wd != null)
-            IOUtils.setUserDir(wd.toAbsolutePath().toString());
+            UserDir.setUserDir(wd.toAbsolutePath().toString());
         // if the relative path, then concatenate user.dir before it
-        final Path inPath = IOUtils.getUserPath(infile);
+        final Path inPath = UserDir.getUserPath(infile);
         // still need to set user.dir, if no -wd, in case LPhy script uses relative path
         if (wd == null)
             // set user.dir to the folder containing lphy script
-            IOUtils.setUserDir(inPath.getParent().toString());
+            UserDir.setUserDir(inPath.getParent().toString());
 
         Path outPath;
         if (outfile != null) {
-            outPath = IOUtils.getUserPath(outfile);
+            outPath = UserDir.getUserPath(outfile);
         } else {
             String infileNoExt = fileName.substring(0, fileName.lastIndexOf("."));
             // add wd before file stem
-            outPath = Paths.get(IOUtils.getUserDir().toString(), infileNoExt + ".xml");
+            outPath = Paths.get(UserDir.getUserDir().toString(), infileNoExt + ".xml");
         }
 
         // add rep after file stem
@@ -131,7 +131,7 @@ public class LPhyBEAST implements Callable<Integer> {
 
         } catch (FileNotFoundException e) {
             throw new CommandLine.PicocliException("Fail to read LPhy scripts from " +
-                    inPath.toString() + ", user.dir = " + System.getProperty(IOUtils.USER_DIR), e);
+                    inPath.toString() + ", user.dir = " + System.getProperty(UserDir.USER_DIR), e);
         }
         String path = outPath.toString();
         String pathNoExt = path.substring(0, path.lastIndexOf("."));
