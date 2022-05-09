@@ -1,14 +1,12 @@
 plugins {
-    application
-//    distribution
+    `java-library`
     `maven-publish`
     signing
-//    id("io.github.linguaphylo.platforms.lphy-java") version "0.1.2"
     id("io.github.linguaphylo.platforms.lphy-publish") version "0.1.2"
 }
 
 //version in root build
-base.archivesName.set("lphy-beast-app")
+base.archivesName.set("lb-launcher")
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17
@@ -18,8 +16,8 @@ java {
 }
 
 dependencies {
-
     implementation("io.github.linguaphylo:lphy-studio:1.3.0-SNAPSHOT")
+    implementation("io.github.linguaphylo:ext-manager:0.0.1-SNAPSHOT")
 
     implementation(project(":lphybeast"))
     // BEAST launcher
@@ -27,29 +25,7 @@ dependencies {
 
 }
 
-val maincls : String = "lphystudio.app.LinguaPhyloStudio"
-//application {
-//    // equivalent to -m lphystudio
-//    // need both mainModule and mainClass
-//    mainModule.set("lphystudio")
-//    // if only mainClass, it will auto add maincls to the end of CMD
-//    mainClass.set(maincls)
-//}
-
-// make studio app locating the correct parent path of examples sub-folder
-tasks.withType<JavaExec>() {
-    // set version into system property
-    systemProperty("lphy.beast.version", version)
-
-    doFirst {
-        // equivalent to: java -p ...
-        jvmArgs = listOf("-p", classpath.asPath)
-        classpath = files()
-    }
-    doLast {
-        println("JavaExec : $jvmArgs")
-    }
-}
+val maincls : String = "lphybeast.launcher.LPhyBeastLauncher"
 
 val developers = "LPhyBEAST developer team"
 tasks.jar {

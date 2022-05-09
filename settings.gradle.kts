@@ -1,5 +1,5 @@
 
-rootProject.name = "LPhyBEAST"
+rootProject.name = "LPhyBeast"
 
 include("lphybeast")
 include("lblauncher")
@@ -14,4 +14,3 @@ buildCache {
         println("Creating local build cache : ${directory}")
     }
 }
-include("lbapp")
