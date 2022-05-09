@@ -2,6 +2,7 @@
 rootProject.name = "LPhyBEAST"
 
 include("lphybeast")
+include("lblauncher")
 include("mascot")
 
 // https://docs.gradle.org/current/userguide/build_cache.html
@@ -13,3 +14,4 @@ buildCache {
         println("Creating local build cache : ${directory}")
     }
 }
+include("lbapp")
