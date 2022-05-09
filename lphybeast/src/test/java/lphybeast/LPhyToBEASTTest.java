@@ -24,11 +24,11 @@ public class LPhyToBEASTTest {
             "  D ~ PhyloCTMC(tree=ψ, L=L, Q=jukesCantor());\n" +
             "}";
 
-    LPhyBEAST lPhyBEAST;
+    LPhyBeast lPhyBEAST;
 
     @Before
-    public void setUp() throws Exception {
-        lPhyBEAST = new LPhyBEAST();
+    public void setUp() {
+        lPhyBEAST = new LPhyBeast();
     }
 
     @Test

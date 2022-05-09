@@ -4,11 +4,7 @@ import lphy.core.*;
 import lphy.graphicalModel.RandomValueLogger;
 import lphy.parser.REPL;
 import lphy.system.UserDir;
-import lphy.util.LoggerUtils;
 import picocli.CommandLine;
-import picocli.CommandLine.Command;
-import picocli.CommandLine.Option;
-import picocli.CommandLine.Parameters;
 
 import java.io.*;
 import java.nio.file.Path;
@@ -16,71 +12,18 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.Callable;
 
-@Command(name = "lphybeast", footer = "Copyright(c) 2020",
-        description = "LPhyBEAST takes an LPhy model specification and some data, " +
-                "and produces a BEAST 2 XML file. The installation and usage is available at " +
-                "https://linguaphylo.github.io/setup/",
-        version = { "LPhyBEAST " + LPhyBEAST.VERSION,
-                "Local JVM: ${java.version} (${java.vendor} ${java.vm.name} ${java.vm.version})",
-                "OS: ${os.name} ${os.version} ${os.arch}"})
-public class LPhyBEAST implements Callable<Integer> {
+/**
+ * @author Walter Xie
+ * @author Alexei Dummond
+ */
+public class LPhyBeast {
 
-    public static final String VERSION = "1.0.0";
+    private final Path inPath, outPath;
+    private int rep = 1;
 
-    @Parameters(paramLabel = "LPhy_scripts", description = "File of the LPhy model specification. " +
-            "If it is a relative path, then concatenate 'user.dir' to the front of the path. " +
-            "But if `-wd` is NOT given, the 'user.dir' will set to the path where the LPhy script is.")
-    Path infile;
-
-    @Option(names = {"-V", "--version"}, versionHelp = true, description = "display version info")
-    boolean versionInfoRequested;
-    @Option(names = {"-h", "--help"}, usageHelp = true, description = "display this help message")
-    boolean usageHelpRequested;
-
-    @Option(names = {"-o", "--out"},     description = "BEAST 2 XML. " +
-            "If it contains relative path, then concatenate 'user.dir' to the front of the path.")
-    Path outfile;
-    // 'user.dir' is default to the current directory
-    @Option(names = {"-wd", "--workdir"}, description = "Set 'user.dir' " +
-            "and concatenate it to the front of the input and output path " +
-            "(if the relative path is provided), which can be used for batch processing.")
-    Path wd;
-
-    //MCMC
-    @Option(names = {"-l", "--chainLength"}, defaultValue = "-1", description = "define the total chain length of MCMC, default to 1 million.")
-    int chainLength;
-    @Option(names = {"-b", "--preBurnin"}, defaultValue = "0", description = "define the number of burn in samples taken before entering the main loop of MCMC")
-    int preBurnin;
-
-    //well calibrated study
-    @Option(names = {"-r", "--replicates"}, defaultValue = "1", description = "the number of replicates (XML) given one LPhy script, " +
-            "usually to create simulations for well-calibrated study.") int rep;
-
-
-    public static void main(String[] args) {
-
-        int exitCode = new CommandLine(new LPhyBEAST()).execute(args);
-
-        if (exitCode != 0)
-            LoggerUtils.log.severe("LPhyBEAST does not exit normally !");
-        System.exit(exitCode);
-
-    }
-
-
-    /**
-     * 1. If the input/output is a relative path, then concatenate 'user.dir'
-     * to the front of the path.
-     * 2. Use '-wd' to set 'user.dir'. But if `-wd` is NOT given,
-     * the 'user.dir' will be set to the path where the LPhy script is.
-     * @throws CommandLine.PicocliException
-     */
-    @Override
-    public Integer call() throws CommandLine.PicocliException { // business logic goes here...
-
-//        if (versionInfoRequested) CommandLine.usage(this, System.out);
+    public LPhyBeast(Path infile, Path outfile, Path wd) {
+        //        if (versionInfoRequested) CommandLine.usage(this, System.out);
 
         String fileName = infile.getFileName().toString();
         if (fileName == null || !fileName.endsWith(".lphy"))
@@ -89,13 +32,12 @@ public class LPhyBEAST implements Callable<Integer> {
         if (wd != null)
             UserDir.setUserDir(wd.toAbsolutePath().toString());
         // if the relative path, then concatenate user.dir before it
-        final Path inPath = UserDir.getUserPath(infile);
+        inPath = UserDir.getUserPath(infile);
         // still need to set user.dir, if no -wd, in case LPhy script uses relative path
         if (wd == null)
             // set user.dir to the folder containing lphy script
             UserDir.setUserDir(inPath.getParent().toString());
 
-        Path outPath;
         if (outfile != null) {
             outPath = UserDir.getUserPath(outfile);
         } else {
@@ -104,25 +46,38 @@ public class LPhyBEAST implements Callable<Integer> {
             outPath = Paths.get(UserDir.getUserDir().toString(), infileNoExt + ".xml");
         }
 
+    }
+
+    /**
+     * Unit test
+     */
+    public LPhyBeast() {
+        inPath = null;
+        outPath = null;
+    }
+
+    public void setRep(int rep) {
+        this.rep = rep;
+    }
+
+    public void run(int chainLength, int preBurnin) {
         // add rep after file stem
         if (rep > 1) {
-            final String outPathNoExt = outPath.toString().substring(0, outPath.toString().lastIndexOf("."));
-            // well-calibrated validations
             for (int i = 0; i < rep; i++) {
+                final String outPathNoExt = outPath.toString().substring(0, outPath.toString().lastIndexOf("."));
+                // well-calibrated validations
                 // update outPath to add i
-                outPath = Paths.get(outPathNoExt + "_" + i + ".xml");
+                Path outPathPerRep = Paths.get(outPathNoExt + "_" + i + ".xml");
                 // need new reader
-                createXML(inPath, outPath, chainLength, preBurnin);
+                createXML(inPath, outPathPerRep, chainLength, preBurnin);
             }
         } else // normal output
             createXML(inPath, outPath, chainLength, preBurnin);
-
-        return 0;
     }
 
     // the relative path given in readNexus in a script always refers to user.dir
     // fileNameStem for both outfile and XML loggers
-    private void createXML(Path inPath, Path outPath, long chainLength, int preBurnin) throws CommandLine.PicocliException {
+    private void createXML(Path inPath, Path outPath, long chainLength, int preBurnin) {
 
         // need to call reader each loop
         BufferedReader reader = null;
@@ -131,7 +86,7 @@ public class LPhyBEAST implements Callable<Integer> {
 
         } catch (FileNotFoundException e) {
             throw new CommandLine.PicocliException("Fail to read LPhy scripts from " +
-                    inPath.toString() + ", user.dir = " + System.getProperty(UserDir.USER_DIR), e);
+                    inPath + ", user.dir = " + System.getProperty(UserDir.USER_DIR), e);
         }
         String path = outPath.toString();
         String pathNoExt = path.substring(0, path.lastIndexOf("."));
@@ -143,8 +98,7 @@ public class LPhyBEAST implements Callable<Integer> {
             writer.flush();
             writer.close();
         } catch (IOException e) {
-            throw new CommandLine.PicocliException("Fail to write XML to " +
-                    outfile.toString(), e);
+            throw new CommandLine.PicocliException("Fail to write XML to " + outPath, e);
         }
 
         System.out.println("\nInput LPhy : " + inPath.toAbsolutePath());
@@ -164,7 +118,7 @@ public class LPhyBEAST implements Callable<Integer> {
      * @see BEASTContext#toBEASTXML(String, long, int)
      * @throws IOException
      */
-    private String toBEASTXML(BufferedReader reader, String filePathNoExt, long chainLength, int preBurnin) throws CommandLine.PicocliException {
+    private String toBEASTXML(BufferedReader reader, String filePathNoExt, long chainLength, int preBurnin) {
         //*** Parse LPhy file ***//
         LPhyParser parser = new REPL();
         try {
@@ -204,53 +158,13 @@ public class LPhyBEAST implements Callable<Integer> {
      * @param lphy           LPhy script with <code>data{}<code/> <code>model{}<code/> blocks,
      *                       and one line one command.
      * @see #toBEASTXML(BufferedReader, String, long, int)
-     * @throws IOException
      */
-    public String lphyToXML (String lphy, String fileNameStem, long chainLength, int preBurnin) throws CommandLine.PicocliException {
+    public String lphyToXML (String lphy, String fileNameStem, long chainLength, int preBurnin) {
         Reader inputString = new StringReader(lphy);
         BufferedReader reader = new BufferedReader(inputString);
 
         return toBEASTXML(reader, fileNameStem, chainLength, preBurnin);
     }
-
-    /**TODO not working
-     * This function is modified from picocli demo {@code VersionProviderDemo2}.
-     * {@link CommandLine.IVersionProvider} implementation that returns version information
-     * from the lphybeast-x.x.x.jar file's {@code /META-INF/MANIFEST.MF} file.
-    static class ManifestVersionProvider implements CommandLine.IVersionProvider {
-        public String[] getVersion() throws Exception {
-            Enumeration<URL> resources = LPhyBEAST.class.getClassLoader().getResources("META-INF/MANIFEST.MF");
-            while (resources.hasMoreElements()) {
-                URL url = resources.nextElement();
-                try {
-                    Manifest manifest = new Manifest(url.openStream());
-                    if (isApplicableManifest(manifest)) {
-                        Attributes attr = manifest.getMainAttributes();
-                        return new String[] { get(attr, "Implementation-Title") + " version \"" +
-                                get(attr, "Implementation-Version") + "\"" };
-                    }
-                } catch (IOException ex) {
-                    return new String[] { "Unable to read from " + url + ": " + ex };
-                }
-            }
-            return new String[0];
-        }
-
-        private boolean isApplicableManifest(Manifest manifest) {
-            return true;
-//            Attributes attributes = manifest.getMainAttributes();
-//            return "LPhyBEAST".equalsIgnoreCase(get(attributes, "Implementation-Title").toString());
-        }
-
-        // no null, so .toString is safe
-        private static Object get(Attributes attributes, String key) {
-            Object o = attributes.get(new Attributes.Name(key));
-            if (o != null) return o;
-            return "";
-        }
-    }
-     */
-
 
 //    private static void source(BufferedReader reader, LPhyParser parser)
 //            throws IOException {
@@ -279,4 +193,6 @@ public class LPhyBEAST implements Callable<Integer> {
 //        reader.close();
 //    }
 
+
 }
+

@@ -7,10 +7,6 @@ plugins {
     id("io.github.linguaphylo.platforms.lphy-publish") version "0.1.2"
 }
 
-// TODO 3 versions: here, LPhyBEAST, version.xml
-// version has to be manually adjusted to keep same between version.xml and here
-version = "1.0.0-SNAPSHOT"
-
 java {
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
