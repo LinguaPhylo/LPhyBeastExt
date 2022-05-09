@@ -56,7 +56,7 @@ dependencies {
 //    }
 }
 
-val maincls = "lphybeast.LPhyBEAST"
+val maincls = "lphybeast.LPhyBeastCMD"
 val developers = "LPhyBEAST developer team"
 tasks.jar {
     manifest {
