@@ -5,8 +5,11 @@ import lphystudio.app.LPhyAppConfig;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.io.PrintStream;
 
 /**
+ * LPhyBeast GUI.
  * @author Walter Xie
  */
 public class LPhyBeastLauncher extends JFrame {
@@ -40,10 +43,30 @@ public class LPhyBeastLauncher extends JFrame {
             );
         }
 
+        LauncherPanel launcherPanel = new LauncherPanel();
+
         JTabbedPane tabbedPane = new JTabbedPane();
         //The following line enables to use scrolling tabs.
         tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 
+        tabbedPane.addTab("Launcher", launcherPanel);
+        tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
+
+        final JTextPane soutPane = new JTextPane();
+        TextPaneOutputStream out = new TextPaneOutputStream(soutPane, false);
+        PrintStream printStream = new PrintStream(out);
+        System.setOut(printStream);
+
+        tabbedPane.addTab("Standard output", new JScrollPane(soutPane));
+        tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
+
+        final JTextPane serrPane = new JTextPane();
+        out = new TextPaneOutputStream(serrPane, true);
+        printStream = new PrintStream(out);
+        System.setErr(printStream);
+
+        tabbedPane.addTab("Warnings", new JScrollPane(serrPane));
+        tabbedPane.setMnemonicAt(2, KeyEvent.VK_3);
 
         getContentPane().add(tabbedPane, BorderLayout.CENTER);
 

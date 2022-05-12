@@ -37,9 +37,11 @@ public class LPhyBeastCMD implements Callable<Integer> {
     Path wd;
 
     //MCMC
-    @CommandLine.Option(names = {"-l", "--chainLength"}, defaultValue = "-1", description = "define the total chain length of MCMC, default to 1 million.")
-    int chainLength;
-    @CommandLine.Option(names = {"-b", "--preBurnin"}, defaultValue = "0", description = "define the number of burn in samples taken before entering the main loop of MCMC")
+    @CommandLine.Option(names = {"-l", "--chainLength"}, defaultValue = "-1", description = "The total chain length of MCMC, default to 1 million.")
+    long chainLength;
+    @CommandLine.Option(names = {"-b", "--preBurnin"}, defaultValue = "-1",
+            description = "The number of burnin samples taken before entering the main loop of MCMC. " +
+                    "If < 0, as default, then estimate it based on all state nodes size.")
     int preBurnin;
 
     //well calibrated study

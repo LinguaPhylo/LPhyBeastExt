@@ -22,12 +22,24 @@ public class LPhyBeast {
     private final Path inPath, outPath;
     private int rep = 1;
 
-    public LPhyBeast(Path infile, Path outfile, Path wd) {
+    /**
+     * Handle the input file path, output file path, and user.dir.
+     * Either can be a relative or absolute path.
+     * If relative, then concatenate user.dir before it.
+     * @param infile   lphy script file path.
+     * @param outfile  XML file path. If null,
+     *                 then use the input file name stem plus .xml,
+     *                 and output to the user.dir.
+     * @param wd       Use to set user.dir. If null,
+     *                 then set user.dir to the parent folder of lphy script.
+     */
+    public LPhyBeast(Path infile, Path outfile, Path wd) throws IOException {
         //        if (versionInfoRequested) CommandLine.usage(this, System.out);
-
+        if (infile == null || !infile.toFile().exists())
+            throw new IOException("Cannot find LPhy script file ! " + (infile != null ? infile.toAbsolutePath() : null));
         String fileName = infile.getFileName().toString();
-        if (fileName == null || !fileName.endsWith(".lphy"))
-            throw new CommandLine.InitializationException("Invalid LPhy file: the postfix has to be '.lphy'");
+        if (!fileName.endsWith(".lphy"))
+            throw new IllegalArgumentException("Invalid LPhy file: the postfix has to be '.lphy'");
 
         if (wd != null)
             UserDir.setUserDir(wd.toAbsolutePath().toString());
@@ -60,7 +72,7 @@ public class LPhyBeast {
         this.rep = rep;
     }
 
-    public void run(int chainLength, int preBurnin) {
+    public void run(long chainLength, int preBurnin) {
         // add rep after file stem
         if (rep > 1) {
             for (int i = 0; i < rep; i++) {

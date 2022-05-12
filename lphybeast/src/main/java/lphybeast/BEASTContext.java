@@ -1187,9 +1187,10 @@ public class BEASTContext {
         if (inits.size() > 0) mcmc.setInputValue("init", inits);
 
         // if not given, preBurnin == 0, then will be defined by all state nodes size
-        if (preBurnin < 1)
+        if (preBurnin < 0)
             preBurnin = getAllStatesSize(this.state) * 10;
-        mcmc.setInputValue("preBurnin", preBurnin);
+        if (preBurnin > 0)
+            mcmc.setInputValue("preBurnin", preBurnin);
 
         mcmc.initAndValidate();
         return mcmc;
