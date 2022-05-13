@@ -1249,14 +1249,12 @@ public class BEASTContext {
         // Will throw an ArithmeticException in case of overflow.
         int logEvery = toIntExact(chainLength / numOfSamples);
 
-        LoggerUtils.log.info("MCMC total chain length = " + chainLength +
+        LoggerUtils.log.info("Set MCMC total chain length = " + chainLength +
                 ", log every = " + logEvery + ", samples = " + numOfSamples);
 
         MCMC mcmc = createMCMC(chainLength, logEvery, fileNameStem, preBurnin);
 
-        String xml = new XMLProducer().toXML(mcmc, elements.keySet());
-
-        return xml;
+        return new XMLProducer().toXML(mcmc, elements.keySet());
     }
 
     public void addSkipOperator(StateNode stateNode) {

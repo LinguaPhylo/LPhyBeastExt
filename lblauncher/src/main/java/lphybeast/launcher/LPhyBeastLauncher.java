@@ -2,6 +2,7 @@ package lphybeast.launcher;
 
 import lphyext.manager.DependencyUtils;
 import lphystudio.app.LPhyAppConfig;
+import lphystudio.core.swing.io.TextPaneOutputStream;
 
 import javax.swing.*;
 import java.awt.*;
@@ -61,8 +62,8 @@ public class LPhyBeastLauncher extends JFrame {
         tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
 
         final JTextPane serrPane = new JTextPane();
-        out = new TextPaneOutputStream(serrPane, true);
-        printStream = new PrintStream(out);
+        TextPaneOutputStream err = new TextPaneOutputStream(serrPane, true);
+        printStream = new PrintStream(err);
         System.setErr(printStream);
 
         tabbedPane.addTab("Warnings", new JScrollPane(serrPane));

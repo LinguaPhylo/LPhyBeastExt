@@ -1,5 +1,6 @@
 package lphybeast.launcher;
 
+import lphy.util.Progress;
 import lphybeast.LPhyBeast;
 import lphystudio.app.Utils;
 import lphystudio.app.graphicalmodelpanel.ErrorPanel;
@@ -8,7 +9,11 @@ import lphystudio.core.swing.SpringUtilities;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -18,12 +23,20 @@ import java.nio.file.Paths;
  * Launcher Panel
  * @author Walter Xie
  */
-public class LauncherPanel extends JPanel {
+public class LauncherPanel extends JPanel implements ActionListener, PropertyChangeListener {
 
     final Color LL_GRAY = new Color(230, 230, 230);
 
-    private LPhyBeast lPhyBeast;
+    private final ErrorPanel errorPanel;
     private JProgressBar progressBar;
+    private JButton runButton;
+    private Task task;
+
+    private JTextField input;
+    private JTextField output;
+    private JTextField rep;
+    private JTextField chainLen;
+    private JTextField burnin;
 
     public LauncherPanel() {
         setLayout(new BorderLayout());
@@ -31,7 +44,7 @@ public class LauncherPanel extends JPanel {
         JPanel topPanel = new JPanel(new SpringLayout());
         topPanel.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
 
-        JTextField input = new JTextField();
+        input = new JTextField();
         input.setEditable(false);
         input.setBackground(LL_GRAY);
 
@@ -41,7 +54,7 @@ public class LauncherPanel extends JPanel {
         buttonInput.setMnemonic(KeyEvent.VK_I);
         buttonInput.setActionCommand("input");
 
-        JTextField output = new JTextField();
+        output = new JTextField();
         output.setEditable(false);
         output.setBackground(LL_GRAY);
 
@@ -77,31 +90,32 @@ public class LauncherPanel extends JPanel {
         JLabel label = new JLabel("Replicates : ", JLabel.TRAILING);
         label.setToolTipText("The number of XML (simulations) for given LPhy script." +
                 "If more than 1, the index will append to the output XML file name.");
-        JTextField rep = new JTextField("1"); // integer
+        rep = new JTextField("1"); // integer
         topPanel.add(label);
         topPanel.add(rep);
 
         label = new JLabel("MCMC chain length : ", JLabel.TRAILING);
         label.setToolTipText("The total chain length of MCMC, default to 1 million.");
-        JTextField chainLen = new JTextField("1000000"); // long
+        chainLen = new JTextField("1000000"); // long
         topPanel.add(label);
         topPanel.add(chainLen);
 
         label = new JLabel("Pre-burnin : ", JLabel.TRAILING);
         label.setToolTipText("The number of burn in samples taken before entering the main loop of MCMC. " +
                 "If empty (or < 0), as default, then estimate it based on all state nodes size.");
-        JTextField burnin = new JTextField(""); // integer
+        burnin = new JTextField(""); // integer
         topPanel.add(label);
         topPanel.add(burnin);
 
-        JButton buttonRun = new JButton("Generate XML");
-        buttonRun.setFont(buttonRun.getFont().deriveFont(Font.BOLD));
+        runButton = new JButton("Generate XML");
+        runButton.setFont(runButton.getFont().deriveFont(Font.BOLD));
+        runButton.addActionListener(this);
 
         progressBar = new JProgressBar(0, 100);
         progressBar.setValue(0);
         progressBar.setStringPainted(true);
 
-        topPanel.add(buttonRun);
+        topPanel.add(runButton);
         topPanel.add(progressBar);
 
         //Lay out the panel.
@@ -112,28 +126,43 @@ public class LauncherPanel extends JPanel {
 
         add(topPanel, BorderLayout.NORTH);
 
-        //        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, topPanel, jPanel);
+//        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, topPanel, jPanel);
 //        splitPane.setDividerLocation(200);
 //        splitPane.setResizeWeight(0.5);
 
-        ErrorPanel errorPanel = new ErrorPanel();
+        errorPanel = new ErrorPanel();
+        errorPanel.setNoLvlName(true);
         add(errorPanel, BorderLayout.CENTER);
 
-        buttonRun.addActionListener(e -> {
-//            errorPanel.setText("");
-            try {
-                LPhyBeast lphyBeast = createLPhyBeast(input, output);
-
-                lphyBeast.setRep(getInt(rep));
-                lphyBeast.run(getLong(chainLen), getInt(burnin));
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                JOptionPane.showMessageDialog(this, ex.getMessage(),
-                        "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        });
-
     }
+
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        runButton.setEnabled(false);
+        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
+        //Instances of javax.swing.SwingWorker are not reusuable, so
+        //we create new instances as needed.
+        task = new Task();
+        task.addPropertyChangeListener(this);
+        try {
+            task.execute();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, ex.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if ("progress".equals(evt.getPropertyName())) {
+            int progress = (Integer) evt.getNewValue();
+            progressBar.setValue(progress);
+        }
+    }
+
 
     private LPhyBeast createLPhyBeast(JTextField input, JTextField output) throws IOException {
         Path infile = Paths.get(input.getText());
@@ -163,5 +192,72 @@ public class LauncherPanel extends JPanel {
         return null;
     }
 
+    class Task extends SwingWorker<Void, Void> implements Progress {
+        private int start = 5;
+        private int end = 95;
+        /*
+         * Main task. Executed in background thread.
+         */
+        @Override
+        public Void doInBackground() throws IOException {
+            setProgress(0);
+            errorPanel.clear();
+            // TODO use AppLauncher, so rm lphybeast dependencies?
+            LPhyBeast lphyBeast = createLPhyBeast(input, output);
+            setProgress(3);
+
+            int r = getInt(rep);
+            long ch = getLong(chainLen);
+            int b = getInt(burnin);
+
+            // start run
+            setProgress(getStart());
+            lphyBeast.run(r, ch, b, this);
+
+            setProgress(100);
+            return null;
+        }
+
+        /*
+         * Executed in event dispatching thread
+         */
+        @Override
+        public void done() {
+            runButton.setEnabled(true);
+            setCursor(null); //turn off the wait cursor
+        }
+
+        /**
+         * @param percentage  based on the interval (= end - start), not the whole process.
+         *                    So set progress = getStartValue() + percentage * getInterval().
+         */
+        @Override
+        public void setProgressPercentage(double percentage) {
+            if (percentage > 1)
+                throw new IllegalArgumentException("Illegal progress percentage value : " + percentage + " !");
+            int p = getStart() + (int) (percentage * getInterval());
+            setProgress(Math.min(p, getEnd()));
+        }
+
+        @Override
+        public int getStart() {
+            return start;
+        }
+
+        @Override
+        public int getEnd() {
+            return end;
+        }
+
+        @Override
+        public void setStart(int start) {
+            this.start = start;
+        }
+
+        @Override
+        public void setEnd(int end) {
+            this.end = end;
+        }
+    }
 
 }

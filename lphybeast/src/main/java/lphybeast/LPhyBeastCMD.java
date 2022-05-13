@@ -1,8 +1,10 @@
 package lphybeast;
 
+import lphy.system.UserDir;
 import lphy.util.LoggerUtils;
 import picocli.CommandLine;
 
+import java.io.FileNotFoundException;
 import java.nio.file.Path;
 import java.util.concurrent.Callable;
 
@@ -68,18 +70,20 @@ public class LPhyBeastCMD implements Callable<Integer> {
      */
     @Override
     public Integer call() throws CommandLine.PicocliException { // business logic goes here...
-
+        LPhyBeast lphyBeast = new LPhyBeast(); // inPath,outPath = null
         try {
-            LPhyBeast lphyBeast = new LPhyBeast(infile, outfile, wd);
-
-            lphyBeast.setRep(rep);
-            lphyBeast.run(chainLength, preBurnin);
+            lphyBeast = new LPhyBeast(infile, outfile, wd);
+            lphyBeast.run(rep, chainLength, preBurnin);
+        } catch (FileNotFoundException e) {
+            throw new CommandLine.PicocliException("Fail to read LPhy scripts from " +
+                    lphyBeast.getInPath() + ", user.dir = " + System.getProperty(UserDir.USER_DIR), e);
         } catch (Exception e) {
             e.printStackTrace();
             throw new CommandLine.PicocliException(e.toString());
         }
         return 0;
     }
+
 
     /**TODO not working
      * This function is modified from picocli demo {@code VersionProviderDemo2}.
