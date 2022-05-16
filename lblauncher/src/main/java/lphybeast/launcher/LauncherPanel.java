@@ -31,7 +31,7 @@ public class LauncherPanel extends JPanel implements ActionListener, PropertyCha
     final Color LL_GRAY = new Color(230, 230, 230);
 
     private final ErrorPanel errorPanel;
-    private JProgressBar progressBar;
+    private JProgressBar progressBar = new JProgressBar(0, 100);
     private JButton runButton;
     private Task task;
 
@@ -114,7 +114,6 @@ public class LauncherPanel extends JPanel implements ActionListener, PropertyCha
         runButton.setFont(runButton.getFont().deriveFont(Font.BOLD));
         runButton.addActionListener(this);
 
-        progressBar = new JProgressBar(0, 100);
         progressBar.setValue(0);
         progressBar.setStringPainted(true);
 
@@ -145,8 +144,7 @@ public class LauncherPanel extends JPanel implements ActionListener, PropertyCha
         runButton.setEnabled(false);
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
-        //Instances of javax.swing.SwingWorker are not reusuable, so
-        //we create new instances as needed.
+        // javax.swing.SwingWorker instance
         task = new Task();
         task.addPropertyChangeListener(this);
         task.execute();
@@ -188,7 +186,7 @@ public class LauncherPanel extends JPanel implements ActionListener, PropertyCha
 
         private int start = 5;
         private int end = 95;
-        private volatile double progPer;
+        private double progPer;
         /*
          * Main task. Executed in background thread.
          */
@@ -196,6 +194,11 @@ public class LauncherPanel extends JPanel implements ActionListener, PropertyCha
         public Void doInBackground() {
             setProgress(0);
             errorPanel.clear();
+
+            if (input.getText().isEmpty()) {
+                LoggerUtils.log.severe("Please select a LPhy script file !");
+                return null;
+            }
 
             try {
                 String classPath = BeastLauncher.getPath(false, null);

@@ -152,8 +152,6 @@ public class LPhyBeast implements Runnable {
         return str.substring(0, str.lastIndexOf("."));
     }
 
-    private final double endRegister = 0.9;
-
     // the relative path given in readNexus in a script always refers to user.dir
     // fileNameStem for both outfile and XML loggers
     private void createXML(Path outPath, Progress progress) throws IOException {
@@ -165,7 +163,7 @@ public class LPhyBeast implements Runnable {
         // create XML string from reader, given file name and MCMC setting
         String xml = toBEASTXML(Objects.requireNonNull(reader), pathNoExt, chainLength, preBurnin, progress);
         if (progress != null)
-            progress.setProgressPercentage(endRegister);
+            progress.setProgressPercentage(0.9);
         writeXML(xml, outPath);
     }
 
@@ -205,7 +203,7 @@ public class LPhyBeast implements Runnable {
         parser.source(reader);
 
         if (progress != null)
-            progress.setProgressPercentage(0.2);
+            progress.setProgressPercentage(0.15);
 
         // log true values and tree
         List<RandomValueLogger> loggers = new ArrayList<>();
@@ -217,12 +215,11 @@ public class LPhyBeast implements Runnable {
         Sampler sampler = new Sampler(gparser);
         sampler.sample(1, loggers);
 
-        double startRegister = 0.3;
         if (progress != null)
-            progress.setProgressPercentage(startRegister);
+            progress.setProgressPercentage(0.2);
 
         // register parser
-        BEASTContext context = new BEASTContext(parser, progress, startRegister, endRegister);
+        BEASTContext context = new BEASTContext(parser);
 
         //*** Write BEAST 2 XML ***//
         // remove any dir in filePathNoExt here
@@ -231,7 +228,7 @@ public class LPhyBeast implements Runnable {
 
         // adjust progress
         if (progress != null)
-            progress.setProgressPercentage(Math.min(endRegister, Math.max(0.8, progress.getCurrentPercentage())));
+            progress.setProgressPercentage(0.8);
 
         // filePathNoExt here is file stem, which will be used in XML log file names.
         // Cannot handle any directories from other machines.
