@@ -2,7 +2,8 @@ package lphybeast;
 
 import org.junit.Before;
 import org.junit.Test;
-import picocli.CommandLine;
+
+import java.io.IOException;
 
 import static org.junit.Assert.assertTrue;
 
@@ -24,11 +25,11 @@ public class LPhyToBEASTTest {
             "  D ~ PhyloCTMC(tree=ψ, L=L, Q=jukesCantor());\n" +
             "}";
 
-    LPhyBEAST lPhyBEAST;
+    LPhyBeast lPhyBEAST;
 
     @Before
-    public void setUp() throws Exception {
-        lPhyBEAST = new LPhyBEAST();
+    public void setUp() {
+        lPhyBEAST = new LPhyBeast();
     }
 
     @Test
@@ -36,8 +37,8 @@ public class LPhyToBEASTTest {
         System.out.println(simpleCoal);
         String xml = null;
         try {
-            xml = lPhyBEAST.lphyToXML(simpleCoal, "simpleCoal", -1, 0);
-        } catch (CommandLine.PicocliException e) {
+            xml = lPhyBEAST.lphyStrToXML(simpleCoal, "simpleCoal");
+        } catch (IOException e) {
             e.printStackTrace();
         }
 

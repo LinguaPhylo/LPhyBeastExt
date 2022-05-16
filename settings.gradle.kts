@@ -1,7 +1,8 @@
 
-rootProject.name = "LPhyBEAST"
+rootProject.name = "LPhyBeast"
 
 include("lphybeast")
+include("lblauncher")
 include("mascot")
 
 // https://docs.gradle.org/current/userguide/build_cache.html

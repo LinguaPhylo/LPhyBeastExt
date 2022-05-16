@@ -159,7 +159,7 @@ public class LPhyBEASTExtFactory {
                 // https://docs.oracle.com/javase/9/docs/api/java/lang/Class.html#newInstance--
                 ValueToBEAST<?,?> valueToBEAST = (ValueToBEAST<?,?>) c.getDeclaredConstructor().newInstance();
                 if (this.valueToBEASTList.contains(valueToBEAST))
-                    LoggerUtils.log.severe(valueToBEAST + " exists in the valueToBEASTList !");
+                    LoggerUtils.log.warning(valueToBEAST + " exists in register, overwrite previous one !");
                 this.valueToBEASTList.add(valueToBEAST);
             } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
                 e.printStackTrace();
@@ -173,7 +173,7 @@ public class LPhyBEASTExtFactory {
                 // https://docs.oracle.com/javase/9/docs/api/java/lang/Class.html#newInstance--
                 GeneratorToBEAST<?,?> generatorToBEAST = (GeneratorToBEAST<?,?>) c.getDeclaredConstructor().newInstance();
                 if (this.generatorToBEASTMap.containsKey(generatorToBEAST))
-                    LoggerUtils.log.severe(generatorToBEAST + " exists in the generatorToBEASTMap !");
+                    LoggerUtils.log.warning(generatorToBEAST + " exists in register, overwrite previous one !");
                 this.generatorToBEASTMap.put(generatorToBEAST.getGeneratorClass(), generatorToBEAST);
             } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
                 e.printStackTrace();
@@ -184,7 +184,7 @@ public class LPhyBEASTExtFactory {
     private void registerDataTypes(final Map<SequenceType, DataType> dataTypeMap) {
         for (Map.Entry<SequenceType, DataType> entry : dataTypeMap.entrySet()) {
             if (this.dataTypeMap.containsKey(entry.getKey()))
-                LoggerUtils.log.severe(entry.getKey() + " exists in the dataTypeMap !");
+                LoggerUtils.log.warning(entry.getKey() + " exists in register, overwrite previous one !");
             this.dataTypeMap.put(entry.getKey(), entry.getValue());
         }
     }

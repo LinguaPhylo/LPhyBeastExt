@@ -7,10 +7,6 @@ plugins {
     id("io.github.linguaphylo.platforms.lphy-publish") version "0.1.2"
 }
 
-// TODO 3 versions: here, LPhyBEAST, version.xml
-// version has to be manually adjusted to keep same between version.xml and here
-version = "0.3.2-SNAPSHOT"
-
 java {
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
@@ -19,6 +15,7 @@ java {
 
 val beast2Jars = fileTree("lib2") {
     exclude("**/starbeast2-*.jar")
+    exclude("**/*-javadoc.jar")
 }
 val notReleasedJars = fileTree("lib") {
     // not released, so must include in lphybeast release
@@ -41,7 +38,7 @@ dependencies {
 //    implementation(lblibs)
 
     // io.github.linguaphylo
-    api("io.github.linguaphylo:lphy:1.2.0")
+    api("io.github.linguaphylo:lphy:1.3.0-SNAPSHOT")
     // all released beast 2 libs
     api(beast2Jars)
     // other jars must be included
@@ -59,7 +56,7 @@ dependencies {
 //    }
 }
 
-val maincls = "lphybeast.LPhyBEAST"
+val maincls = "lphybeast.LPhyBeastCMD"
 val developers = "LPhyBEAST developer team"
 tasks.jar {
     manifest {

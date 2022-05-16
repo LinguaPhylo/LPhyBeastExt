@@ -6,9 +6,15 @@ import lphy.core.distributions.IID;
 import lphy.core.distributions.RandomComposition;
 import lphy.core.distributions.WeightedDirichlet;
 import lphy.core.functions.*;
+import lphy.core.functions.alignment.NCharFunction;
+import lphy.core.functions.alignment.ReadFasta;
+import lphy.core.functions.alignment.ReadNexus;
 import lphy.core.functions.datatype.BinaryDatatypeFunction;
 import lphy.core.functions.datatype.NucleotidesFunction;
 import lphy.core.functions.datatype.StandardDatatypeFunction;
+import lphy.core.functions.taxa.*;
+import lphy.core.functions.tree.MigrationCount;
+import lphy.core.functions.tree.NodeCount;
 import lphy.evolution.Taxa;
 import lphy.evolution.alignment.Alignment;
 import lphy.evolution.tree.TimeTree;
@@ -43,9 +49,9 @@ public class Exclusion {
         return generator instanceof WeightedDirichlet || generator instanceof IntegerArray ||
                 generator instanceof ExpressionNode || generator instanceof RandomComposition ||
                 generator instanceof NTaxaFunction || generator instanceof NCharFunction ||
-                generator instanceof CreateTaxa || generator instanceof TaxaFunction ||
-                generator instanceof lphy.core.functions.NodeCount ||
-                generator instanceof Species || generator instanceof TaxaAgesFromFunction ||
+                generator instanceof TaxaFunction || generator instanceof NodeCount ||
+                generator instanceof CreateTaxa || generator instanceof Species ||
+                generator instanceof TaxaAgesFromFunction ||
                 generator instanceof ReadNexus || generator instanceof ReadFasta ||
                 generator instanceof ExtractTrait || generator instanceof Unique ||
                 generator instanceof ARange || generator instanceof Range ||
