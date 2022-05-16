@@ -1,7 +1,10 @@
 package lphybeast.launcher;
 
+import beast.app.beastapp.BeastLauncher;
+import beast.util.BEASTClassLoader;
+import beast.util.PackageManager;
+import lphy.util.LoggerUtils;
 import lphy.util.Progress;
-import lphybeast.LPhyBeast;
 import lphystudio.app.Utils;
 import lphystudio.app.graphicalmodelpanel.ErrorPanel;
 import lphystudio.core.swing.SpringUtilities;
@@ -15,7 +18,7 @@ import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.io.IOException;
+import java.lang.reflect.Method;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -146,13 +149,7 @@ public class LauncherPanel extends JPanel implements ActionListener, PropertyCha
         //we create new instances as needed.
         task = new Task();
         task.addPropertyChangeListener(this);
-        try {
-            task.execute();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(this, ex.getMessage(),
-                    "Error", JOptionPane.ERROR_MESSAGE);
-        }
+        task.execute();
     }
 
     @Override
@@ -163,12 +160,6 @@ public class LauncherPanel extends JPanel implements ActionListener, PropertyCha
         }
     }
 
-
-    private LPhyBeast createLPhyBeast(JTextField input, JTextField output) throws IOException {
-        Path infile = Paths.get(input.getText());
-        Path outfile = Paths.get(output.getText());
-        return new LPhyBeast(infile, outfile, null);
-    }
 
     private int getInt(JTextField textField) {
         String intStr = textField.getText().trim();
@@ -193,27 +184,57 @@ public class LauncherPanel extends JPanel implements ActionListener, PropertyCha
     }
 
     class Task extends SwingWorker<Void, Void> implements Progress {
+        public static final String LPHY_BEAST_CLS = "lphybeast.LPhyBeast";
+
         private int start = 5;
         private int end = 95;
+        private volatile double progPer;
         /*
          * Main task. Executed in background thread.
          */
         @Override
-        public Void doInBackground() throws IOException {
+        public Void doInBackground() {
             setProgress(0);
             errorPanel.clear();
-            // TODO use AppLauncher, so rm lphybeast dependencies?
-            LPhyBeast lphyBeast = createLPhyBeast(input, output);
-            setProgress(3);
 
+            try {
+                String classPath = BeastLauncher.getPath(false, null);
+
+                PackageManager.loadExternalJars();
+                for (String jarFile : classPath.split(File.pathSeparator)) {
+                    if (jarFile.toLowerCase().endsWith("jar")) {
+                        BEASTClassLoader.classLoader.addJar(jarFile);
+                    }
+                }
+            } catch (Exception e) {
+                LoggerUtils.logStackTrace(e);
+                return null;
+            }
+
+            Path infile = Paths.get(input.getText());
+            Path outfile = Paths.get(output.getText());
             int r = getInt(rep);
             long ch = getLong(chainLen);
             int b = getInt(burnin);
 
-            // start run
-            setProgress(getStart());
-            lphyBeast.run(r, ch, b, this);
+            setProgress(3);
 
+            try {
+                Class<?> mainClass = BEASTClassLoader.forName(LPHY_BEAST_CLS);
+                // Path infile, Path outfile, Path wd, long chainLength, int preBurnin
+                Object o = mainClass.getConstructor(Path.class, Path.class, Path.class, long.class, int.class)
+                        .newInstance(infile, outfile, null, ch, b);
+
+                // start run
+                setProgress(getStart());
+
+                // lphyBeast.run(r, this);
+                Method runMethod = mainClass.getMethod("run", int.class, Progress.class);
+                runMethod.invoke(o, r, this);
+            } catch (Exception e) {
+                LoggerUtils.logStackTrace(e);
+                return null;
+            }
             setProgress(100);
             return null;
         }
@@ -228,6 +249,8 @@ public class LauncherPanel extends JPanel implements ActionListener, PropertyCha
         }
 
         /**
+         * Handle both single process and multi-processes by interval(s).
+         * The percentage based on each interval.
          * @param percentage  based on the interval (= end - start), not the whole process.
          *                    So set progress = getStartValue() + percentage * getInterval().
          */
@@ -235,8 +258,14 @@ public class LauncherPanel extends JPanel implements ActionListener, PropertyCha
         public void setProgressPercentage(double percentage) {
             if (percentage > 1)
                 throw new IllegalArgumentException("Illegal progress percentage value : " + percentage + " !");
+            this.progPer = percentage;
             int p = getStart() + (int) (percentage * getInterval());
             setProgress(Math.min(p, getEnd()));
+        }
+
+        @Override
+        public double getCurrentPercentage() {
+            return progPer;
         }
 
         @Override

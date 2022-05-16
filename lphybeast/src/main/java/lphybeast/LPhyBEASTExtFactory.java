@@ -6,6 +6,7 @@ import jebl.evolution.sequences.SequenceType;
 import lphy.graphicalModel.Generator;
 import lphy.graphicalModel.Value;
 import lphy.util.LoggerUtils;
+import lphy.util.Progress;
 import lphybeast.spi.LPhyBEASTExt;
 
 import java.lang.reflect.InvocationTargetException;
@@ -21,21 +22,23 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class LPhyBEASTExtFactory {
     private static LPhyBEASTExtFactory factory;
-//    final private ServiceLoader<LPhyBEASTExt> loader;
+    //    final private ServiceLoader<LPhyBEASTExt> loader;
 
-    private LPhyBEASTExtFactory() {
-//        loader = ServiceLoader.load(LPhyBEASTExt.class);
-//         register all ext
-//        registerExtensions(loader, null);
-
+    private LPhyBEASTExtFactory(Progress progress, double startPer, double endPer) {
         // ServiceLoader cannot work with BEASTClassLoader
-        registerExtensions(null);
+        registerExtensions(null, progress, startPer, endPer);
     }
 
     // singleton
+    public static synchronized LPhyBEASTExtFactory getInstance(Progress progress, double startPer, double endPer) {
+        if (factory == null)
+            factory = new LPhyBEASTExtFactory(progress, startPer, endPer);
+        return factory;
+    }
+    // singleton no Process
     public static synchronized LPhyBEASTExtFactory getInstance() {
         if (factory == null)
-            factory = new LPhyBEASTExtFactory();
+            factory = new LPhyBEASTExtFactory(null, 0.0, 1.0);
         return factory;
     }
 
@@ -64,33 +67,20 @@ public class LPhyBEASTExtFactory {
     public List<Class<? extends Value>> excludedValueClasses;
 
     /**
-     * for creating doc only.
-     * @param fullClsName  the full name with package of the class
-     *                 to implement {@link LPhyBEASTExt},
-     *                 such as lphy.spi.LPhyExtImpl
-
-    public void loadExtension(String fullClsName) {
-        loader.reload();
-        registerExtensions(loader, fullClsName);
-    }
-
-    public List<LPhyBEASTExt> getExtensions() {
-        loader.reload();
-        Iterator<LPhyBEASTExt> extensions = loader.iterator();
-        List<LPhyBEASTExt> extList = new ArrayList<>();
-        extensions.forEachRemaining(extList::add);
-        return extList;
-    }*/
-
-    /**
      * Use {@link PackageManager} to load the container classes from LPhyBEAST extensions,
      * which include all extended classes.
      * @return  the list of container classes (one per extension).
      */
-    public List<LPhyBEASTExt> getExtClasses() {
+    private List<LPhyBEASTExt> getExtClasses(Progress progress, double startPer, double endPer) {
 
+        // loading all beast2 classes sets to half of progress
+        if (progress != null)
+            progress.setProgressPercentage(startPer + (endPer-startPer)*0.1);
         List<Class<?>> classList = PackageManager.find(LPhyBEASTExt.class, false);
+        if (progress != null)
+            progress.setProgressPercentage(startPer + (endPer-startPer)*0.5);
 
+        // instantiating all beast2 classes sets to 1/4 of progress
         List<LPhyBEASTExt> extensionList = new ArrayList<>();
         for (Class<?> cls : classList) {
             // https://docs.oracle.com/javase/9/docs/api/java/lang/Class.html#newInstance--
@@ -101,14 +91,16 @@ public class LPhyBEASTExtFactory {
                     IllegalAccessException | NoSuchMethodException e) {
                 // do nothing
             }
+            if (progress != null)
+                progress.setProgressPercentage(progress.getCurrentPercentage() + (endPer-startPer)*0.25/classList.size());
 //        catch (Throwable e) { e.printStackTrace(); }
         }
         return extensionList;
     }
 
 
-//    private void registerExtensions(ServiceLoader<LPhyBEASTExt> loader, String clsName) {
-    private void registerExtensions(String clsName) {
+    //    private void registerExtensions(ServiceLoader<LPhyBEASTExt> loader, String clsName) {
+    private void registerExtensions(String clsName, Progress progress, double startPer, double endPer) {
         valueToBEASTList = new ArrayList<>();
         generatorToBEASTMap = new LinkedHashMap<>();
         dataTypeMap = new ConcurrentHashMap<>();
@@ -117,10 +109,10 @@ public class LPhyBEASTExtFactory {
         excludedValueClasses = new ArrayList<>();
 
         try {
-//            Iterator<LPhyBEASTExt> extensions = loader.iterator();
 //            while (extensions.hasNext()) { // TODO validation if add same name
+            List<LPhyBEASTExt> extList = getExtClasses(progress, startPer, endPer);
 
-            for (LPhyBEASTExt ext : getExtClasses()) {
+            for (LPhyBEASTExt ext : extList) {
                 //*** LPhyBEASTExtImpl must have a public no-args constructor ***//
 //                LPhyBEASTExt ext = extensions.next();
                 // clsName == null then register all
@@ -137,6 +129,10 @@ public class LPhyBEASTExtFactory {
 
                     excludedGeneratorClasses.addAll(ext.getExcludedGenerator());
                     excludedValueClasses.addAll(ext.getExcludedValue());
+
+                    // registering all extensions sets to 1/4 of progress
+                    if (progress != null)
+                        progress.setProgressPercentage(progress.getCurrentPercentage() + (endPer-startPer)*0.25/extList.size());
                 }
             }
 
@@ -188,5 +184,25 @@ public class LPhyBEASTExtFactory {
             this.dataTypeMap.put(entry.getKey(), entry.getValue());
         }
     }
+
+
+    /**
+     * for creating doc only.
+     * @param fullClsName  the full name with package of the class
+     *                 to implement {@link LPhyBEASTExt},
+     *                 such as lphy.spi.LPhyExtImpl
+
+    public void loadExtension(String fullClsName) {
+    loader.reload();
+    registerExtensions(loader, fullClsName);
+    }
+
+    public List<LPhyBEASTExt> getExtensions() {
+    loader.reload();
+    Iterator<LPhyBEASTExt> extensions = loader.iterator();
+    List<LPhyBEASTExt> extList = new ArrayList<>();
+    extensions.forEachRemaining(extList::add);
+    return extList;
+    }*/
 
 }

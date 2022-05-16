@@ -34,6 +34,7 @@ import lphy.evolution.coalescent.StructuredCoalescent;
 import lphy.evolution.tree.TimeTree;
 import lphy.graphicalModel.*;
 import lphy.util.LoggerUtils;
+import lphy.util.Progress;
 import lphy.util.Symbols;
 import lphybeast.tobeast.values.ValueToParameter;
 import org.xml.sax.SAXException;
@@ -97,6 +98,12 @@ public class BEASTContext {
     public BEASTContext(LPhyParser phyParser) {
         parser = phyParser;
         LPhyBEASTExtFactory factory = LPhyBEASTExtFactory.getInstance();
+        setRegisteredClasses(factory);
+    }
+
+    public BEASTContext(LPhyParser phyParser, Progress progress, double startPer, double endPer) {
+        parser = phyParser;
+        LPhyBEASTExtFactory factory = LPhyBEASTExtFactory.getInstance(progress, startPer, endPer);
         setRegisteredClasses(factory);
     }
 

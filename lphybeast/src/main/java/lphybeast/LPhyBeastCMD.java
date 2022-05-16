@@ -39,7 +39,8 @@ public class LPhyBeastCMD implements Callable<Integer> {
     Path wd;
 
     //MCMC
-    @CommandLine.Option(names = {"-l", "--chainLength"}, defaultValue = "-1", description = "The total chain length of MCMC, default to 1 million.")
+    @CommandLine.Option(names = {"-l", "--chainLength"}, defaultValue = "1000000",
+            description = "The total chain length of MCMC, default to 1 million.")
     long chainLength;
     @CommandLine.Option(names = {"-b", "--preBurnin"}, defaultValue = "-1",
             description = "The number of burnin samples taken before entering the main loop of MCMC. " +
@@ -70,13 +71,14 @@ public class LPhyBeastCMD implements Callable<Integer> {
      */
     @Override
     public Integer call() throws CommandLine.PicocliException { // business logic goes here...
-        LPhyBeast lphyBeast = new LPhyBeast(); // inPath,outPath = null
+        LPhyBeast lphyBeast;
         try {
-            lphyBeast = new LPhyBeast(infile, outfile, wd);
-            lphyBeast.run(rep, chainLength, preBurnin);
+            lphyBeast = new LPhyBeast(infile, outfile, wd, chainLength, preBurnin);
+            lphyBeast.setRep(rep);
+            lphyBeast.run();
         } catch (FileNotFoundException e) {
             throw new CommandLine.PicocliException("Fail to read LPhy scripts from " +
-                    lphyBeast.getInPath() + ", user.dir = " + System.getProperty(UserDir.USER_DIR), e);
+                    infile + ", user.dir = " + System.getProperty(UserDir.USER_DIR), e);
         } catch (Exception e) {
             e.printStackTrace();
             throw new CommandLine.PicocliException(e.toString());

@@ -58,16 +58,16 @@ public class LPhyBeastLauncher extends JFrame {
         PrintStream printStream = new PrintStream(out);
         System.setOut(printStream);
 
-        tabbedPane.addTab("Standard output", new JScrollPane(soutPane));
+        tabbedPane.addTab("Verbose", new JScrollPane(soutPane));
         tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
 
-        final JTextPane serrPane = new JTextPane();
-        TextPaneOutputStream err = new TextPaneOutputStream(serrPane, true);
-        printStream = new PrintStream(err);
-        System.setErr(printStream);
-
-        tabbedPane.addTab("Warnings", new JScrollPane(serrPane));
-        tabbedPane.setMnemonicAt(2, KeyEvent.VK_3);
+//        final JTextPane serrPane = new JTextPane();
+//        TextPaneOutputStream err = new TextPaneOutputStream(serrPane, true);
+//        printStream = new PrintStream(err);
+//        System.setErr(printStream);
+//
+//        tabbedPane.addTab("Warnings", new JScrollPane(serrPane));
+//        tabbedPane.setMnemonicAt(2, KeyEvent.VK_3);
 
         getContentPane().add(tabbedPane, BorderLayout.CENTER);
 
