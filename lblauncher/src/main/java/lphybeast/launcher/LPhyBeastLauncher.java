@@ -1,5 +1,9 @@
 package lphybeast.launcher;
 
+import beast.app.beastapp.BeastLauncher;
+import beast.util.BEASTClassLoader;
+import beast.util.PackageManager;
+import lphy.util.LoggerUtils;
 import lphyext.manager.DependencyUtils;
 import lphystudio.app.LPhyAppConfig;
 import lphystudio.core.swing.io.TextPaneOutputStream;
@@ -7,6 +11,7 @@ import lphystudio.core.swing.io.TextPaneOutputStream;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.io.File;
 import java.io.PrintStream;
 
 /**
@@ -72,6 +77,21 @@ public class LPhyBeastLauncher extends JFrame {
         getContentPane().add(tabbedPane, BorderLayout.CENTER);
 
         setVisible(true);
+
+        // Have to load all BEAST classes
+        try {
+            String classPath = BeastLauncher.getPath(false, null);
+
+            PackageManager.loadExternalJars();
+            for (String jarFile : classPath.split(File.pathSeparator)) {
+                if (jarFile.toLowerCase().endsWith("jar")) {
+                    BEASTClassLoader.classLoader.addJar(jarFile);
+                }
+            }
+        } catch (Exception e) {
+            LoggerUtils.logStackTrace(e);
+        }
+
     }
 
     private String getHTMLCredits() {

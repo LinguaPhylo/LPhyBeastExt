@@ -21,13 +21,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class LPhyBEASTExtFactory {
     private static LPhyBEASTExtFactory factory;
-//    final private ServiceLoader<LPhyBEASTExt> loader;
 
     private LPhyBEASTExtFactory() {
-//        loader = ServiceLoader.load(LPhyBEASTExt.class);
-//         register all ext
-//        registerExtensions(loader, null);
-
         // ServiceLoader cannot work with BEASTClassLoader
         registerExtensions(null);
     }
@@ -64,31 +59,13 @@ public class LPhyBEASTExtFactory {
     public List<Class<? extends Value>> excludedValueClasses;
 
     /**
-     * for creating doc only.
-     * @param fullClsName  the full name with package of the class
-     *                 to implement {@link LPhyBEASTExt},
-     *                 such as lphy.spi.LPhyExtImpl
-
-    public void loadExtension(String fullClsName) {
-        loader.reload();
-        registerExtensions(loader, fullClsName);
-    }
-
-    public List<LPhyBEASTExt> getExtensions() {
-        loader.reload();
-        Iterator<LPhyBEASTExt> extensions = loader.iterator();
-        List<LPhyBEASTExt> extList = new ArrayList<>();
-        extensions.forEachRemaining(extList::add);
-        return extList;
-    }*/
-
-    /**
      * Use {@link PackageManager} to load the container classes from LPhyBEAST extensions,
      * which include all extended classes.
      * @return  the list of container classes (one per extension).
      */
     public List<LPhyBEASTExt> getExtClasses() {
 
+        //TODO PackageManager.find is time-consuming
         List<Class<?>> classList = PackageManager.find(LPhyBEASTExt.class, false);
 
         List<LPhyBEASTExt> extensionList = new ArrayList<>();
