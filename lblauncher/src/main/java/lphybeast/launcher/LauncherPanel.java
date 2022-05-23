@@ -2,6 +2,7 @@ package lphybeast.launcher;
 
 import beast.util.BEASTClassLoader;
 import lphy.util.LoggerUtils;
+import lphybeast.LPhyBEASTLoader;
 import lphystudio.app.Utils;
 import lphystudio.app.graphicalmodelpanel.ErrorPanel;
 import lphystudio.core.swing.SpringUtilities;
@@ -33,6 +34,8 @@ public class LauncherPanel extends JPanel implements ActionListener {
     private JTextField rep;
     private JTextField chainLen;
     private JTextField burnin;
+
+    private static LPhyBEASTLoader loader;
 
     public LauncherPanel() {
         setLayout(new BorderLayout());
@@ -126,6 +129,23 @@ public class LauncherPanel extends JPanel implements ActionListener {
         errorPanel.setNoLvlName(true);
         add(errorPanel, BorderLayout.CENTER);
 
+        if (loader == null)
+            loader = LPhyBEASTLoader.getInstance();
+
+        // TODO test if LPhyBEASTLoader can replace the below code
+        // load all BEAST classes
+//        try {
+//            String classPath = BeastLauncher.getPath(false, null);
+//
+//            PackageManager.loadExternalJars();
+//            for (String jarFile : classPath.split(File.pathSeparator)) {
+//                if (jarFile.toLowerCase().endsWith("jar")) {
+//                    BEASTClassLoader.classLoader.addJar(jarFile);
+//                }
+//            }
+//        } catch (Exception e) {
+//            LoggerUtils.logStackTrace(e);
+//        }
     }
 
 
@@ -187,8 +207,8 @@ public class LauncherPanel extends JPanel implements ActionListener {
             try {
                 Class<?> mainClass = BEASTClassLoader.forName(LPHY_BEAST_CLS);
                 // Path infile, Path outfile, Path wd, long chainLength, int preBurnin
-                Object o = mainClass.getConstructor(Path.class, Path.class, Path.class, long.class, int.class)
-                        .newInstance(infile, outfile, null, ch, b);
+                Object o = mainClass.getConstructor(Path.class, Path.class, Path.class, long.class, int.class, LPhyBEASTLoader.class)
+                        .newInstance(infile, outfile, null, ch, b, loader);
 
                 // lphyBeast.run(r, this);
                 Method runMethod = mainClass.getMethod("run", int.class);

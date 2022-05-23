@@ -1,9 +1,5 @@
 package lphybeast.launcher;
 
-import beast.app.beastapp.BeastLauncher;
-import beast.util.BEASTClassLoader;
-import beast.util.PackageManager;
-import lphy.util.LoggerUtils;
 import lphyext.manager.DependencyUtils;
 import lphystudio.app.LPhyAppConfig;
 import lphystudio.core.swing.io.TextPaneOutputStream;
@@ -11,7 +7,6 @@ import lphystudio.core.swing.io.TextPaneOutputStream;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
-import java.io.File;
 import java.io.PrintStream;
 
 /**
@@ -49,6 +44,12 @@ public class LPhyBeastLauncher extends JFrame {
             );
         }
 
+        // setOut before LauncherPanel to catch more System.out
+        final JTextPane soutPane = new JTextPane();
+        TextPaneOutputStream out = new TextPaneOutputStream(soutPane, false);
+        PrintStream printStream = new PrintStream(out);
+        System.setOut(printStream);
+
         LauncherPanel launcherPanel = new LauncherPanel();
 
         JTabbedPane tabbedPane = new JTabbedPane();
@@ -57,11 +58,6 @@ public class LPhyBeastLauncher extends JFrame {
 
         tabbedPane.addTab("Launcher", launcherPanel);
         tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
-
-        final JTextPane soutPane = new JTextPane();
-        TextPaneOutputStream out = new TextPaneOutputStream(soutPane, false);
-        PrintStream printStream = new PrintStream(out);
-        System.setOut(printStream);
 
         tabbedPane.addTab("Verbose", new JScrollPane(soutPane));
         tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
@@ -77,20 +73,6 @@ public class LPhyBeastLauncher extends JFrame {
         getContentPane().add(tabbedPane, BorderLayout.CENTER);
 
         setVisible(true);
-
-        // Have to load all BEAST classes
-        try {
-            String classPath = BeastLauncher.getPath(false, null);
-
-            PackageManager.loadExternalJars();
-            for (String jarFile : classPath.split(File.pathSeparator)) {
-                if (jarFile.toLowerCase().endsWith("jar")) {
-                    BEASTClassLoader.classLoader.addJar(jarFile);
-                }
-            }
-        } catch (Exception e) {
-            LoggerUtils.logStackTrace(e);
-        }
 
     }
 

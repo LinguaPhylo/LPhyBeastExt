@@ -28,6 +28,10 @@ public class LPhyBeast implements Runnable {
 
     private int rep = 1; // for multi-outputs
 
+    // register classes outside LPhyBeast, reduce loading time,
+    // can be null, then initiate in BEASTContext.
+    private final LPhyBEASTLoader loader;
+
     /**
      * The configuration to create a BEAST 2 XML.
      * Handle the input file path, output file path, and user.dir.
@@ -44,9 +48,11 @@ public class LPhyBeast implements Runnable {
      *                      If < 0, as default, then estimate it based on all state nodes size.
      * @throws IOException
      */
-    public LPhyBeast(Path infile, Path outfile, Path wd, long chainLength, int preBurnin) throws IOException {
+    public LPhyBeast(Path infile, Path outfile, Path wd, long chainLength, int preBurnin,
+                     LPhyBEASTLoader loader) throws IOException {
         this.chainLength = chainLength;
         this.preBurnin = preBurnin;
+        this.loader = loader;
 
         if (infile == null || !infile.toFile().exists())
             throw new IOException("Cannot find LPhy script file ! " + (infile != null ? infile.toAbsolutePath() : null));
@@ -76,6 +82,14 @@ public class LPhyBeast implements Runnable {
     }
 
     /**
+     * Initiate LPhyBEASTLoader every LPhyBeast instance.
+     * @see #LPhyBeast(Path, Path, Path, long, int, LPhyBEASTLoader)
+     */
+    public LPhyBeast(Path infile, Path outfile, Path wd, long chainLength, int preBurnin) throws IOException {
+        this(infile, outfile, wd, chainLength,  preBurnin, null);
+    }
+
+    /**
      * For unit test, and then call {@link #lphyStrToXML(String, String)}.
      * @see #LPhyBeast(Path, Path, Path, long, int)
      */
@@ -83,6 +97,7 @@ public class LPhyBeast implements Runnable {
         inPath = null; // lphy script is in String
         outPath = null;
         preBurnin = 0;
+        loader = null;
     }
 
     /**
@@ -105,14 +120,9 @@ public class LPhyBeast implements Runnable {
     }
 
     public void run(int rep) throws IOException {
-        final int start0 = 5;
-        final int endAll = 95;
-        BufferedReader reader;
         // e.g. well-calibrated validations
         if (rep > 1) {
             LoggerUtils.log.info("\nStart " + rep + " replicates : \n");
-
-            final int incre = (endAll-start0) / rep;
 
             for (int i = 0; i < rep; i++) {
                 // add _i after file stem
@@ -197,8 +207,8 @@ public class LPhyBeast implements Runnable {
         Sampler sampler = new Sampler(gparser);
         sampler.sample(1, loggers);
 
-        // register parser
-        BEASTContext context = new BEASTContext(parser);
+        // register parser, pass cached loader
+        BEASTContext context = new BEASTContext(parser, loader);
 
         //*** Write BEAST 2 XML ***//
         // remove any dir in filePathNoExt here

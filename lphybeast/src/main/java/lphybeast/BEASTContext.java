@@ -88,25 +88,30 @@ public class BEASTContext {
     LPhyParser parser;
 
 
+    @Deprecated
+    public BEASTContext(LPhyParser parser) {
+        this(parser, null);
+    }
+
     /**
      * Find all core classes {@link ValueToBEAST} and {@link GeneratorToBEAST},
      * including {@link DataType} mapped to lphy {@link SequenceType},
      * and then register them for XML creators to use.
-     * @param phyParser  the parsed lphy commands
+     * @param parser  the parsed lphy commands
+     * @param loader to load LPhyBEAST extensions.
+     *               Can be null, then initiate here.
      */
-    public BEASTContext(LPhyParser phyParser) {
-        parser = phyParser;
-        LPhyBEASTExtFactory factory = LPhyBEASTExtFactory.getInstance();
-        setRegisteredClasses(factory);
-    }
+    public BEASTContext(LPhyParser parser, LPhyBEASTLoader loader) {
+        this.parser = parser;
+        if (loader == null)
+            loader = LPhyBEASTLoader.getInstance();
 
-    private void setRegisteredClasses(LPhyBEASTExtFactory factory){
-        valueToBEASTList = factory.valueToBEASTList;
-        generatorToBEASTMap = factory.generatorToBEASTMap;
-        dataTypeMap = factory.dataTypeMap;
+        valueToBEASTList = loader.valueToBEASTList;
+        generatorToBEASTMap = loader.generatorToBEASTMap;
+        dataTypeMap = loader.dataTypeMap;
 
-        excludedGeneratorClasses = factory.excludedGeneratorClasses;
-        excludedValueClasses = factory.excludedValueClasses;
+        excludedGeneratorClasses = loader.excludedGeneratorClasses;
+        excludedValueClasses = loader.excludedValueClasses;
     }
 
     public Map<SequenceType, DataType> getDataTypeMap() {

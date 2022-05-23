@@ -13,24 +13,24 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * The implementation to load LPhyBEAST extensions using {@link ServiceLoader}.
+ * The factory class to load LPhyBEAST extensions using {@link PackageManager}.
  * All distributions, functions and data types will be collected
  * in this class for later use.
  *
  * @author Walter Xie
  */
-public class LPhyBEASTExtFactory {
-    private static LPhyBEASTExtFactory factory;
+public class LPhyBEASTLoader {
+    private static LPhyBEASTLoader factory;
 
-    private LPhyBEASTExtFactory() {
+    private LPhyBEASTLoader() {
         // ServiceLoader cannot work with BEASTClassLoader
         registerExtensions(null);
     }
 
     // singleton
-    public static synchronized LPhyBEASTExtFactory getInstance() {
+    public static synchronized LPhyBEASTLoader getInstance() {
         if (factory == null)
-            factory = new LPhyBEASTExtFactory();
+            factory = new LPhyBEASTLoader();
         return factory;
     }
 
@@ -65,7 +65,7 @@ public class LPhyBEASTExtFactory {
      */
     public List<LPhyBEASTExt> getExtClasses() {
 
-        //TODO PackageManager.find is time-consuming
+        //this is time-consuming, but can cache LPhyBEASTLoader to reduce time
         List<Class<?>> classList = PackageManager.find(LPhyBEASTExt.class, false);
 
         List<LPhyBEASTExt> extensionList = new ArrayList<>();
