@@ -2,6 +2,7 @@ package lphybeast.launcher;
 
 import lphyext.manager.DependencyUtils;
 import lphystudio.app.LPhyAppConfig;
+import lphystudio.core.awt.AboutMenuHelper;
 import lphystudio.core.swing.io.TextPaneOutputStream;
 
 import javax.swing.*;
@@ -37,13 +38,6 @@ public class LPhyBeastLauncher extends JFrame {
         final int MAX_HEIGHT = 900;
         LPhyAppConfig.setFrameLocation(this, MAX_WIDTH, MAX_HEIGHT);
 
-        if (Desktop.isDesktopSupported()) {
-            Desktop desktop = Desktop.getDesktop();
-            desktop.setAboutHandler(e ->
-                    LPhyAppConfig.buildAboutDialog(this, APP_NAME + " v " + VERSION, getHTMLCredits())
-            );
-        }
-
         // setOut before LauncherPanel to catch more System.out
         final JTextPane soutPane = new JTextPane();
         TextPaneOutputStream out = new TextPaneOutputStream(soutPane, false);
@@ -71,6 +65,12 @@ public class LPhyBeastLauncher extends JFrame {
 //        tabbedPane.setMnemonicAt(2, KeyEvent.VK_3);
 
         getContentPane().add(tabbedPane, BorderLayout.CENTER);
+
+        JMenuBar menuBar = new JMenuBar();
+
+        AboutMenuHelper aboutMenuHelper =
+                new AboutMenuHelper(this, APP_NAME + " v " + VERSION,
+                        getHTMLCredits(), menuBar);
 
         setVisible(true);
 
