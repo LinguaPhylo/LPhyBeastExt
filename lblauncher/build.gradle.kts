@@ -1,8 +1,8 @@
 plugins {
     `java-library`
-    `maven-publish`
-    signing
-    id("io.github.linguaphylo.platforms.lphy-publish") version "0.1.2"
+//    `maven-publish`
+//    signing
+//    id("io.github.linguaphylo.platforms.lphy-publish") version "0.1.2"
 }
 
 //version in root build
@@ -33,7 +33,7 @@ tasks.jar {
         // shared attr in the root build
         attributes(
             "Main-Class" to maincls,
-            "Implementation-Title" to "LPhyBEAST",
+            "Implementation-Title" to "LPhyBEAST Launcher",
             "Implementation-Vendor" to developers,
         )
     }
@@ -56,4 +56,4 @@ tasks.jar {
 //
 //    }
 //}
-//
+

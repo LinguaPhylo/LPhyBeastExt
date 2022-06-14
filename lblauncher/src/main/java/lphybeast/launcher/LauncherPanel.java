@@ -2,7 +2,6 @@ package lphybeast.launcher;
 
 import beast.util.BEASTClassLoader;
 import lphy.util.LoggerUtils;
-import lphybeast.LPhyBEASTLoader;
 import lphystudio.app.Utils;
 import lphystudio.app.graphicalmodelpanel.ErrorPanel;
 import lphystudio.core.swing.SpringUtilities;
@@ -35,7 +34,7 @@ public class LauncherPanel extends JPanel implements ActionListener {
     private JTextField chainLen;
     private JTextField burnin;
 
-    private static LPhyBEASTLoader loader;
+//    private static LPhyBEASTLoader loader;
 
     public LauncherPanel() {
         setLayout(new BorderLayout());
@@ -129,8 +128,8 @@ public class LauncherPanel extends JPanel implements ActionListener {
         errorPanel.setNoLvlName(true);
         add(errorPanel, BorderLayout.CENTER);
 
-        if (loader == null)
-            loader = LPhyBEASTLoader.getInstance();
+//        if (loader == null)
+//            loader = LPhyBEASTLoader.getInstance();
 
         // TODO test if LPhyBEASTLoader can replace the below code
         // load all BEAST classes
@@ -205,8 +204,8 @@ public class LauncherPanel extends JPanel implements ActionListener {
             try {
                 Class<?> mainClass = BEASTClassLoader.forName(LPHY_BEAST_CLS);
                 // Path infile, Path outfile, Path wd, long chainLength, int preBurnin
-                Object o = mainClass.getConstructor(Path.class, Path.class, Path.class, long.class, int.class, LPhyBEASTLoader.class)
-                        .newInstance(infile, outfile, null, ch, b, loader);
+                Object o = mainClass.getConstructor(Path.class, Path.class, Path.class, long.class, int.class)
+                        .newInstance(infile, outfile, null, ch, b);
 
                 // lphyBeast.run(r, this);
                 Method runMethod = mainClass.getMethod("run", int.class);

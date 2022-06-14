@@ -31,8 +31,8 @@ public class LPhyBeastLauncher extends JFrame {
         VERSION = DependencyUtils.getVersion(LPhyBeastLauncher.class, "lphy.beast.version");
 
         setTitle(APP_NAME + " version " + VERSION);
-        // not close lphy studio frame
-        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        // DISPOSE_ON_CLOSE will not close lphy studio frame
+        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
         final int MAX_WIDTH = 800;
         final int MAX_HEIGHT = 900;
