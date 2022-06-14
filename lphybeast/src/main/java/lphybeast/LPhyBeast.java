@@ -109,7 +109,7 @@ public class LPhyBeast implements Runnable {
 
     @Override
     public void run() {
-        if (inPath == null || outPath == null || rep < 1 || chainLength * preBurnin < 1)
+        if (inPath == null || outPath == null || rep < 1 || chainLength < BEASTContext.NUM_OF_SAMPLES)
             throw new IllegalArgumentException("Illegal inputs : inPath = " + inPath + ", outPath = " + outPath +
                     ", rep = " + rep + ", chainLength = " + chainLength + ", preBurnin = " + preBurnin);
         try {

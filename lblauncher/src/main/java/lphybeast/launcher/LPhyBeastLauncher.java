@@ -1,7 +1,7 @@
 package lphybeast.launcher;
 
-import lphyext.manager.DependencyUtils;
 import lphystudio.app.LPhyAppConfig;
+import lphystudio.app.manager.DependencyUtils;
 import lphystudio.core.awt.AboutMenuHelper;
 import lphystudio.core.swing.io.TextPaneOutputStream;
 

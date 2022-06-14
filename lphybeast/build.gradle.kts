@@ -40,6 +40,7 @@ dependencies {
     // io.github.linguaphylo
     api("io.github.linguaphylo:lphy:1.3.0-SNAPSHOT")
     // all released beast 2 libs
+    // TODO beast2 jar contains Apache math. Be aware of version conflict to LPhy dependency.
     api(beast2Jars)
     // other jars must be included
     implementation(notReleasedJars)

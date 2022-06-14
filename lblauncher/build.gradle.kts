@@ -18,7 +18,6 @@ java {
 dependencies {
     implementation("io.github.linguaphylo:lphy:1.3.0-SNAPSHOT")
     implementation("io.github.linguaphylo:lphy-studio:1.3.0-SNAPSHOT")
-    implementation("io.github.linguaphylo:ext-manager:0.1.0-SNAPSHOT")
 
     implementation(project(":lphybeast")) // not depend on LPhyBeast, only use for debug
     // BEAST launcher

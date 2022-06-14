@@ -202,8 +202,6 @@ public class LauncherPanel extends JPanel implements ActionListener {
             long ch = getLong(chainLen);
             int b = getInt(burnin);
 
-            setProgress(3);
-
             try {
                 Class<?> mainClass = BEASTClassLoader.forName(LPHY_BEAST_CLS);
                 // Path infile, Path outfile, Path wd, long chainLength, int preBurnin
