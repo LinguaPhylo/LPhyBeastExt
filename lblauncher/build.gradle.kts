@@ -5,7 +5,7 @@ plugins {
 //    id("io.github.linguaphylo.platforms.lphy-publish") version "0.1.2"
 }
 
-//version in root build
+version = "0.0.1-SNAPSHOT"
 base.archivesName.set("lb-launcher")
 
 java {
