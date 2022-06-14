@@ -88,25 +88,30 @@ public class BEASTContext {
     LPhyParser parser;
 
 
+    @Deprecated
+    public BEASTContext(LPhyParser parser) {
+        this(parser, null);
+    }
+
     /**
      * Find all core classes {@link ValueToBEAST} and {@link GeneratorToBEAST},
      * including {@link DataType} mapped to lphy {@link SequenceType},
      * and then register them for XML creators to use.
-     * @param phyParser  the parsed lphy commands
+     * @param parser  the parsed lphy commands
+     * @param loader to load LPhyBEAST extensions.
+     *               Can be null, then initiate here.
      */
-    public BEASTContext(LPhyParser phyParser) {
-        parser = phyParser;
-        LPhyBEASTExtFactory factory = LPhyBEASTExtFactory.getInstance();
-        setRegisteredClasses(factory);
-    }
+    public BEASTContext(LPhyParser parser, LPhyBEASTLoader loader) {
+        this.parser = parser;
+        if (loader == null)
+            loader = LPhyBEASTLoader.getInstance();
 
-    private void setRegisteredClasses(LPhyBEASTExtFactory factory){
-        valueToBEASTList = factory.valueToBEASTList;
-        generatorToBEASTMap = factory.generatorToBEASTMap;
-        dataTypeMap = factory.dataTypeMap;
+        valueToBEASTList = loader.valueToBEASTList;
+        generatorToBEASTMap = loader.generatorToBEASTMap;
+        dataTypeMap = loader.dataTypeMap;
 
-        excludedGeneratorClasses = factory.excludedGeneratorClasses;
-        excludedValueClasses = factory.excludedValueClasses;
+        excludedGeneratorClasses = loader.excludedGeneratorClasses;
+        excludedValueClasses = loader.excludedValueClasses;
     }
 
     public Map<SequenceType, DataType> getDataTypeMap() {
@@ -1158,7 +1163,10 @@ public class BEASTContext {
         return false;
     }
 
-    public MCMC createMCMC(long chainLength, int logEvery, String fileName, int preBurnin) {
+    /**
+     * Init BEAST 2 MCMC here
+     */
+    private MCMC createMCMC(long chainLength, int logEvery, String fileName, int preBurnin) {
 
         createBEASTObjects();
 
@@ -1186,9 +1194,6 @@ public class BEASTContext {
 
         if (inits.size() > 0) mcmc.setInputValue("init", inits);
 
-        // if not given, preBurnin == 0, then will be defined by all state nodes size
-        if (preBurnin < 0)
-            preBurnin = getAllStatesSize(this.state) * 10;
         if (preBurnin > 0)
             mcmc.setInputValue("preBurnin", preBurnin);
 
@@ -1221,36 +1226,37 @@ public class BEASTContext {
 
         try {
             mcmc.run();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (SAXException e) {
-            e.printStackTrace();
-        } catch (ParserConfigurationException e) {
+        } catch (IOException | SAXException | ParserConfigurationException e) {
             e.printStackTrace();
         }
     }
 
+    public static final int NUM_OF_SAMPLES = 2000;
+
     /**
-     * Create BEAST 2 XML from LPhy objects.
+     * Process configurations to create BEAST 2 XML from LPhy objects.
      *
      * @param fileNameStem
      * @param chainLength  if <=0, then use default 1,000,000.
      *                     logEvery = chainLength / numOfSamples,
      *                     where numOfSamples = 2000 as default.
-     * @param preBurnin    preBurnin for BEAST MCMC, default to 0.
+     * @param preBurnin    preBurnin for BEAST MCMC, if preBurnin < 0,
+     *                     then will be automatically assigned to all state nodes size * 10.
      * @return BEAST 2 XML in String
      */
     public String toBEASTXML(final String fileNameStem, long chainLength, int preBurnin) {
-
-        final int numOfSamples = 2000;
         // default to 1M if not specified
-        if (chainLength <= 0)
-            chainLength = 1000000;
+        if (chainLength < NUM_OF_SAMPLES)
+            throw new IllegalArgumentException("Invalid length for MCMC chain, len = " + chainLength);
         // Will throw an ArithmeticException in case of overflow.
-        int logEvery = toIntExact(chainLength / numOfSamples);
+        int logEvery = toIntExact(chainLength / NUM_OF_SAMPLES);
 
-        LoggerUtils.log.info("Set MCMC total chain length = " + chainLength +
-                ", log every = " + logEvery + ", samples = " + numOfSamples);
+        // if preBurnin < 0, then will be defined by all state nodes size
+        if (preBurnin < 0)
+            preBurnin = getAllStatesSize(this.state) * 10;
+
+        LoggerUtils.log.info("Set MCMC chain length = " + chainLength + ", log every = " +
+                logEvery + ", samples = " + NUM_OF_SAMPLES + ", preBurnin = " + preBurnin);
 
         MCMC mcmc = createMCMC(chainLength, logEvery, fileNameStem, preBurnin);
 

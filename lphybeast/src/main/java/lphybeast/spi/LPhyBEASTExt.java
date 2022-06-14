@@ -1,7 +1,6 @@
 package lphybeast.spi;
 
 import beast.evolution.datatype.DataType;
-import beast.util.PackageManager;
 import jebl.evolution.sequences.SequenceType;
 import lphy.graphicalModel.Generator;
 import lphy.graphicalModel.Value;
@@ -31,30 +30,5 @@ public interface LPhyBEASTExt {
     List<Class<? extends Generator>> getExcludedGenerator();
 
     List<Class<? extends Value>> getExcludedValue();
-
-    /**
-     * Use {@link PackageManager} to load the container classes from LPhyBEAST extensions,
-     * which include all extended classes.
-     * This mechanism will be replaced by Java module system and SPI in future.
-     * @return  the list of container classes (one per extension).
-// Move to LPhyBEASTExtFactory
-    static List<LPhyBEASTExt> getExtClasses() {
-
-        List<Class<?>> classList = PackageManager.find(LPhyBEASTExt.class, false);
-
-        List<LPhyBEASTExt> extensionList = new ArrayList<>();
-        for (Class<?> cls : classList) {
-            // https://docs.oracle.com/javase/9/docs/api/java/lang/Class.html#newInstance--
-            try {
-                Object obj = cls.getDeclaredConstructor().newInstance();
-                extensionList.add((LPhyBEASTExt) obj);
-            } catch (InvocationTargetException | InstantiationException |
-                    IllegalAccessException | NoSuchMethodException e) {
-                // do nothing
-            }
-//        catch (Throwable e) { e.printStackTrace(); }
-        }
-        return extensionList;
-    }     */
 
 }

@@ -1,7 +1,8 @@
 package lphybeast.launcher;
 
-import lphyext.manager.DependencyUtils;
 import lphystudio.app.LPhyAppConfig;
+import lphystudio.app.manager.DependencyUtils;
+import lphystudio.core.awt.AboutMenuHelper;
 import lphystudio.core.swing.io.TextPaneOutputStream;
 
 import javax.swing.*;
@@ -37,12 +38,11 @@ public class LPhyBeastLauncher extends JFrame {
         final int MAX_HEIGHT = 900;
         LPhyAppConfig.setFrameLocation(this, MAX_WIDTH, MAX_HEIGHT);
 
-        if (Desktop.isDesktopSupported()) {
-            Desktop desktop = Desktop.getDesktop();
-            desktop.setAboutHandler(e ->
-                    LPhyAppConfig.buildAboutDialog(this, APP_NAME + " v " + VERSION, getHTMLCredits())
-            );
-        }
+        // setOut before LauncherPanel to catch more System.out
+        final JTextPane soutPane = new JTextPane();
+        TextPaneOutputStream out = new TextPaneOutputStream(soutPane, false);
+        PrintStream printStream = new PrintStream(out);
+        System.setOut(printStream);
 
         LauncherPanel launcherPanel = new LauncherPanel();
 
@@ -52,11 +52,6 @@ public class LPhyBeastLauncher extends JFrame {
 
         tabbedPane.addTab("Launcher", launcherPanel);
         tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
-
-        final JTextPane soutPane = new JTextPane();
-        TextPaneOutputStream out = new TextPaneOutputStream(soutPane, false);
-        PrintStream printStream = new PrintStream(out);
-        System.setOut(printStream);
 
         tabbedPane.addTab("Verbose", new JScrollPane(soutPane));
         tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
@@ -71,7 +66,14 @@ public class LPhyBeastLauncher extends JFrame {
 
         getContentPane().add(tabbedPane, BorderLayout.CENTER);
 
+        JMenuBar menuBar = new JMenuBar();
+
+        AboutMenuHelper aboutMenuHelper =
+                new AboutMenuHelper(this, APP_NAME + " v " + VERSION,
+                        getHTMLCredits(), menuBar);
+
         setVisible(true);
+
     }
 
     private String getHTMLCredits() {

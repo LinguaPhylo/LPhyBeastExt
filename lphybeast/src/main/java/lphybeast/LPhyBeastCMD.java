@@ -62,7 +62,7 @@ public class LPhyBeastCMD implements Callable<Integer> {
 
     }
 
-
+    private static LPhyBEASTLoader loader;
     /**
      * 1. If the input/output is a relative path, then concatenate 'user.dir'
      * to the front of the path.
@@ -70,10 +70,12 @@ public class LPhyBeastCMD implements Callable<Integer> {
      * the 'user.dir' will be set to the path where the LPhy script is.
      */
     @Override
-    public Integer call() throws CommandLine.PicocliException { // business logic goes here...
-        LPhyBeast lphyBeast;
+    public Integer call() throws CommandLine.PicocliException {
+        if (loader == null)
+            loader = LPhyBEASTLoader.getInstance();
+
         try {
-            lphyBeast = new LPhyBeast(infile, outfile, wd, chainLength, preBurnin);
+            LPhyBeast lphyBeast = new LPhyBeast(infile, outfile, wd, chainLength, preBurnin, loader);
             lphyBeast.setRep(rep);
             lphyBeast.run();
         } catch (FileNotFoundException e) {

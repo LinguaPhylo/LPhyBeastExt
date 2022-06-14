@@ -5,7 +5,6 @@ import lphy.graphicalModel.RandomValueLogger;
 import lphy.parser.REPL;
 import lphy.system.UserDir;
 import lphy.util.LoggerUtils;
-import lphy.util.Progress;
 
 import java.io.*;
 import java.nio.file.Path;
@@ -29,6 +28,10 @@ public class LPhyBeast implements Runnable {
 
     private int rep = 1; // for multi-outputs
 
+    // register classes outside LPhyBeast, reduce loading time,
+    // can be null, then initiate in BEASTContext.
+    private final LPhyBEASTLoader loader;
+
     /**
      * The configuration to create a BEAST 2 XML.
      * Handle the input file path, output file path, and user.dir.
@@ -45,9 +48,11 @@ public class LPhyBeast implements Runnable {
      *                      If < 0, as default, then estimate it based on all state nodes size.
      * @throws IOException
      */
-    public LPhyBeast(Path infile, Path outfile, Path wd, long chainLength, int preBurnin) throws IOException {
+    public LPhyBeast(Path infile, Path outfile, Path wd, long chainLength, int preBurnin,
+                     LPhyBEASTLoader loader) throws IOException {
         this.chainLength = chainLength;
         this.preBurnin = preBurnin;
+        this.loader = loader;
 
         if (infile == null || !infile.toFile().exists())
             throw new IOException("Cannot find LPhy script file ! " + (infile != null ? infile.toAbsolutePath() : null));
@@ -77,6 +82,14 @@ public class LPhyBeast implements Runnable {
     }
 
     /**
+     * Initiate LPhyBEASTLoader every LPhyBeast instance.
+     * @see #LPhyBeast(Path, Path, Path, long, int, LPhyBEASTLoader)
+     */
+    public LPhyBeast(Path infile, Path outfile, Path wd, long chainLength, int preBurnin) throws IOException {
+        this(infile, outfile, wd, chainLength,  preBurnin, null);
+    }
+
+    /**
      * For unit test, and then call {@link #lphyStrToXML(String, String)}.
      * @see #LPhyBeast(Path, Path, Path, long, int)
      */
@@ -84,6 +97,7 @@ public class LPhyBeast implements Runnable {
         inPath = null; // lphy script is in String
         outPath = null;
         preBurnin = 0;
+        loader = null;
     }
 
     /**
@@ -95,44 +109,29 @@ public class LPhyBeast implements Runnable {
 
     @Override
     public void run() {
-        if (inPath == null || outPath == null || rep < 1 || chainLength * preBurnin < 1)
+        if (inPath == null || outPath == null || rep < 1 || chainLength < BEASTContext.NUM_OF_SAMPLES)
             throw new IllegalArgumentException("Illegal inputs : inPath = " + inPath + ", outPath = " + outPath +
                     ", rep = " + rep + ", chainLength = " + chainLength + ", preBurnin = " + preBurnin);
         try {
-            run(rep,null);
+            run(rep);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public void run(int rep, Progress progress) throws IOException {
-        final int start0 = 5;
-        final int endAll = 95;
-        BufferedReader reader;
+    public void run(int rep) throws IOException {
         // e.g. well-calibrated validations
         if (rep > 1) {
             LoggerUtils.log.info("\nStart " + rep + " replicates : \n");
 
-            final int incre = (endAll-start0) / rep;
-
             for (int i = 0; i < rep; i++) {
-                if (progress != null) {
-                    progress.setStart(start0 + incre * i);
-                    progress.setEnd(start0 + incre * (i + 1));
-                }
-
                 // add _i after file stem
                 Path outPathPerRep = getOutPath(i);
                 // need new reader
-                createXML(outPathPerRep, progress);
+                createXML(outPathPerRep);
             }
         } else { // 1 simulation
-            if (progress != null) {
-                progress.setStart(start0);
-                progress.setEnd(endAll);
-            }
-
-            createXML(outPath, progress);
+            createXML(outPath);
         }
     }
 
@@ -154,16 +153,12 @@ public class LPhyBeast implements Runnable {
 
     // the relative path given in readNexus in a script always refers to user.dir
     // fileNameStem for both outfile and XML loggers
-    private void createXML(Path outPath, Progress progress) throws IOException {
+    private void createXML(Path outPath) throws IOException {
         BufferedReader reader = lphyReader();
-        if (progress != null)
-            progress.setProgressPercentage(0.1);
 
         final String pathNoExt = getPathNoExtension(outPath);
         // create XML string from reader, given file name and MCMC setting
-        String xml = toBEASTXML(Objects.requireNonNull(reader), pathNoExt, chainLength, preBurnin, progress);
-        if (progress != null)
-            progress.setProgressPercentage(0.9);
+        String xml = toBEASTXML(Objects.requireNonNull(reader), pathNoExt, chainLength, preBurnin);
         writeXML(xml, outPath);
     }
 
@@ -197,13 +192,10 @@ public class LPhyBeast implements Runnable {
      * @throws IOException
      */
     private String toBEASTXML(BufferedReader reader, String filePathNoExt, long chainLength,
-                              int preBurnin, Progress progress) throws IOException {
+                              int preBurnin) throws IOException {
         //*** Parse LPhy file ***//
         LPhyParser parser = new REPL();
         parser.source(reader);
-
-        if (progress != null)
-            progress.setProgressPercentage(0.15);
 
         // log true values and tree
         List<RandomValueLogger> loggers = new ArrayList<>();
@@ -215,20 +207,13 @@ public class LPhyBeast implements Runnable {
         Sampler sampler = new Sampler(gparser);
         sampler.sample(1, loggers);
 
-        if (progress != null)
-            progress.setProgressPercentage(0.2);
-
-        // register parser
-        BEASTContext context = new BEASTContext(parser);
+        // register parser, pass cached loader
+        BEASTContext context = new BEASTContext(parser, loader);
 
         //*** Write BEAST 2 XML ***//
         // remove any dir in filePathNoExt here
         if (filePathNoExt.contains(File.separator))
             filePathNoExt = filePathNoExt.substring(filePathNoExt.lastIndexOf(File.separator)+1);
-
-        // adjust progress
-        if (progress != null)
-            progress.setProgressPercentage(0.8);
 
         // filePathNoExt here is file stem, which will be used in XML log file names.
         // Cannot handle any directories from other machines.
@@ -239,14 +224,14 @@ public class LPhyBeast implements Runnable {
      * parse LPhy script into BEAST 2 XML.
      * @param lphy           LPhy script with <code>data{}<code/> <code>model{}<code/> blocks,
      *                       and one line one command.
-     * @see #toBEASTXML(BufferedReader, String, long, int, Progress)
+     * @see #toBEASTXML(BufferedReader, String, long, int)
      */
     @Deprecated
     public String lphyStrToXML(String lphy, String fileNameStem) throws IOException {
         Reader inputString = new StringReader(lphy);
         BufferedReader reader = new BufferedReader(inputString);
 
-        return toBEASTXML(Objects.requireNonNull(reader), fileNameStem, chainLength, preBurnin, null);
+        return toBEASTXML(Objects.requireNonNull(reader), fileNameStem, chainLength, preBurnin);
     }
 
 
