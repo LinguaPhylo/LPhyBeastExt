@@ -28,7 +28,7 @@ public class LPhyBeastLauncher extends JFrame {
     public LPhyBeastLauncher() {
         // use MANIFEST.MF to store version in jar, or use system property in development,
         // otherwise VERSION = "DEVELOPMENT"
-        VERSION = DependencyUtils.getVersion(LPhyBeastLauncher.class, "lphy.beast.version");
+        VERSION = DependencyUtils.getVersion(LPhyBeastLauncher.class, "lphy.beast.launcher.version");
 
         setTitle(APP_NAME + " version " + VERSION);
         // DISPOSE_ON_CLOSE will not close lphy studio frame
