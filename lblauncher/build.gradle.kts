@@ -5,7 +5,7 @@ plugins {
 //    id("io.github.linguaphylo.platforms.lphy-publish") version "0.1.2"
 }
 
-version = "0.0.1-SNAPSHOT"
+version = "0.0.1"
 base.archivesName.set("lb-launcher")
 
 java {
@@ -16,8 +16,8 @@ java {
 }
 
 dependencies {
-    implementation("io.github.linguaphylo:lphy:1.3.0-SNAPSHOT")
-    implementation("io.github.linguaphylo:lphy-studio:1.3.0-SNAPSHOT")
+    implementation("io.github.linguaphylo:lphy:1.3.0")
+    implementation("io.github.linguaphylo:lphy-studio:1.3.0")
 
     implementation(project(":lphybeast")) // not depend on LPhyBeast, only use for debug
     // BEAST launcher
