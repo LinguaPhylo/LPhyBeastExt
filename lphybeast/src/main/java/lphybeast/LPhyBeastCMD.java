@@ -9,8 +9,8 @@ import java.nio.file.Path;
 import java.util.concurrent.Callable;
 
 @CommandLine.Command(name = "lphybeast", footer = "Copyright(c) 2020",
-        description = "LPhyBEAST takes an LPhy model specification and some data, " +
-                "and produces a BEAST 2 XML file. The installation and usage is available at " +
+        description = "LPhyBEAST takes an LPhy script, which contains a model specification and some data, " +
+                "to produce a BEAST 2 XML file. The installation and usage is available at " +
                 "https://linguaphylo.github.io/setup/",
         version = { "LPhyBEAST " + LPhyBeastCMD.VERSION,
                 "Local JVM: ${java.version} (${java.vendor} ${java.vm.name} ${java.vm.version})",
@@ -21,7 +21,7 @@ public class LPhyBeastCMD implements Callable<Integer> {
 
     @CommandLine.Parameters(paramLabel = "LPhy_scripts", description = "File of the LPhy model specification. " +
             "If it is a relative path, then concatenate 'user.dir' to the front of the path. " +
-            "But if `-wd` is NOT given, the 'user.dir' will set to the path where the LPhy script is.")
+            "If `-wd` is NOT given, the 'user.dir' will set to the path where the LPhy script is.")
     Path infile;
 
     @CommandLine.Option(names = {"-V", "--version"}, versionHelp = true, description = "display version info")
@@ -89,7 +89,7 @@ public class LPhyBeastCMD implements Callable<Integer> {
     }
 
 
-    /**TODO not working
+    /**TODO not working, use BEASTClassLoader ?
      * This function is modified from picocli demo {@code VersionProviderDemo2}.
      * {@link CommandLine.IVersionProvider} implementation that returns version information
      * from the lphybeast-x.x.x.jar file's {@code /META-INF/MANIFEST.MF} file.
