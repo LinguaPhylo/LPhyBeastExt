@@ -13,6 +13,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -210,6 +211,12 @@ public class LauncherPanel extends JPanel implements ActionListener {
                 // lphyBeast.run(r, this);
                 Method runMethod = mainClass.getMethod("run", int.class);
                 runMethod.invoke(o, r);
+            } catch (InvocationTargetException e) {
+                LoggerUtils.log.severe("\nCannot find the mapping for given LPhy code to BEAST2 classes! " +
+                        "\nPlease ensure you have installed the required LPhyBEAST extensions and BEAST2 packages : " +
+                        "\n" + e.getCause().getMessage() + "\n");
+                LoggerUtils.logStackTrace(e);
+                return null;
             } catch (Exception e) {
                 LoggerUtils.logStackTrace(e);
                 return null;

@@ -81,6 +81,11 @@ public class LPhyBeastCMD implements Callable<Integer> {
         } catch (FileNotFoundException e) {
             throw new CommandLine.PicocliException("Fail to read LPhy scripts from " +
                     infile + ", user.dir = " + System.getProperty(UserDir.USER_DIR), e);
+        } catch (UnsupportedOperationException e) {
+            throw new CommandLine.PicocliException("\n\nCannot find the mapping for given LPhy code to BEAST2 classes! " +
+                    "\nInput file = " + infile +
+                    "\nPlease ensure you have installed the required LPhyBEAST extensions and BEAST2 packages : " +
+                    "\n\n" + e.getMessage(), e);
         } catch (Exception e) {
             e.printStackTrace();
             throw new CommandLine.PicocliException(e.toString());
