@@ -9,7 +9,8 @@ import lphy.evolution.birthdeath.BirthDeathSerialSamplingTree;
 import lphybeast.BEASTContext;
 import lphybeast.GeneratorToBEAST;
 
-// TODO bdtree not released as a BEAST2 package #69
+// bdtree (https://github.com/fkmendes/bdtree) is not released as a BEAST2 package,
+// but the XML created by this class can run if lphybeast package is installed and loaded by BEAST 2 ClassLoader.
 public class BirthDeathSerialSamplingToBEAST implements
         GeneratorToBEAST<BirthDeathSerialSamplingTree, BirthDeathSequentialSampling> {
 

@@ -1,3 +1,0 @@
-bdtree (https://github.com/fkmendes/bdtree) is not released as a BEAST2 package,
-so it cannot be installed and run by BEAST2.
-Suggest merging it into BEASTLabs or beast-classic.
