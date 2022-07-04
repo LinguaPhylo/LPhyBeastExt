@@ -28,16 +28,11 @@ public class AlignmentToBEAST implements ValueToBEAST<SimpleAlignment, beast.evo
         SequenceType lphyDataType = alignment.getSequenceType();
         String[] taxaNames = alignment.getTaxaNames();
 
-        DataType beastDataType = DataTypeUtils.getBEASTDataType(lphyDataType, context.getDataTypeMap());
-
         beast.evolution.alignment.Alignment beastAlignment;
         // TODO BEAST special data types: StandardData, UserDataType, IntegerData
-        if (lphyDataType instanceof Standard) {
-            // UserDataType for trait alignment
-            if ( ! (beastDataType instanceof UserDataType))
-                throw new IllegalArgumentException("Require BEAST 'user defined' ! But find " +
-                        beastDataType.getTypeDescription());
-
+        // 1. Trait Alignment, always 1 site
+        if (lphyDataType instanceof Standard standard && alignment.nchar()==1) {
+            DataType beastDataType = DataTypeUtils.getUserDataType(standard, true);
             // AlignmentFromTrait
             beastAlignment = new beast.evolution.alignment.AlignmentFromTrait();
             // Input<DataType.Base> userDataTypeInput
@@ -46,7 +41,6 @@ public class AlignmentToBEAST implements ValueToBEAST<SimpleAlignment, beast.evo
             List<Taxon> taxonList = context.createTaxonList(List.of(taxaNames));
             String traitStr = createTraitString(alignment);
 
-            // TODO morphological data
             TraitSet traitSet = new TraitSet();
             traitSet.setInputValue("traitname", DISCRETE);
             traitSet.setInputValue("value", traitStr);
@@ -62,7 +56,9 @@ public class AlignmentToBEAST implements ValueToBEAST<SimpleAlignment, beast.evo
             beastAlignment.initAndValidate();
 
         } else {
+            DataType beastDataType = DataTypeUtils.getBEASTDataType(lphyDataType, context.getDataTypeMap());
 
+            // 2. nucleotide, protein, ...
             // sequences
             List<Sequence> sequences = new ArrayList<>();
             for (int i = 0; i < taxaNames.length; i++) {
@@ -75,9 +71,20 @@ public class AlignmentToBEAST implements ValueToBEAST<SimpleAlignment, beast.evo
 
             // normal Alignment
             beastAlignment = new beast.evolution.alignment.Alignment();
-            // Input<String> dataTypeInput
-            beastAlignment.setInputValue("dataType", beastDataType.getTypeDescription());
             beastAlignment.setInputValue("sequence", sequences);
+
+            // 3. morphological data, needs extra <userDataType section
+            if (beastDataType instanceof UserDataType) {
+                // StandardData.getTypeDescription()
+                beastAlignment.setInputValue("dataType", "standard");
+                //TODO add FilteredAlignment ?
+                beastAlignment.setInputValue("userDataType", beastDataType);
+
+            } else {
+                // Input<String> dataTypeInput
+                beastAlignment.setInputValue("dataType", beastDataType.getTypeDescription());
+            }
+
             beastAlignment.initAndValidate();
 
         }

@@ -1,4 +1,4 @@
-package lphybeast.tobeast.generators;
+package mm.lphybeast.tobeast.generators;
 
 import beast.core.BEASTInterface;
 import lphy.evolution.substitutionmodel.LewisMK;

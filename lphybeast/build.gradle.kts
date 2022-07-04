@@ -107,6 +107,9 @@ distributions {
                 from(project(":mascot").layout.buildDirectory.dir("libs")){
                     exclude("*-sources.jar")
                 }
+                from(project(":mm").layout.buildDirectory.dir("libs")){
+                    exclude("*-sources.jar")
+                }
             }
             into("."){
                 from("$rootDir") {
@@ -120,6 +123,9 @@ distributions {
                 from(tasks.getByName<Jar>("sourcesJar"))
                 //TODO
                 from(project(":mascot").layout.buildDirectory.dir("libs")){
+                    include("*-sources.jar")
+                }
+                from(project(":mm").layout.buildDirectory.dir("libs")){
                     include("*-sources.jar")
                 }
             }

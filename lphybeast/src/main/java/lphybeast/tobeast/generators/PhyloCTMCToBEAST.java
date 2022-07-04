@@ -24,7 +24,6 @@ import lphy.core.distributions.DiscretizedGamma;
 import lphy.core.distributions.IID;
 import lphy.core.distributions.LogNormal;
 import lphy.evolution.branchrates.LocalBranchRates;
-import lphy.evolution.datatype.SequenceTypeFactory;
 import lphy.evolution.likelihood.PhyloCTMC;
 import lphy.evolution.substitutionmodel.RateMatrix;
 import lphy.evolution.tree.TimeTree;
@@ -40,28 +39,26 @@ public class PhyloCTMCToBEAST implements GeneratorToBEAST<PhyloCTMC, GenericTree
 
     public GenericTreeLikelihood generatorToBEAST(PhyloCTMC phyloCTMC, BEASTInterface value, BEASTContext context) {
 
-        if (SequenceTypeFactory.INSTANCE.isStandardDataType( phyloCTMC.getDataType() ) ) { // TODO morphology
+        if (value instanceof beast.evolution.alignment.AlignmentFromTrait traitAlignment) {
             // for discrete phylogeography
-            return createAncestralStateTreeLikelihood(phyloCTMC, value, context);
+            return createAncestralStateTreeLikelihood(phyloCTMC, traitAlignment, context);
         } else {
             return createThreadedTreeLikelihood(phyloCTMC, value, context);
         }
 
     }
 
-    private AncestralStateTreeLikelihood createAncestralStateTreeLikelihood(PhyloCTMC phyloCTMC, BEASTInterface value, BEASTContext context) {
+    private AncestralStateTreeLikelihood createAncestralStateTreeLikelihood(PhyloCTMC phyloCTMC, AlignmentFromTrait traitAlignment, BEASTContext context) {
         AncestralStateTreeLikelihood treeLikelihood = new AncestralStateTreeLikelihood();
         treeLikelihood.setInputValue("tag", LOCATION);
-
-        assert value instanceof beast.evolution.alignment.AlignmentFromTrait;
-        AlignmentFromTrait traitAlignment = (beast.evolution.alignment.AlignmentFromTrait)value;
         treeLikelihood.setInputValue("data", traitAlignment);
 
         constructTreeAndBranchRate(phyloCTMC, treeLikelihood, context);
 
         DataType userDataType = traitAlignment.getDataType();
         if (! (userDataType instanceof UserDataType) )
-            throw new IllegalArgumentException("Substitution Model was null!");
+            throw new IllegalArgumentException("Expect BEAST user defined datatype ! But find " +
+                    userDataType.getTypeDescription());
 
         SiteModel siteModel = constructGeoSiteModel(phyloCTMC, context, (UserDataType) userDataType);
         treeLikelihood.setInputValue("siteModel", siteModel);

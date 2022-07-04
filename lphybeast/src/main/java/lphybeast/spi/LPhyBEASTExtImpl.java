@@ -61,7 +61,6 @@ public class LPhyBEASTExtImpl implements LPhyBEASTExt {
                 InverseGammaToBEAST.class,
                 JukesCantorToBEAST.class,
                 K80ToBEAST.class,
-                LewisMKToBeast.class,
                 LocalBranchRatesToBEAST.class,
                 LogNormalToBEAST.class,
 //                MultispeciesCoalescentToStarBEAST2.class,
