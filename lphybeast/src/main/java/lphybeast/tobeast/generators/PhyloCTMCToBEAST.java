@@ -33,6 +33,8 @@ import lphy.graphicalModel.Value;
 import lphybeast.BEASTContext;
 import lphybeast.GeneratorToBEAST;
 
+import java.util.Map;
+
 public class PhyloCTMCToBEAST implements GeneratorToBEAST<PhyloCTMC, GenericTreeLikelihood> {
 
     private static final String LOCATION = "location";
@@ -228,27 +230,36 @@ public class PhyloCTMCToBEAST implements GeneratorToBEAST<PhyloCTMC, GenericTree
 
         Value<Double[]> siteRates = phyloCTMC.getSiteRates();
 
+        // Scenario 1: using siteRates
         if (siteRates != null) {
             Generator generator = siteRates.getGenerator();
 
-            DiscretizedGamma discretizedGamma;
-            if (generator instanceof DiscretizedGamma) {
-                discretizedGamma = (DiscretizedGamma)generator;
-            } else if (generator instanceof IID) {
-                discretizedGamma = (DiscretizedGamma) ((IID)generator).getBaseDistribution();
+            Value shape;
+            Value ncat;
+            if (generator instanceof DiscretizedGamma discretizedGamma) {
+                shape = discretizedGamma.getShape();
+                ncat = discretizedGamma.getNcat();
+            } else if (generator instanceof IID iid) {
+                if (iid.getBaseDistribution() instanceof DiscretizedGamma) {
+                    Map<String, Value> params = iid.getParams();
+                    shape = params.get("shape");
+                    ncat = params.get("ncat");
+                } else
+                    throw new UnsupportedOperationException("Only discretized gamma site rates are supported by LPhyBEAST !");
             } else {
-                throw new RuntimeException("Only discretized gamma site rates are supported by LPhyBEAST");
+                throw new UnsupportedOperationException("Only discretized gamma site rates are supported by LPhyBEAST !");
             }
-            siteModel.setInputValue("shape", context.getAsRealParameter(discretizedGamma.getShape()));
-            siteModel.setInputValue("gammaCategoryCount", discretizedGamma.getNcat().value());
+            siteModel.setInputValue("shape", context.getAsRealParameter(shape));
+            siteModel.setInputValue("gammaCategoryCount", ncat.value());
 
             //TODO need a better solution than rm RandomVariable siteRates
             context.removeBEASTObject(context.getBEASTObject(siteRates));
         }
 
+        // Scenario 2: siteRates = NULL
         Generator qGenerator = phyloCTMC.getQ().getGenerator();
         if (qGenerator == null || !(qGenerator instanceof RateMatrix)) {
-            throw new RuntimeException("BEAST2 only supports Q matrices constructed by a RateMatrix function (e.g. hky, gtr, jukeCantor et cetera).");
+            throw new IllegalArgumentException("BEAST2 only supports Q matrices constructed by a RateMatrix function (e.g. hky, gtr, jukeCantor et cetera).");
         } else {
             SubstitutionModel substitutionModel = (SubstitutionModel) context.getBEASTObject(qGenerator);
             if (substitutionModel == null) throw new IllegalArgumentException("Substitution Model was null!");
@@ -261,6 +272,7 @@ public class PhyloCTMCToBEAST implements GeneratorToBEAST<PhyloCTMC, GenericTree
 
             siteModel.initAndValidate();
         }
+        // TODO Scenario 3: using SiteModel in PhyloCTMCSiteModel
         return siteModel;
     }
 
