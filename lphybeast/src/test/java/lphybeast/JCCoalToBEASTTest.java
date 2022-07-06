@@ -2,9 +2,6 @@ package lphybeast;
 
 import org.junit.Test;
 
-import java.io.IOException;
-
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 
@@ -12,7 +9,7 @@ import static org.junit.Assert.assertTrue;
  * Check the XML
  * @author Walter Xie
  */
-public class LPhyToBEASTTest {
+public class JCCoalToBEASTTest {
 
     private int ntaxa = 10;
     private final String simpleCoal = "data {\n" +
@@ -27,17 +24,8 @@ public class LPhyToBEASTTest {
 
     @Test
     public void testSimpleCoalescent() {
-        System.out.println(simpleCoal);
-        LPhyBeast lPhyBEAST = TestUtils.getLPhyBeast();
+        String xml = TestUtils.lphyScriptToBEASTXML(simpleCoal, "simpleCoal");
 
-        String xml = null;
-        try {
-            xml = lPhyBEAST.lphyStrToXML(simpleCoal, "simpleCoal");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        assertNotNull("XML", xml);
-        TestUtils.assertXMLTags(xml);
         TestUtils.assertXMLNTaxa(xml, ntaxa);
 
         assertTrue("Theta prior",  xml.contains("<distribution") && xml.contains("id=\"Theta.prior\"") &&
