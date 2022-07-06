@@ -220,6 +220,12 @@ tasks.test {
     // show standard out and standard error of the test JVM(s) on the console
     testLogging.showStandardStreams = true
     //testLogging.exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
-    exclude("**/Tutorial*")
+    exclude("**/*TutorialTest.class")
 }
 
+val testTutorials = task<Test>("testTutorials") {
+    description = "Test tutorials."
+    group = "tutorials"
+
+    include("**/*TutorialTest.class")
+}

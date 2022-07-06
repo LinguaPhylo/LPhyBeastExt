@@ -1,10 +1,10 @@
 package lphybeast;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
 
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 
@@ -25,29 +25,27 @@ public class LPhyToBEASTTest {
             "  D ~ PhyloCTMC(tree=ψ, L=L, Q=jukesCantor());\n" +
             "}";
 
-    LPhyBeast lPhyBEAST;
-
-    @Before
-    public void setUp() {
-        lPhyBEAST = new LPhyBeast();
-    }
-
     @Test
     public void testSimpleCoalescent() {
         System.out.println(simpleCoal);
+        LPhyBeast lPhyBEAST = TestUtils.getLPhyBeast();
+
         String xml = null;
         try {
             xml = lPhyBEAST.lphyStrToXML(simpleCoal, "simpleCoal");
         } catch (IOException e) {
             e.printStackTrace();
         }
+        assertNotNull("XML", xml);
+        TestUtils.assertXMLTags(xml);
+        TestUtils.assertXMLNTaxa(xml, ntaxa);
 
-        TestUtils.assertXML(xml, ntaxa);
-
-        assertTrue("Theta prior",  xml.contains("<distribution id=\"Theta.prior\"") &&
-                xml.contains("spec=\"beast.math.distributions.LogNormalDistributionModel\"") &&
+        assertTrue("Theta prior",  xml.contains("<distribution") && xml.contains("id=\"Theta.prior\"") &&
+                xml.contains("x=\"@Theta\"") && xml.contains("spec=\"beast.math.distributions.LogNormalDistributionModel\"") &&
                 xml.contains("name=\"M\">3.0</parameter>") && xml.contains("name=\"S\">1.0</parameter>") );
 
+        assertTrue("Coalescent",  xml.contains("<distribution") && xml.contains("id=\"Coalescent\"") );
+        assertTrue("popSize",  xml.contains("<populationModel") && xml.contains("popSize=\"@Theta\"") );
     }
 
 
