@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author Walter Xie
@@ -42,31 +42,31 @@ public class TestUtils {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        assertNotNull("XML", xml);
+        assertNotNull(xml, "XML");
         assertXMLTags(xml);
 
         return xml;
     }
 
     private static void assertXMLTags(String xml) {
-        assertTrue("<beast></beast>",  xml.contains("<beast") && xml.contains("</beast>"));
+        assertTrue(xml.contains("<beast") && xml.contains("</beast>"), "<beast></beast>");
 
-        assertTrue("MCMC tag",  xml.contains("<run") && xml.contains("id=\"MCMC\""));
-        assertTrue("posterior tag",  xml.contains("<distribution") && xml.contains("id=\"posterior\""));
-        assertTrue("prior tag",  xml.contains("<distribution") && xml.contains("id=\"prior\""));
-        assertTrue("likelihood tag",  xml.contains("<distribution") && xml.contains("id=\"likelihood\""));
-        assertTrue("operator tag",  xml.contains("<operator"));
-        assertTrue("logger tag",  xml.contains("<logger") && xml.contains("id=\"Logger\""));
+        assertTrue(xml.contains("<run") && xml.contains("id=\"MCMC\""), "MCMC tag" );
+        assertTrue(xml.contains("<distribution") && xml.contains("id=\"posterior\""), "posterior tag");
+        assertTrue(xml.contains("<distribution") && xml.contains("id=\"prior\""), "prior tag");
+        assertTrue(xml.contains("<distribution") && xml.contains("id=\"likelihood\""), "likelihood tag");
+        assertTrue(xml.contains("<operator"), "operator tag");
+        assertTrue(xml.contains("<logger") && xml.contains("id=\"Logger\""), "logger tag");
     }
 
     public static void assertXMLNTaxa(String xml, int ntaxa) {
-        assertTrue("alignment tag",  xml.contains("<data") && xml.contains("</data>"));
+        assertTrue(xml.contains("<data") && xml.contains("</data>"), "alignment tag");
 
         // take the 1st <data> ... </data>
         String alig = xml.substring(xml.indexOf("<data"), xml.indexOf("</data>"));
         // count how many <sequence in the 1st pair of <data> ... </data>
         String temp = alig.replace("<sequence", "");
         int occ = (alig.length() - temp.length()) / "<sequence".length();
-        assertEquals("ntaxa", ntaxa,  occ);
+        assertEquals(ntaxa,  occ, "ntaxa");
     }
 }

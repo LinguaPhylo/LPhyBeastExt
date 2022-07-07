@@ -1,5 +1,6 @@
 plugins {
     `java-library`
+    `java-test-fixtures` // which produces test fixtures
 // DO NOT use app plugin, it will mess up distZip
     distribution
     `maven-publish`
@@ -44,17 +45,12 @@ dependencies {
     api(beast2Jars)
     // other jars must be included
     implementation(notReleasedJars)
-
-    // tests
-    testImplementation("junit:junit:4.13.2")
-
-//    testRuntimeOnly("io.github.linguaphylo:lphy:1.1.0")
-//    testRuntimeOnly(beast2Jars)
-
 //    if (project.hasProperty("isRuntime")) {
 //        runtimeOnly("io.github.linguaphylo:lphy:1.1.0")
 //        runtimeOnly(beast2Jars)
 //    }
+
+    // Tests are the bottom of the file
 }
 
 val maincls = "lphybeast.LPhyBeastCMD"
@@ -211,9 +207,26 @@ publishing {
     }
 }
 
+//++++++++ tests ++++++++//
+
+dependencies {
+//    intTestImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
+
+    // tests
+    testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
+
+    // API dependencies are visible to consumers when building
+    testFixturesApi("org.junit.jupiter:junit-jupiter:5.8.2")
+    testImplementation(testFixtures(project(":lphybeast")))
+
+//    testRuntimeOnly("io.github.linguaphylo:lphy:1.1.0")
+//    testRuntimeOnly(beast2Jars)
+}
+
 tasks.test {
-    useJUnit()
-    // useJUnitPlatform()
+    useJUnitPlatform() {
+        excludeTags("dev")
+    }
     // set heap size for the test JVM(s)
     minHeapSize = "128m"
     maxHeapSize = "1G"
@@ -226,15 +239,12 @@ tasks.test {
             mergeReruns.set(true) // defaults to false
         }
     }
-    filter {
-        includeTestsMatching("*ToBEASTTest")
-        includeTestsMatching("RSV2TutorialTest")
-    }
+
 }
 
-val testTutorials = task<Test>("testTutorials") {
-    description = "Test tutorials."
-    group = "tutorials"
-
-    include("**/H5N1TutorialTest.class")
-}
+//val testTutorials = task<Test>("testTutorials") {
+//    description = "Test tutorials."
+//    group = "tutorials"
+//
+//    include("**/H5N1TutorialTest.class")
+//}

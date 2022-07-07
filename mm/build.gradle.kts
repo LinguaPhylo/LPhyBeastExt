@@ -1,5 +1,6 @@
 plugins {
     `java-library`
+    `java-test-fixtures` // which produces test fixtures
 }
 
 version = "0.0.1-SNAPSHOT"
@@ -14,6 +15,10 @@ java {
 dependencies {
     implementation(project(":lphybeast"))
     implementation(fileTree("lib"))
+
+    // tests
+    testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
+    testImplementation(testFixtures(project(":lphybeast")))
 }
 
 val developers = "LPhyBEAST developer team"
@@ -24,5 +29,21 @@ tasks.jar {
             "Implementation-Title" to "LPhyBEAST morphological models",
             "Implementation-Vendor" to developers,
         )
+    }
+}
+
+tasks.test {
+    useJUnitPlatform()
+    // set heap size for the test JVM(s)
+    minHeapSize = "128m"
+    maxHeapSize = "1G"
+    // show standard out and standard error of the test JVM(s) on the console
+    testLogging.showStandardStreams = true
+
+    reports {
+        junitXml.apply {
+            isOutputPerTestCase = true // defaults to false
+            mergeReruns.set(true) // defaults to false
+        }
     }
 }
