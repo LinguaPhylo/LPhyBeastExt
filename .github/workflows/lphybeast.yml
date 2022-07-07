@@ -43,6 +43,4 @@ jobs:
         uses: EnricoMi/publish-unit-test-result-action@v1
         if: always()
         with:
-          files: ./LPhyBeast/lphybeast/build/test-results/**/*.xml
-                 ./LPhyBeast/mm/build/test-results/**/*.xml
-#                 ./LPhyBeast/mascot/build/test-results/**/*.xml
+          files: ./LPhyBeast/*/build/test-results/**/*.xml
