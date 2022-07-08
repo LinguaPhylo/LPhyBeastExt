@@ -26,6 +26,7 @@ public class H5N1TutorialTest {
 
     @Test
     public void testDPG() {
+        final String fileStem = "h5n1";
         String h5n1LPhy = String.format("""
                 data {
                     options = {ageDirection="forward", ageRegex="_(\\d+)$"};
@@ -52,7 +53,7 @@ public class H5N1TutorialTest {
                     D_trait ~ PhyloCTMC(L=1, Q=Q_trait, mu=μ_trait, tree=ψ, dataType=D_trait.dataType());
                   }""", fPath.toAbsolutePath());
 
-        String xml = TestUtils.lphyScriptToBEASTXML(h5n1LPhy, "H5N1");
+        String xml = TestUtils.lphyScriptToBEASTXML(h5n1LPhy, fileStem);
 
         TestUtils.assertXMLNTaxa(xml, ntaxa);
 
@@ -86,8 +87,14 @@ public class H5N1TutorialTest {
         assertTrue(xml.contains("x=\"@pi_trait\"") && xml.contains("id=\"pi_trait.prior\"") &&
                 xml.contains("name=\"alpha\">3.0 3.0 3.0 3.0 3.0 3.0</parameter>"),  "pi_trait prior" );
 
+        // 2 site models
+        assertEquals(2, xml.split("<siteModel", -1).length - 1, "2 site models" );
+        assertTrue(xml.contains("gammaCategoryCount=\"4\"") && xml.contains("shape=\"@gamma\"") &&
+                xml.contains("gammaCategoryCount=\"1\""), "SiteModel" );
         assertTrue(xml.contains("x=\"@gamma\"") && xml.contains("name=\"M\">0.0</parameter>") &&
                 xml.contains("name=\"S\">2.0</parameter>"),  "gamma shape prior" );
+
+        assertTrue(xml.contains("name=\"clock.rate\">0.004</parameter>"),  "clock rate" );
 
         assertTrue(xml.contains("x=\"@R_trait\"") && xml.contains("id=\"R_trait.prior\"") &&
                 xml.contains("name=\"alpha\">1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0</parameter>"),
@@ -108,15 +115,12 @@ public class H5N1TutorialTest {
         assertTrue(xml.contains("id=\"SVSGeneralSubstitutionModel\"") && xml.contains("rateIndicator=\"@I\"") &&
                 xml.contains("rates=\"@R_trait\"") && xml.contains("clock.rate=\"@mu_trait\"") , "geo site model" );
 
-        // 2 site models
-        assertEquals(2, xml.split("<siteModel", -1).length - 1, "2 site models" );
-
         assertTrue(xml.contains("spec=\"BitFlipOperator\"") && xml.contains("parameter=\"@I\""), "I.bitFlip Operator" );
 
         // 6 ScaleOperator, incl. tree
         assertEquals(6, xml.split("ScaleOperator", -1).length - 1, "ScaleOperator" );
 
-        assertTrue(xml.contains("Exchange") && xml.contains("SubtreeSlide") &&
+        assertTrue(xml.contains("Exchange") && xml.contains("SubtreeSlide") && xml.contains("Uniform") &&
                 xml.contains("WilsonBalding"), "Tree Operator" );
 
         assertTrue(xml.contains("UpDownOperator") &&
@@ -125,9 +129,9 @@ public class H5N1TutorialTest {
         assertEquals(3, xml.split("DeltaExchangeOperator", -1).length - 1, "DeltaExchangeOperator");
 
         assertTrue(xml.contains("chainLength=\"1000000\"") && xml.contains("logEvery=\"500\"") &&
-                xml.contains("fileName=\"H5N1.log\"") && xml.contains("spec=\"SVSGeneralSubstitutionModelLogger\"") &&
-                xml.contains("fileName=\"H5N1.trees\"") && xml.contains("fileName=\"H5N1_with_trait.trees\"") &&
-                xml.contains("mode=\"tree\""), "logger" );
+                xml.contains("fileName=\"" + fileStem + ".log\"") && xml.contains("fileName=\"" + fileStem + ".trees\"") &&
+                xml.contains("fileName=\"" + fileStem + "_with_trait.trees\"") &&  xml.contains("mode=\"tree\"") &&
+                xml.contains("spec=\"SVSGeneralSubstitutionModelLogger\""), "logger" );
     }
 
 }

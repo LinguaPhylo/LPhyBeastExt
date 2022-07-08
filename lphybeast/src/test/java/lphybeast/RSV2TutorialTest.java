@@ -26,6 +26,7 @@ public class RSV2TutorialTest {
 
     @Test
     public void testRSV2() {
+        final String fileStem = "RSV2";
         String RSV2LPhy = String.format("""
                     data {
                        options = {ageDirection="forward", ageRegex="s(\\d+)$"};
@@ -45,7 +46,7 @@ public class RSV2TutorialTest {
                        codon ~ PhyloCTMC(L=L, Q=hky(kappa=κ, freq=π, meanRate=r), mu=μ, tree=ψ);
                      }""", fPath.toAbsolutePath());
 
-        String xml = TestUtils.lphyScriptToBEASTXML(RSV2LPhy, "RSV2");
+        String xml = TestUtils.lphyScriptToBEASTXML(RSV2LPhy, fileStem);
 
         TestUtils.assertXMLNTaxa(xml, ntaxa);
 
@@ -87,7 +88,7 @@ public class RSV2TutorialTest {
         // 5 ScaleOperator, incl. tree
         assertEquals(5, xml.split("ScaleOperator", -1).length - 1, "ScaleOperator" );
 
-        assertTrue(xml.contains("Exchange") && xml.contains("SubtreeSlide") &&
+        assertTrue(xml.contains("Exchange") && xml.contains("SubtreeSlide") && xml.contains("Uniform") &&
                 xml.contains("WilsonBalding"), "Tree Operator" );
 
         assertTrue(xml.contains("UpDownOperator") &&
@@ -96,7 +97,8 @@ public class RSV2TutorialTest {
         assertEquals(4, xml.split("DeltaExchangeOperator", -1).length - 1, "DeltaExchangeOperator");
 
         assertTrue(xml.contains("chainLength=\"1000000\"") && xml.contains("logEvery=\"500\"") &&
-                xml.contains("fileName=\"RSV2.log\"") && xml.contains("fileName=\"RSV2.trees\""), "logger" );
+                xml.contains("fileName=\"" + fileStem + ".log\"") && xml.contains("fileName=\"" + fileStem + ".trees\""),
+                "logger" );
     }
 
 }
