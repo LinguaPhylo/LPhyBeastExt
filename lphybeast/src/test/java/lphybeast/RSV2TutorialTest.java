@@ -11,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Time stamped data
+ * https://linguaphylo.github.io/tutorials/time-stamped-data/
  * @author Walter Xie
  */
 public class RSV2TutorialTest {
@@ -77,7 +78,7 @@ public class RSV2TutorialTest {
                 xml.contains("<weights") && xml.contains("dimension=\"3\"") &&
                 xml.contains("estimate=\"false\">209 210 210</weights>"), "r.prior WeightedDirichlet" );
 
-        assertTrue(xml.contains("x=\"@kappa\"") && xml.contains("name=\"M\">-5.0</parameter>") &&
+        assertTrue(xml.contains("x=\"@mu\"") && xml.contains("name=\"M\">-5.0</parameter>") &&
                 xml.contains("name=\"S\">1.25</parameter>"),  "mu prior" );
 
         // 3 TreeLikelihood
