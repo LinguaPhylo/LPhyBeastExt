@@ -1,4 +1,4 @@
-package mm.lphybeast;
+package mm.lphybeast.tobeast.generators;
 
 import lphybeast.TestUtils;
 import org.junit.jupiter.api.Test;

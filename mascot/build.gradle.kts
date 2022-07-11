@@ -14,6 +14,10 @@ java {
 dependencies {
     implementation(project(":lphybeast"))
     implementation(fileTree("lib"))
+
+    // tests
+    testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
+    testImplementation(testFixtures(project(":lphybeast")))
 }
 
 val developers = "LPhyBEAST developer team"
@@ -38,4 +42,18 @@ tasks.register("runMascotLB", JavaExec::class.java) {
     println("args = $args")
 }
 
+tasks.test {
+    useJUnitPlatform()
+    // set heap size for the test JVM(s)
+    minHeapSize = "128m"
+    maxHeapSize = "1G"
+    // show standard out and standard error of the test JVM(s) on the console
+    testLogging.showStandardStreams = true
 
+    reports {
+        junitXml.apply {
+            isOutputPerTestCase = true // defaults to false
+            mergeReruns.set(true) // defaults to false
+        }
+    }
+}
