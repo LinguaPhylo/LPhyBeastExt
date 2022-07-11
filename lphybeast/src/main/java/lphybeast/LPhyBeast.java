@@ -181,8 +181,8 @@ public class LPhyBeast implements Runnable {
 
     /**
      * Alternative method to give LPhy script (e.g. from String), not only from a file.
-     * @param reader
-     * @param filePathNoExt
+     * @param reader         BufferedReader
+     * @param filePathNoExt  no file extension
      * @param chainLength    if <=0, then use default 1,000,000.
      *                       logEvery = chainLength / numOfSamples,
      *                       where numOfSamples = 2000 as default.
@@ -220,13 +220,12 @@ public class LPhyBeast implements Runnable {
         return context.toBEASTXML(filePathNoExt, chainLength, preBurnin);
     }
 
-    /**TODO  merge it into run(...)
-     * parse LPhy script into BEAST 2 XML.
-     * @param lphy           LPhy script with <code>data{}<code/> <code>model{}<code/> blocks,
-     *                       and one line one command.
-     * @see #toBEASTXML(BufferedReader, String, long, int)
+    /**
+     * Parse LPhy script into BEAST 2 XML in string. Only used for tests.
+     * @param lphy           LPhy script in string, and one line one command.
+     * @param fileNameStem   output file stem without file extension
+     * @return  BEAST 2 XML in string
      */
-    @Deprecated
     public String lphyStrToXML(String lphy, String fileNameStem) throws IOException {
         Reader inputString = new StringReader(lphy);
         BufferedReader reader = new BufferedReader(inputString);
