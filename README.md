@@ -47,7 +47,7 @@ LPhy and LPhyBEAST [Tutorials](https://linguaphylo.github.io/tutorials/)
 
 - [linguaPhylo](https://github.com/LinguaPhylo/linguaPhylo)
 
-BEAST 2 packages:
+BEAST 2 packages, for example:
 
 - [beast2](http://www.github.com/CompEvol/beast2)
 - [BEASTLabs](https://github.com/BEAST2-Dev/BEASTLabs/)
