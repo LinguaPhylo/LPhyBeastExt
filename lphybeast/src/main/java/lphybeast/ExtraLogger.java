@@ -5,12 +5,13 @@ import beast.core.Logger;
 
 import java.io.PrintStream;
 
-/**
+/**TODO 1) 2 layers: Logger & Loggable, latter is either log or tree;
+ * TODO 2) List Loggable, not all models use 1 Loggable
  * Wrapper to handle the extra content required in beast logging,
  * such as Mascot StructuredTreeLogger
  * @author Walter Xie
  */
-public abstract class ExtraLogger implements Loggable {
+public abstract class ExtraLogger implements Loggable { //TODO extends Logger
 
     protected Loggable loggable;
     private boolean multiTrees = false;

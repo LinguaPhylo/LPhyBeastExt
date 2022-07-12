@@ -2,7 +2,6 @@ package lphybeast;
 
 import beast.core.Loggable;
 import beast.core.*;
-import beast.core.parameter.BooleanParameter;
 import beast.core.parameter.IntegerParameter;
 import beast.core.parameter.Parameter;
 import beast.core.parameter.RealParameter;
@@ -11,10 +10,8 @@ import beast.core.util.Slice;
 import beast.evolution.alignment.Alignment;
 import beast.evolution.alignment.Taxon;
 import beast.evolution.datatype.DataType;
-import beast.evolution.likelihood.AncestralStateTreeLikelihood;
-import beast.evolution.operators.*;
 import beast.evolution.substitutionmodel.Frequencies;
-import beast.evolution.tree.*;
+import beast.evolution.tree.TreeInterface;
 import beast.math.distributions.ParametricDistribution;
 import beast.math.distributions.Prior;
 import beast.util.BEASTVector;
@@ -24,14 +21,7 @@ import com.google.common.collect.Multimap;
 import feast.function.Concatenate;
 import jebl.evolution.sequences.SequenceType;
 import lphy.core.LPhyParser;
-import lphy.core.distributions.Dirichlet;
-import lphy.core.distributions.IID;
-import lphy.core.distributions.RandomComposition;
 import lphy.core.functions.ElementsAt;
-import lphy.evolution.birthdeath.SimFBDAge;
-import lphy.evolution.coalescent.SkylineCoalescent;
-import lphy.evolution.coalescent.StructuredCoalescent;
-import lphy.evolution.tree.TimeTree;
 import lphy.graphicalModel.*;
 import lphy.util.LoggerUtils;
 import lphy.util.Symbols;
@@ -41,7 +31,6 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static java.lang.Math.toIntExact;
 
@@ -52,6 +41,8 @@ public class BEASTContext {
     public static final String LIKELIHOOD_ID = "likelihood";
 
     //*** registry ***//
+
+    LPhyParser parser;
 
     List<ValueToBEAST> valueToBEASTList;
     //use LinkedHashMap to keep inserted ordering, so the first matching converter is used.
@@ -64,12 +55,12 @@ public class BEASTContext {
 
     //*** to BEAST ***//
 
-    List<StateNode> state = new ArrayList<>();
+    private List<StateNode> state = new ArrayList<>();
 
     // a list of extra beast elements in the keys,
     // with a pointer to the graphical model node that caused their production
     private Multimap<BEASTInterface, GraphicalModelNode<?>> elements = HashMultimap.create();
-    List<StateNodeInitialiser> inits = new ArrayList<>();
+    private List<StateNodeInitialiser> inits = new ArrayList<>();
 
     // a map of graphical model nodes to a list of equivalent BEASTInterface objects
     private Map<GraphicalModelNode<?>, BEASTInterface> beastObjects = new HashMap<>();
@@ -77,16 +68,25 @@ public class BEASTContext {
     // a map of BEASTInterface to graphical model nodes that they represent
     private Map<BEASTInterface, GraphicalModelNode<?>> BEASTToLPHYMap = new HashMap<>();
 
-    // a list of beast state nodes to skip the automatic operator creation for.
-    private Set<StateNode> skipOperators = new HashSet<>();
-
-    private List<Operator> extraOperators = new ArrayList<>();
-    private List<Loggable> extraLoggables = new ArrayList<>();
-
     SortedMap<String, Taxon> allTaxa = new TreeMap<>();
 
-    LPhyParser parser;
+    //*** operators ***//
+    // a list of beast state nodes to skip the automatic operator creation for.
+    private Set<StateNode> skipOperators = new HashSet<>();
+    // extra operators either for default or from extensions
+    private List<Operator> extraOperators = new ArrayList<>();
+    // TODO eventually all operator related code should go there
+    // create XML operator section, with the capability to replace default operators
+    OperatorFactory operatorFactory;
 
+    //*** operators ***//
+    // a list of extra loggables in 3 default loggers: parameter logger, screen logger, tree logger.
+    private List<Loggable> extraLoggables = new ArrayList<>();
+    // extra loggers from extensions
+    private List<Logger> extraLoggers = new ArrayList<>();
+    // TODO eventually all logging related code should go there
+    // create XML logger section
+    LoggerFactory loggerFactory;
 
     @Deprecated
     public BEASTContext(LPhyParser parser) {
@@ -710,383 +710,65 @@ public class BEASTContext {
         return prior;
     }
 
-
-    public List<Operator> createOperators() {
-
-        List<Operator> operators = new ArrayList<>();
-
-        for (StateNode stateNode : state) {
-            if (!skipOperators.contains(stateNode)) {
-                if (stateNode instanceof RealParameter) {
-                    Operator operator = createBEASTOperator((RealParameter) stateNode);
-                    if (operator != null) operators.add(operator);
-                } else if (stateNode instanceof IntegerParameter) {
-                    operators.add(createBEASTOperator((IntegerParameter) stateNode));
-                } else if (stateNode instanceof BooleanParameter) {
-                    operators.add(createBEASTOperator((BooleanParameter) stateNode));
-                } else if (stateNode instanceof Tree) {
-                    Tree tree = (Tree) stateNode;
-                    operators.add(createTreeScaleOperator(tree));
-                    operators.add(createRootHeightOperator(tree));
-                    operators.add(createExchangeOperator(tree, true));
-                    operators.add(createExchangeOperator(tree, false));
-                    if (!isSampledAncestor(tree)) operators.add(createSubtreeSlideOperator((Tree) stateNode));
-                    operators.add(createTreeUniformOperator(tree));
-                    if (!isSampledAncestor(tree)) operators.add(createWilsonBaldingOperator(tree));
-                }
-            }
-        }
-
-        operators.addAll(extraOperators);
-        operators.sort(Comparator.comparing(BEASTObject::getID));
-
-        return operators;
-    }
-
-    private List<Logger> createLoggers(int logEvery, String fileName) {
-        topDist = getTopCompoundDist();
-
-        List<Logger> loggers = new ArrayList<>();
-        // reduce screen logging
-        loggers.add(createScreenLogger(logEvery * 100));
-        loggers.add(createLogger(logEvery, fileName + ".log"));
-        loggers.addAll(createTreeLoggers(logEvery, fileName));
-
-        return loggers;
-    }
-
-    private Logger createLogger(int logEvery, String fileName) {
-
-        List<Loggable> nonTrees = state.stream()
-                .filter(stateNode -> !(stateNode instanceof Tree))
-                .collect(Collectors.toList());
-
-        // tree height, but not in screen logging
-        if (fileName != null) {
-            List<TreeInterface> trees = getTrees();
-            for (TreeInterface tree : trees) {
-                TreeStatLogger treeStatLogger = new TreeStatLogger();
-                // use default, which will log the length
-                treeStatLogger.initByName("tree", tree);
-                nonTrees.add(treeStatLogger);
-            }
-        }
-
-        // not in screen logging
-        if (fileName != null) {
-//            nonTrees.addAll(extraLoggables);
-            for (Loggable loggable : extraLoggables) {
-                if (loggable instanceof ExtraLogger extraLogger) {
-                    // if extra logger, then get the original beast2 loggable class
-                    // otherwise logger.setInputValue("log", nonTrees) will fail.
-                    nonTrees.add(extraLogger.getLoggable());
-                } else {
-                    nonTrees.add(loggable);
-                }
-            }
-        }
-
-//        for (Loggable loggable : extraLoggables) {
-//            // fix StructuredCoalescent log
-//            if (loggable instanceof Constant) {
-//                // Constant includes Ne and m
-//                RealParameter ne = ((Constant) loggable).NeInput.get();
-//                nonTrees.remove(ne);
-//                RealParameter m = ((Constant) loggable).b_mInput.get();
-//                nonTrees.remove(m);
-//            }
-//        }
-
-        // add them in the end to avoid sorting
-        nonTrees.addAll(0, Arrays.asList(topDist));
-
-        Logger logger = new Logger();
-        logger.setInputValue("logEvery", logEvery);
-        logger.setInputValue("log", nonTrees);
-        if (fileName != null) logger.setInputValue("fileName", fileName);
-        logger.initAndValidate();
-        elements.put(logger, null);
-        return logger;
-    }
-
-    private CompoundDistribution[] topDist = new CompoundDistribution[3];
-    // sorted by specific order
-    private CompoundDistribution[] getTopCompoundDist() {
-        for (BEASTInterface bI : elements.keySet()) {
-            if (bI instanceof CompoundDistribution && bI.getID() != null) {
-                if (bI.getID().equals(POSTERIOR_ID))
-                    topDist[0] = (CompoundDistribution) bI;
-                else if (bI.getID().equals(LIKELIHOOD_ID))
-                    topDist[1] = (CompoundDistribution) bI;
-                else if (bI.getID().equals(PRIOR_ID))
-                    topDist[2] = (CompoundDistribution) bI;
-            }
-        }
-        return topDist;
-    }
-
-    CompoundDistribution getPosteriorDist() {
-        return topDist[0];
-    }
-
-    public List<TreeInterface> getTrees() {
-        return state.stream()
-                .filter(stateNode -> stateNode instanceof TreeInterface)
-                .map(stateNode -> (TreeInterface) stateNode)
-                .sorted(Comparator.comparing(TreeInterface::getID))
-                .collect(Collectors.toList());
-    }
-
-    private List<Logger> createTreeLoggers(int logEvery, String fileNameStem) {
-
-        List<TreeInterface> trees = getTrees();
-
-        boolean multipleTrees = trees.size() > 1;
-
-        List<Logger> treeLoggers = new ArrayList<>();
-
-        // TODO: use tree-likelihood instead, and get all trees from tree-likelihood?
-
-        for (TreeInterface tree : trees) {
-            GraphicalModelNode graphicalModelNode = BEASTToLPHYMap.get(tree);
-            Generator generator = ((RandomVariable) graphicalModelNode).getGenerator();
-
-            boolean logMetaData = generator instanceof SkylineCoalescent ||
-                    generator instanceof StructuredCoalescent;
-
-            Logger logger = new Logger();
-            logger.setInputValue("logEvery", logEvery);
-            if (logMetaData) { // TODO
-                TreeWithMetaDataLogger treeWithMetaDataLogger = new TreeWithMetaDataLogger();
-                treeWithMetaDataLogger.setInputValue("tree", tree);
-                logger.setInputValue("log", treeWithMetaDataLogger);
-            } else
-                logger.setInputValue("log", tree);
-
-            String fileName = Objects.requireNonNull(fileNameStem) + ".trees";
-            if (multipleTrees) // multi-partitions and unlink trees
-                fileName = fileNameStem + "_" + tree.getID() + ".trees";
-
-            logger.setInputValue("fileName", fileName);
-            logger.setInputValue("mode", "tree");
-            logger.initAndValidate();
-            logger.setID(tree.getID() + ".treeLogger");
-            treeLoggers.add(logger);
-            elements.put(logger, null);
-        }
-
-        // extra tree logger
-        // extraLoggables are used to retain all tree-likelihoods
-        for (Loggable loggable : extraLoggables) {
-
-            if (loggable instanceof ExtraLogger extraLogger) { // TODO
-                // Mascot StructuredTreeLogger
-                extraLogger.setMultiTrees(multipleTrees);
-                Logger logger = extraLogger.createExtraLogger(logEvery, fileNameStem);
-
-                treeLoggers.add(logger);
-                elements.put(logger, null);
-
-            } else if (loggable instanceof AncestralStateTreeLikelihood) { // TODO
-                // DPG: TreeWithTraitLogger
-                TreeInterface tree = ((AncestralStateTreeLikelihood) loggable).treeInput.get();
-
-                TreeWithTraitLogger treeWithTraitLogger = new TreeWithTraitLogger();
-                treeWithTraitLogger.setInputValue("tree", tree);
-
-                List<BEASTObject> metadata = new ArrayList<>();
-                metadata.add((AncestralStateTreeLikelihood) loggable);
-                // posterior
-                metadata.add(getPosteriorDist());
-                treeWithTraitLogger.setInputValue("metadata", metadata);
-
-                Logger logger = new Logger();
-                logger.setInputValue("logEvery", logEvery);
-                logger.setInputValue("log", treeWithTraitLogger);
-
-                String treeFNSteam = Objects.requireNonNull(fileNameStem) + "_with_trait";
-                if (multipleTrees) // multi-partitions and unlink trees
-                    treeFNSteam = fileNameStem + "_" + tree.getID();
-                String fileName = treeFNSteam + ".trees";
-                logger.setInputValue("fileName", fileName);
-                logger.setID("TreeWithTraitLogger" + (multipleTrees ? "." + treeFNSteam : ""));
-
-                logger.setInputValue("mode", "tree");
-                logger.initAndValidate();
-
-                treeLoggers.add(logger);
-                elements.put(logger, null);
-            }
-
-        }
-
-        return treeLoggers;
-    }
-
-    private Logger createScreenLogger(int logEvery) {
-        return createLogger(logEvery, null);
-    }
-
     public static double getOperatorWeight(int size) {
         return Math.pow(size, 0.7);
     }
 
-    private boolean isSampledAncestor(Tree tree) {
-        return (((Value<TimeTree>)BEASTToLPHYMap.get(tree)).getGenerator() instanceof SimFBDAge);
+    public void addSkipOperator(StateNode stateNode) {
+        skipOperators.add(stateNode);
     }
 
-    private Operator createTreeScaleOperator(Tree tree) {
-
-        ScaleOperator operator = isSampledAncestor(tree) ? new SAScaleOperator() : new ScaleOperator();
-
-        operator.setInputValue("tree", tree);
-        operator.setInputValue("scaleFactor", 0.75);
-        // set the upper of the scale factor
-        operator.setInputValue("upper", 0.975);
-        operator.setInputValue("weight", getOperatorWeight(tree.getInternalNodeCount()));
-        operator.initAndValidate();
-        operator.setID(tree.getID() + "." + "scale");
-        elements.put(operator, null);
-
-        return operator;
+    public void addExtraOperator(Operator operator) {
+        extraOperators.add(operator);
     }
 
-    private Operator createRootHeightOperator(Tree tree) {
-        ScaleOperator operator = isSampledAncestor(tree) ? new SAScaleOperator() : new ScaleOperator();
-        operator.setInputValue("tree", tree);
-        operator.setInputValue("rootOnly", true);
-        operator.setInputValue("scaleFactor", 0.75);
-        // set the upper of the scale factor
-        operator.setInputValue("upper", 0.975);
-        operator.setInputValue("weight", getOperatorWeight(1));
-        operator.initAndValidate();
-        operator.setID(tree.getID() + "." + "rootAgeScale");
-        elements.put(operator, null);
-
-        return operator;
+    public boolean hasExtraOperator(String opID) {
+        return extraOperators.stream().anyMatch(op -> op.getID().equals(opID));
     }
 
-    private Operator createTreeUniformOperator(Tree tree) {
-        Operator uniform = isSampledAncestor(tree) ? new SAUniform() : new Uniform();
-        uniform.setInputValue("tree", tree);
-        uniform.setInputValue("weight", getOperatorWeight(tree.getInternalNodeCount()));
-        uniform.initAndValidate();
-        uniform.setID(tree.getID() + "." + "uniform");
-        elements.put(uniform, null);
-
-        return uniform;
+    public List<StateNode> getState() {
+        return state;
     }
 
-    private Operator createSubtreeSlideOperator(Tree tree) {
-        SubtreeSlide subtreeSlide = new SubtreeSlide();
-        subtreeSlide.setInputValue("tree", tree);
-        subtreeSlide.setInputValue("weight", getOperatorWeight(tree.getInternalNodeCount()));
-        subtreeSlide.setInputValue("size", tree.getRoot().getHeight() / 10.0);
-        subtreeSlide.initAndValidate();
-        subtreeSlide.setID(tree.getID() + "." + "subtreeSlide");
-        elements.put(subtreeSlide, null);
-
-        return subtreeSlide;
+    public Multimap<BEASTInterface, GraphicalModelNode<?>> getElements() {
+        return elements;
     }
 
-    private Operator createWilsonBaldingOperator(Tree tree) {
-        Operator wilsonBalding = isSampledAncestor(tree) ? new SAWilsonBalding() : new WilsonBalding();
-        wilsonBalding.setInputValue("tree", tree);
-        wilsonBalding.setInputValue("weight", getOperatorWeight(tree.getInternalNodeCount()));
-        wilsonBalding.initAndValidate();
-        wilsonBalding.setID(tree.getID() + "." + "wilsonBalding");
-        elements.put(wilsonBalding, null);
-
-        return wilsonBalding;
+    public Map<BEASTInterface, GraphicalModelNode<?>> getBEASTToLPHYMap() {
+        return BEASTToLPHYMap;
     }
 
-    private Operator createExchangeOperator(Tree tree, boolean isNarrow) {
-        Exchange exchange = isSampledAncestor(tree) ? new SAExchange() : new Exchange();
-        exchange.setInputValue("tree", tree);
-        exchange.setInputValue("weight", getOperatorWeight(tree.getInternalNodeCount()));
-        exchange.setInputValue("isNarrow", isNarrow);
-        exchange.initAndValidate();
-        exchange.setID(tree.getID() + "." + ((isNarrow) ? "narrow" : "wide") + "Exchange");
-        elements.put(exchange, null);
-
-        return exchange;
+    public Set<StateNode> getSkipOperators() {
+        return skipOperators;
     }
 
-    private Operator createBEASTOperator(RealParameter parameter) {
-
-        Collection<GraphicalModelNode<?>> nodes = elements.get(parameter);
-
-        if (nodes.stream().anyMatch(node -> node instanceof RandomVariable)) {
-
-            GraphicalModelNode graphicalModelNode = (GraphicalModelNode)nodes.stream().filter(node -> node instanceof RandomVariable).toArray()[0];
-
-            RandomVariable<?> variable = (RandomVariable<?>) graphicalModelNode;
-
-            Operator operator;
-            GenerativeDistribution generativeDistribution = variable.getGenerativeDistribution();
-
-            if (generativeDistribution instanceof Dirichlet ||
-                    (generativeDistribution instanceof IID &&
-                            ((IID<?>) generativeDistribution).getBaseDistribution() instanceof Dirichlet) ) {
-                Double[] value = (Double[]) variable.value();
-                operator = new DeltaExchangeOperator();
-                operator.setInputValue("parameter", parameter);
-                operator.setInputValue("weight", getOperatorWeight(parameter.getDimension() - 1));
-                operator.setInputValue("delta", 1.0 / value.length);
-                operator.initAndValidate();
-                operator.setID(parameter.getID() + ".deltaExchange");
-            } else {
-                operator = new ScaleOperator();
-                operator.setInputValue("parameter", parameter);
-                operator.setInputValue("weight", getOperatorWeight(parameter.getDimension()));
-                operator.setInputValue("scaleFactor", 0.75);
-                operator.initAndValidate();
-                operator.setID(parameter.getID() + ".scale");
-            }
-            elements.put(operator, null);
-            return operator;
-        } else {
-            LoggerUtils.log.severe("No LPhy random variable associated with beast state node " + parameter.getID());
-            return null;
-        }
+    public List<Operator> getExtraOperators() {
+        return extraOperators;
     }
 
-    private Operator createBEASTOperator(BooleanParameter parameter) {
-        Operator operator = new BitFlipOperator();
-        operator.setInputValue("parameter", parameter);
-        operator.setInputValue("weight", getOperatorWeight(parameter.getDimension()));
-        operator.initAndValidate();
-        operator.setID(parameter.getID() + ".bitFlip");
-
-        return operator;
+    public List<Loggable> getExtraLoggables() {
+        return extraLoggables;
     }
 
-    private Operator createBEASTOperator(IntegerParameter parameter) {
-        RandomVariable<?> variable = (RandomVariable<?>) BEASTToLPHYMap.get(parameter);
-
-        Operator operator;
-        if (variable.getGenerativeDistribution() instanceof RandomComposition) {
-            System.out.println("Constructing operator for randomComposition");
-            operator = new DeltaExchangeOperator();
-            operator.setInputValue("intparameter", parameter);
-            operator.setInputValue("weight", getOperatorWeight(parameter.getDimension() - 1));
-            operator.setInputValue("delta", 2.0);
-            operator.setInputValue("integer", true);
-            operator.initAndValidate();
-            operator.setID(parameter.getID() + ".deltaExchange");
-        } else {
-            operator = new IntRandomWalkOperator();
-            operator.setInputValue("parameter", parameter);
-            operator.setInputValue("weight", getOperatorWeight(parameter.getDimension()));
-
-            // TODO implement an optimizable int random walk that uses a reflected Poisson distribution for the jump size with the mean of the Poisson being the optimizable parameter
-            operator.setInputValue("windowSize", 1);
-            operator.initAndValidate();
-            operator.setID(parameter.getID() + ".randomWalk");
-        }
-        elements.put(operator, null);
-        return operator;
+    public List<Logger> getExtraLoggers() {
+        return extraLoggers;
     }
+
+    public void addExtraLoggable(Loggable loggable) {
+        extraLoggables.add(loggable);
+    }
+
+    /**
+     * BEAST2 {@link Logger} contains one/many of {@link Loggable} BEAST2 objects.
+     */
+    public void addExtraLogger(Logger logger) {
+        extraLoggers.add(logger);
+    }
+
+    public void addInit(StateNodeInitialiser beastInitializer) {
+        inits.add(beastInitializer);
+    }
+
 
     private CompoundDistribution createBEASTPosterior() {
 
@@ -1176,13 +858,18 @@ public class BEASTContext {
         mcmc.setInputValue("distribution", posterior);
         mcmc.setInputValue("chainLength", chainLength);
 
-        List<Operator> operators = createOperators();
+        operatorFactory = new OperatorFactory(this);
+        // create all operators
+        List<Operator> operators = operatorFactory.createOperators();
         for (int i = 0; i < operators.size(); i++) {
             System.out.println(operators.get(i));
         }
-
         mcmc.setInputValue("operator", operators);
-        mcmc.setInputValue("logger", createLoggers(logEvery, fileName));
+
+        loggerFactory = new LoggerFactory(this);
+        // 3 default loggers: parameter logger, screen logger, tree logger.
+        List<Logger> defaultLoggers = loggerFactory.createLoggers(logEvery, fileName);
+        mcmc.setInputValue("logger", defaultLoggers);
 
         State state = new State();
         state.setInputValue("stateNode", this.state);
@@ -1263,18 +950,6 @@ public class BEASTContext {
         return new XMLProducer().toXML(mcmc, elements.keySet());
     }
 
-    public void addSkipOperator(StateNode stateNode) {
-        skipOperators.add(stateNode);
-    }
-
-    public void addExtraOperator(Operator operator) {
-        extraOperators.add(operator);
-    }
-
-    public boolean hasExtraOperator(String opID) {
-        return extraOperators.stream().anyMatch(op -> op.getID().equals(opID));
-    }
-
     public void addTaxon(String taxonID) {
         if (!allTaxa.containsKey(taxonID)) {
             allTaxa.put(taxonID, new Taxon(taxonID));
@@ -1313,14 +988,6 @@ public class BEASTContext {
      */
     public void putBEASTObject(GraphicalModelNode node, BEASTInterface beastInterface) {
         addToContext(node, beastInterface);
-    }
-
-    public void addExtraLogger(Loggable loggable) {
-        extraLoggables.add(loggable);
-    }
-
-    public void addInit(StateNodeInitialiser beastInitializer) {
-        inits.add(beastInitializer);
     }
 
     public List<Value<lphy.evolution.alignment.Alignment>> getAlignments() {

@@ -68,7 +68,7 @@ public class PhyloCTMCToBEAST implements GeneratorToBEAST<PhyloCTMC, GenericTree
         treeLikelihood.initAndValidate();
         treeLikelihood.setID(traitAlignment.getID() + ".treeLikelihood");
         // logging
-        context.addExtraLogger(treeLikelihood);
+        context.addExtraLoggable(treeLikelihood);
 
         return treeLikelihood;
     }
@@ -109,7 +109,7 @@ public class PhyloCTMCToBEAST implements GeneratorToBEAST<PhyloCTMC, GenericTree
             if (svsLogger.getID() == null)
                 svsLogger.setID(svsLogger.toString().substring(0, 3));
 
-            context.addExtraLogger(svsLogger);
+            context.addExtraLoggable(svsLogger);
         }
         siteModel.setID("geo." + siteModel.toString());
         return siteModel;
@@ -131,7 +131,7 @@ public class PhyloCTMCToBEAST implements GeneratorToBEAST<PhyloCTMC, GenericTree
         treeLikelihood.initAndValidate();
         treeLikelihood.setID(alignment.getID() + ".treeLikelihood");
         // logging
-        context.addExtraLogger(treeLikelihood);
+        context.addExtraLoggable(treeLikelihood);
 
         return treeLikelihood;
     }

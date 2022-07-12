@@ -12,7 +12,7 @@ import java.util.Objects;
  * @author Walter Xie
  */
 public class MascotExtraTreeLogger extends ExtraLogger {
-
+    // Mascot is a TreeDistribution
     public MascotExtraTreeLogger(Mascot mascot) {
         super(mascot);
     }
