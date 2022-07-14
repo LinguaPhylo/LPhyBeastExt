@@ -94,9 +94,9 @@ public class H3N2TutorialTest {
                 xml.contains("spec=\"beast.mascot.distribution.StructuredTreeIntervals\"") &&
                 xml.contains("backwardsMigration=\"@m\""), "Mascot" );
         assertTrue(xml.contains("spec=\"beast.evolution.tree.TraitSet\"") && xml.contains("traitname=\"deme\"") &&
-                xml.contains("A/New_York/169/2000|CY000657|2000.005464|New_York=New_York,") &&
-                xml.contains("A/Hong_Kong/1269/2001|KP457669|2001.657534|Hong_Kong=Hong_Kong,") &&
-                xml.contains("A/Waikato/5/2000|CY011960|2000.661202|New_Zealand=New_Zealand,") &&
+                xml.contains("A/New_York/169/2000|CY000657|2000.005464|New_York=New_York") &&
+                xml.contains("A/Hong_Kong/1269/2001|KP457669|2001.657534|Hong_Kong=Hong_Kong") &&
+                xml.contains("A/Waikato/5/2000|CY011960|2000.661202|New_Zealand=New_Zealand") &&
                 xml.contains("<typeTrait"), "Trait set" );
 
         // 7 ScaleOperator, incl. tree

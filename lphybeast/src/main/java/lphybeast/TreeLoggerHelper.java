@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * Helper to create a tree logger, may contain a simple tree,
  * or customised logger e.g. {@link beast.evolution.tree.TreeWithMetaDataLogger}.
- * Usually one tree one logger, which is different convention logging parameters.
+ * Usually one tree one logger, which is different convention with logging parameters.
  * @author Walter Xie
  */
 public interface TreeLoggerHelper extends LoggerHelper  {
