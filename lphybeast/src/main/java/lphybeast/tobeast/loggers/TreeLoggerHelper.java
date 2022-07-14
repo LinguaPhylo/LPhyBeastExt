@@ -1,4 +1,4 @@
-package lphybeast;
+package lphybeast.tobeast.loggers;
 
 import beast.core.Loggable;
 import beast.evolution.tree.TreeInterface;
@@ -11,7 +11,7 @@ import java.util.List;
  * Usually one tree one logger, which is different convention with logging parameters.
  * @author Walter Xie
  */
-public interface TreeLoggerHelper extends LoggerHelper  {
+public interface TreeLoggerHelper extends LoggerHelper {
 
 
     default List<Loggable> getLoggables() {

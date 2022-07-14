@@ -1,4 +1,4 @@
-package lphybeast;
+package lphybeast.tobeast.loggers;
 
 import beast.core.BEASTInterface;
 import beast.core.Loggable;
@@ -15,6 +15,7 @@ import lphy.evolution.coalescent.StructuredCoalescent;
 import lphy.graphicalModel.Generator;
 import lphy.graphicalModel.GraphicalModelNode;
 import lphy.graphicalModel.RandomVariable;
+import lphybeast.BEASTContext;
 
 import java.util.*;
 import java.util.stream.Collectors;

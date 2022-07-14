@@ -8,7 +8,6 @@ import beast.evolution.tree.TreeInterface;
 import beast.evolution.tree.TreeWithTraitLogger;
 import com.google.common.collect.Multimap;
 import lphy.graphicalModel.GraphicalModelNode;
-import lphybeast.TreeLoggerHelper;
 
 import java.util.ArrayList;
 import java.util.List;

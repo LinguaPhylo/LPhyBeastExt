@@ -7,7 +7,7 @@ import beast.mascot.distribution.Mascot;
 import beast.mascot.logger.StructuredTreeLogger;
 import com.google.common.collect.Multimap;
 import lphy.graphicalModel.GraphicalModelNode;
-import lphybeast.TreeLoggerHelper;
+import lphybeast.tobeast.loggers.TreeLoggerHelper;
 
 /**
  * @author Walter Xie

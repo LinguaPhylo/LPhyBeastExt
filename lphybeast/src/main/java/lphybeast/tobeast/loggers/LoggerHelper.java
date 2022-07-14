@@ -1,4 +1,4 @@
-package lphybeast;
+package lphybeast.tobeast.loggers;
 
 import beast.core.BEASTInterface;
 import beast.core.Loggable;
