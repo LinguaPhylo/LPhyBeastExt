@@ -9,8 +9,8 @@ import lphy.graphicalModel.GraphicalModelNode;
 import java.util.List;
 
 /**
- * Helper to create a list of loggable.
- * Can be used to create a customized logger.
+ * Helper to create a {@link Logger} from a list of loggable.
+ * It can be used to create a customized logger different to the default loggers.
  * @author Walter Xie
  */
 public interface LoggerHelper {
@@ -38,7 +38,8 @@ public interface LoggerHelper {
     /**
      * Set the log file name by a given file stem.
      * @param fileStem    log file stem without file extension
-     * @param isMultiple  if true, then add the partition
+     * @param isMultiple  if true, for example multi-partitions and unlink trees,
+     *                    then add the unique identifier (e.g. tree id) into the file name.
      */
     void setFileName(String fileStem, boolean isMultiple);
 
