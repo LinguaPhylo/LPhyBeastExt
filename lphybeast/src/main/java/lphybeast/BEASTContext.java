@@ -82,8 +82,8 @@ public class BEASTContext {
     //*** operators ***//
     // a list of extra loggables in 3 default loggers: parameter logger, screen logger, tree logger.
     private List<Loggable> extraLoggables = new ArrayList<>();
-    // extra loggers from extensions
-    private List<Logger> extraLoggers = new ArrayList<>();
+    // helper to create extra loggers from extensions
+    private List<LoggerHelper> extraLoggers = new ArrayList<>();
     // TODO eventually all logging related code should go there
     // create XML logger section
     LoggerFactory loggerFactory;
@@ -114,207 +114,40 @@ public class BEASTContext {
         excludedValueClasses = loader.excludedValueClasses;
     }
 
-    public Map<SequenceType, DataType> getDataTypeMap() {
-        return this.dataTypeMap;
-    }
-
-    public BEASTInterface getBEASTObject(GraphicalModelNode<?> node) {
-
-        // Q=jukesCantor(), rateMatrix.getMeanRate() is null
-        if (node == null) return null;
-
-        if (node instanceof Value) {
-            Value value = (Value)node;
-            if (!value.isAnonymous()) {
-                BEASTInterface beastInterface = getBEASTObject(value.getId());
-                // cannot be Alignment, otherwise getBEASTObject(value.getId()) makes data clamping not working;
-                // it will get simulated Alignment even though data is clamped.
-                if (beastInterface != null) {
-                    if (beastInterface instanceof BEASTVector) {
-                        List<BEASTInterface> beastInterfaceList = ((BEASTVector)beastInterface).getObjectList();
-
-                        if ( !(beastInterfaceList.get(0) instanceof Alignment) )
-                            return beastInterface;
-
-                    } else if ( !(beastInterface instanceof Alignment) ) {
-                        return beastInterface;
-                    }
-                }
-            }
-        }
-
-        // have to use this for data clamping
-        BEASTInterface beastInterface = beastObjects.get(node);
-
-        if (beastInterface != null) {
-            return beastInterface;
-        } else {
-            String id = node.getUniqueId();
-            String[] parts = id.split(VectorUtils.INDEX_SEPARATOR);
-            if (parts.length == 2) {
-                int index = Integer.parseInt(parts[1]);
-                Slice slice = createSliceFromVector(node, parts[0], index);
-                beastObjects.put(node, slice);
-                return slice;
-            }
-        }
-        
-        if (node instanceof SliceValue) {
-            SliceValue sliceValue = (SliceValue) node;
-            return handleSliceRequest(sliceValue);
-        }
-        return null;
-    }
-
-    public Slice createSliceFromVector(GraphicalModelNode node, String id, int index) {
-
-        BEASTInterface parentNode = getBEASTObject(Symbols.getCanonical(id));
-
-        Slice slice = SliceFactory.createSlice(parentNode, index,
-                Symbols.getCanonical(id) + VectorUtils.INDEX_SEPARATOR + index);
-        addToContext(node, slice);
-        return slice;
-
-    }
-
-    boolean byslice = false;
+    public static final int NUM_OF_SAMPLES = 2000;
 
     /**
-     * returns a logical slice based on the given slice value, as long as the value to be sliced is already available.
+     * Main method to process configurations to create BEAST 2 XML from LPhy objects.
      *
-     * @param sliceValue the slice value that needs a beast equivalent
-     * @return
+     * @param logFileStem  log file stem
+     * @param chainLength  if <=0, then use default 1,000,000.
+     *                     logEvery = chainLength / numOfSamples,
+     *                     where numOfSamples = 2000 as default.
+     * @param preBurnin    preBurnin for BEAST MCMC, if preBurnin < 0,
+     *                     then will be automatically assigned to all state nodes size * 10.
+     * @return BEAST 2 XML in String
      */
-    public BEASTInterface handleSliceRequest(SliceValue sliceValue) {
+    public String toBEASTXML(final String logFileStem, long chainLength, int preBurnin) {
+        // default to 1M if not specified
+        if (chainLength < NUM_OF_SAMPLES)
+            throw new IllegalArgumentException("Invalid length for MCMC chain, len = " + chainLength);
+        // Will throw an ArithmeticException in case of overflow.
+        int logEvery = toIntExact(chainLength / NUM_OF_SAMPLES);
 
-        BEASTInterface slicedBEASTValue = beastObjects.get(sliceValue.getSlicedValue());
+        // if preBurnin < 0, then will be defined by all state nodes size
+        if (preBurnin < 0)
+            preBurnin = getAllStatesSize(this.state) * 10;
 
+        LoggerUtils.log.info("Set MCMC chain length = " + chainLength + ", log every = " +
+                logEvery + ", samples = " + NUM_OF_SAMPLES + ", preBurnin = " + preBurnin);
 
-        if (slicedBEASTValue != null) {
-            if (!(slicedBEASTValue instanceof Concatenate)) {
-                Slice slice = SliceFactory.createSlice(slicedBEASTValue, sliceValue.getIndex(), sliceValue.getId());
-                addToContext(sliceValue, slice);
-                return slice;
-            } else {
-                // handle by concatenating
-                List<Function> parts = ((Concatenate) slicedBEASTValue).functionsInput.get();
-                Function slice = parts.get(sliceValue.getIndex());
-                addToContext(sliceValue, (BEASTInterface) slice);
-                return (BEASTInterface) slice;
-            }
-        } else return null;
+        MCMC mcmc = createMCMC(chainLength, logEvery, logFileStem, preBurnin);
+
+        return new XMLProducer().toXML(mcmc, elements.keySet());
     }
 
 
-    public BEASTInterface getBEASTObject(String id) {
-        for (BEASTInterface beastInterface : elements.keySet()) {
-            if (id.equals(beastInterface.getID())) return beastInterface;
-        }
-
-        for (BEASTInterface beastInterface : beastObjects.values()) {
-            if (beastInterface.getID() !=  null && id.equals(beastInterface.getID().equals(id))) return beastInterface;
-        }
-        return null;
-    }
-
-    /**
-     * This function will retrieve the beast object for this value and return it if it is a RealParameter,
-     * or convert it to a RealParameter if it is an IntegerParameter and replace the original integer parameter in the relevant stores.
-     *
-     * @param value
-     * @return the RealParameter associated with this value if it exists, or can be coerced. Has a side-effect if coercion occurs.
-     */
-    public RealParameter getAsRealParameter(Value value) {
-        Parameter param = (Parameter) beastObjects.get(value);
-        if (param instanceof RealParameter) return (RealParameter) param;
-        if (param instanceof IntegerParameter) {
-            if (param.getDimension() == 1) {
-
-                RealParameter newParam = createRealParameter(param.getID(), ((IntegerParameter) param).getValue());
-                removeBEASTObject((BEASTInterface) param);
-                addToContext(value, newParam);
-                return newParam;
-            } else {
-                Double[] values = new Double[param.getDimension()];
-                for (int i = 0; i < values.length; i++) {
-                    values[i] = ((IntegerParameter) param).getValue(i).doubleValue();
-                }
-
-                RealParameter newParam = createRealParameter(param.getID(), values);
-                removeBEASTObject((BEASTInterface) param);
-                addToContext(value, newParam);
-                return newParam;
-
-            }
-        }
-        throw new RuntimeException("No coercable parameter found.");
-    }
-
-    public IntegerParameter getAsIntegerParameter(Value value) {
-        Parameter param = (Parameter) beastObjects.get(value);
-        if (param instanceof IntegerParameter) return (IntegerParameter) param;
-        if (param instanceof RealParameter) {
-            if (param.getDimension() == 1) {
-
-                IntegerParameter newParam = createIntegerParameter(param.getID(), (int) Math.round(((RealParameter) param).getValue()));
-                removeBEASTObject((BEASTInterface) param);
-                addToContext(value, newParam);
-                return newParam;
-            } else {
-                Integer[] values = new Integer[param.getDimension()];
-                for (int i = 0; i < values.length; i++) {
-                    values[i] = ((RealParameter) param).getValue(i).intValue();
-                }
-
-                IntegerParameter newParam = createIntegerParameter(param.getID(), values);
-                removeBEASTObject((BEASTInterface) param);
-                addToContext(value, newParam);
-                return newParam;
-
-            }
-        }
-        throw new RuntimeException("No coercable parameter found.");
-    }
-
-
-    public GraphicalModelNode getGraphicalModelNode(BEASTInterface beastInterface) {
-        return BEASTToLPHYMap.get(beastInterface);
-    }
-
-    public void addBEASTObject(BEASTInterface newBEASTObject, GraphicalModelNode graphicalModelNode) {
-        elements.put(newBEASTObject, graphicalModelNode);
-    }
-
-    /**
-     * @param stateNode the state node to be added
-     * @param graphicalModelNode the graphical model node that this state node corresponds to, or represents a part of
-     */
-    public void addStateNode(StateNode stateNode, GraphicalModelNode graphicalModelNode, boolean createOperators) {
-        if (!state.contains(stateNode)) {
-            elements.put(stateNode, graphicalModelNode);
-            state.add(stateNode);
-        }
-        if (!createOperators) skipOperators.add(stateNode);
-    }
-
-    public void removeBEASTObject(BEASTInterface beastObject) {
-        elements.removeAll(beastObject);
-        BEASTToLPHYMap.remove(beastObject);
-        if (beastObject instanceof StateNode) state.remove(beastObject);
-        if (beastObject instanceof StateNode) skipOperators.remove(beastObject);
-
-        GraphicalModelNode matchingKey = null;
-        for (GraphicalModelNode key : beastObjects.keySet()) {
-            if (getBEASTObject(key) == beastObject) {
-                matchingKey = key;
-                break;
-            }
-        }
-        if (matchingKey != null) beastObjects.remove(matchingKey);
-
-        // it may be in extraLoggables
-        extraLoggables.remove(beastObject);
-    }
+    //*** BEAST 2 Parameters ***//
 
     public static RealParameter createRealParameter(Double[] value) {
         return new RealParameter(value);
@@ -341,7 +174,6 @@ public class BEASTContext {
 
         return parameter;
     }
-
 
     public static RealParameter createRealParameter(String id, double value) {
         RealParameter parameter = new RealParameter();
@@ -408,6 +240,204 @@ public class BEASTContext {
 
             return parameter;
         }
+    }
+
+    /**
+     * This function will retrieve the beast object for this value and return it if it is a RealParameter,
+     * or convert it to a RealParameter if it is an IntegerParameter and replace the original integer parameter in the relevant stores.
+     *
+     * @param value
+     * @return the RealParameter associated with this value if it exists, or can be coerced. Has a side-effect if coercion occurs.
+     */
+    public RealParameter getAsRealParameter(Value value) {
+        Parameter param = (Parameter) beastObjects.get(value);
+        if (param instanceof RealParameter) return (RealParameter) param;
+        if (param instanceof IntegerParameter) {
+            if (param.getDimension() == 1) {
+
+                RealParameter newParam = createRealParameter(param.getID(), ((IntegerParameter) param).getValue());
+                removeBEASTObject((BEASTInterface) param);
+                addToContext(value, newParam);
+                return newParam;
+            } else {
+                Double[] values = new Double[param.getDimension()];
+                for (int i = 0; i < values.length; i++) {
+                    values[i] = ((IntegerParameter) param).getValue(i).doubleValue();
+                }
+
+                RealParameter newParam = createRealParameter(param.getID(), values);
+                removeBEASTObject((BEASTInterface) param);
+                addToContext(value, newParam);
+                return newParam;
+
+            }
+        }
+        throw new RuntimeException("No coercable parameter found.");
+    }
+
+    public IntegerParameter getAsIntegerParameter(Value value) {
+        Parameter param = (Parameter) beastObjects.get(value);
+        if (param instanceof IntegerParameter) return (IntegerParameter) param;
+        if (param instanceof RealParameter) {
+            if (param.getDimension() == 1) {
+
+                IntegerParameter newParam = createIntegerParameter(param.getID(), (int) Math.round(((RealParameter) param).getValue()));
+                removeBEASTObject((BEASTInterface) param);
+                addToContext(value, newParam);
+                return newParam;
+            } else {
+                Integer[] values = new Integer[param.getDimension()];
+                for (int i = 0; i < values.length; i++) {
+                    values[i] = ((RealParameter) param).getValue(i).intValue();
+                }
+
+                IntegerParameter newParam = createIntegerParameter(param.getID(), values);
+                removeBEASTObject((BEASTInterface) param);
+                addToContext(value, newParam);
+                return newParam;
+
+            }
+        }
+        throw new RuntimeException("No coercable parameter found.");
+    }
+
+    //*** handle BEAST 2 objects ***//
+
+    public BEASTInterface getBEASTObject(GraphicalModelNode<?> node) {
+
+        // Q=jukesCantor(), rateMatrix.getMeanRate() is null
+        if (node == null) return null;
+
+        if (node instanceof Value) {
+            Value value = (Value)node;
+            if (!value.isAnonymous()) {
+                BEASTInterface beastInterface = getBEASTObject(value.getId());
+                // cannot be Alignment, otherwise getBEASTObject(value.getId()) makes data clamping not working;
+                // it will get simulated Alignment even though data is clamped.
+                if (beastInterface != null) {
+                    if (beastInterface instanceof BEASTVector) {
+                        List<BEASTInterface> beastInterfaceList = ((BEASTVector)beastInterface).getObjectList();
+
+                        if ( !(beastInterfaceList.get(0) instanceof Alignment) )
+                            return beastInterface;
+
+                    } else if ( !(beastInterface instanceof Alignment) ) {
+                        return beastInterface;
+                    }
+                }
+            }
+        }
+
+        // have to use this for data clamping
+        BEASTInterface beastInterface = beastObjects.get(node);
+
+        if (beastInterface != null) {
+            return beastInterface;
+        } else {
+            String id = node.getUniqueId();
+            String[] parts = id.split(VectorUtils.INDEX_SEPARATOR);
+            if (parts.length == 2) {
+                int index = Integer.parseInt(parts[1]);
+                Slice slice = createSliceFromVector(node, parts[0], index);
+                beastObjects.put(node, slice);
+                return slice;
+            }
+        }
+
+        if (node instanceof SliceValue) {
+            SliceValue sliceValue = (SliceValue) node;
+            return handleSliceRequest(sliceValue);
+        }
+        return null;
+    }
+
+    public BEASTInterface getBEASTObject(String id) {
+        for (BEASTInterface beastInterface : elements.keySet()) {
+            if (id.equals(beastInterface.getID())) return beastInterface;
+        }
+
+        for (BEASTInterface beastInterface : beastObjects.values()) {
+            if (beastInterface.getID() !=  null && id.equals(beastInterface.getID().equals(id))) return beastInterface;
+        }
+        return null;
+    }
+
+    public Slice createSliceFromVector(GraphicalModelNode node, String id, int index) {
+
+        BEASTInterface parentNode = getBEASTObject(Symbols.getCanonical(id));
+
+        Slice slice = SliceFactory.createSlice(parentNode, index,
+                Symbols.getCanonical(id) + VectorUtils.INDEX_SEPARATOR + index);
+        addToContext(node, slice);
+        return slice;
+
+    }
+
+    boolean byslice = false;
+
+    /**
+     * returns a logical slice based on the given slice value, as long as the value to be sliced is already available.
+     *
+     * @param sliceValue the slice value that needs a beast equivalent
+     * @return
+     */
+    public BEASTInterface handleSliceRequest(SliceValue sliceValue) {
+
+        BEASTInterface slicedBEASTValue = beastObjects.get(sliceValue.getSlicedValue());
+
+
+        if (slicedBEASTValue != null) {
+            if (!(slicedBEASTValue instanceof Concatenate)) {
+                Slice slice = SliceFactory.createSlice(slicedBEASTValue, sliceValue.getIndex(), sliceValue.getId());
+                addToContext(sliceValue, slice);
+                return slice;
+            } else {
+                // handle by concatenating
+                List<Function> parts = ((Concatenate) slicedBEASTValue).functionsInput.get();
+                Function slice = parts.get(sliceValue.getIndex());
+                addToContext(sliceValue, (BEASTInterface) slice);
+                return (BEASTInterface) slice;
+            }
+        } else return null;
+    }
+
+    public GraphicalModelNode getGraphicalModelNode(BEASTInterface beastInterface) {
+        return BEASTToLPHYMap.get(beastInterface);
+    }
+
+    public void addBEASTObject(BEASTInterface newBEASTObject, GraphicalModelNode graphicalModelNode) {
+        elements.put(newBEASTObject, graphicalModelNode);
+    }
+
+    /**
+     * @param stateNode the state node to be added
+     * @param graphicalModelNode the graphical model node that this state node corresponds to, or represents a part of
+     */
+    public void addStateNode(StateNode stateNode, GraphicalModelNode graphicalModelNode, boolean createOperators) {
+        if (!state.contains(stateNode)) {
+            elements.put(stateNode, graphicalModelNode);
+            state.add(stateNode);
+        }
+        if (!createOperators) skipOperators.add(stateNode);
+    }
+
+    public void removeBEASTObject(BEASTInterface beastObject) {
+        elements.removeAll(beastObject);
+        BEASTToLPHYMap.remove(beastObject);
+        if (beastObject instanceof StateNode) state.remove(beastObject);
+        if (beastObject instanceof StateNode) skipOperators.remove(beastObject);
+
+        GraphicalModelNode matchingKey = null;
+        for (GraphicalModelNode key : beastObjects.keySet()) {
+            if (getBEASTObject(key) == beastObject) {
+                matchingKey = key;
+                break;
+            }
+        }
+        if (matchingKey != null) beastObjects.remove(matchingKey);
+
+        // it may be in extraLoggables
+        extraLoggables.remove(beastObject);
     }
 
 
@@ -497,6 +527,18 @@ public class BEASTContext {
     }
 
     /**
+     * The special method to to fill in context,
+     * use it as a caution.
+     * @param node
+     * @param beastInterface
+     * @see #valueToBEAST(Value)
+     */
+    public void putBEASTObject(GraphicalModelNode node, BEASTInterface beastInterface) {
+        addToContext(node, beastInterface);
+    }
+
+
+    /**
      * Creates the beast value objects in a post-order traversal, so that inputs are always created before outputs.
      *
      * @param value the value to convert to a beast value (after doing so for the inputs of its generator, recursively)
@@ -519,7 +561,6 @@ public class BEASTContext {
         }
 
     }
-
 
     private void traverseBEASTGeneratorObjects(Value<?> value, boolean modifyValues, boolean createGenerators, Set<Generator> visited) {
 
@@ -672,7 +713,7 @@ public class BEASTContext {
         }
     }
 
-    public boolean isState(GraphicalModelNode node) {
+    private boolean isState(GraphicalModelNode node) {
         if (node instanceof RandomVariable) return true;
         if (node instanceof Value) {
             Value value = (Value) node;
@@ -686,6 +727,8 @@ public class BEASTContext {
         }
         return false;
     }
+
+    //*** static methods to init BEAST 2 models ***//
 
     /**
      * @param freqParameter
@@ -714,61 +757,49 @@ public class BEASTContext {
         return Math.pow(size, 0.7);
     }
 
-    public void addSkipOperator(StateNode stateNode) {
-        skipOperators.add(stateNode);
-    }
-
-    public void addExtraOperator(Operator operator) {
-        extraOperators.add(operator);
-    }
-
-    public boolean hasExtraOperator(String opID) {
-        return extraOperators.stream().anyMatch(op -> op.getID().equals(opID));
-    }
-
-    public List<StateNode> getState() {
-        return state;
-    }
-
-    public Multimap<BEASTInterface, GraphicalModelNode<?>> getElements() {
-        return elements;
-    }
-
-    public Map<BEASTInterface, GraphicalModelNode<?>> getBEASTToLPHYMap() {
-        return BEASTToLPHYMap;
-    }
-
-    public Set<StateNode> getSkipOperators() {
-        return skipOperators;
-    }
-
-    public List<Operator> getExtraOperators() {
-        return extraOperators;
-    }
-
-    public List<Loggable> getExtraLoggables() {
-        return extraLoggables;
-    }
-
-    public List<Logger> getExtraLoggers() {
-        return extraLoggers;
-    }
-
-    public void addExtraLoggable(Loggable loggable) {
-        extraLoggables.add(loggable);
-    }
-
     /**
-     * BEAST2 {@link Logger} contains one/many of {@link Loggable} BEAST2 objects.
+     * Init BEAST 2 MCMC here
      */
-    public void addExtraLogger(Logger logger) {
-        extraLoggers.add(logger);
-    }
+    private MCMC createMCMC(long chainLength, int logEvery, String logFileStem, int preBurnin) {
 
-    public void addInit(StateNodeInitialiser beastInitializer) {
-        inits.add(beastInitializer);
-    }
+        createBEASTObjects();
 
+        CompoundDistribution posterior = createBEASTPosterior();
+
+        MCMC mcmc = new MCMC();
+        mcmc.setInputValue("distribution", posterior);
+        mcmc.setInputValue("chainLength", chainLength);
+
+        operatorFactory = new OperatorFactory(this);
+        // create all operators
+        List<Operator> operators = operatorFactory.createOperators();
+        for (int i = 0; i < operators.size(); i++) {
+            System.out.println(operators.get(i));
+        }
+        mcmc.setInputValue("operator", operators);
+
+        loggerFactory = new LoggerFactory(this);
+        // 3 default loggers: parameter logger, screen logger, tree logger.
+        List<Logger> loggers = loggerFactory.createLoggers(logEvery, logFileStem, elements);
+        // extraLoggers processed in LoggerFactory
+        mcmc.setInputValue("logger", loggers);
+
+        State state = new State();
+        state.setInputValue("stateNode", this.state);
+        state.initAndValidate();
+        elements.put(state, null);
+
+        // TODO make sure the stateNode list is being correctly populated
+        mcmc.setInputValue("state", state);
+
+        if (inits.size() > 0) mcmc.setInputValue("init", inits);
+
+        if (preBurnin > 0)
+            mcmc.setInputValue("preBurnin", preBurnin);
+
+        mcmc.initAndValidate();
+        return mcmc;
+    }
 
     private CompoundDistribution createBEASTPosterior() {
 
@@ -845,49 +876,6 @@ public class BEASTContext {
         return false;
     }
 
-    /**
-     * Init BEAST 2 MCMC here
-     */
-    private MCMC createMCMC(long chainLength, int logEvery, String fileName, int preBurnin) {
-
-        createBEASTObjects();
-
-        CompoundDistribution posterior = createBEASTPosterior();
-
-        MCMC mcmc = new MCMC();
-        mcmc.setInputValue("distribution", posterior);
-        mcmc.setInputValue("chainLength", chainLength);
-
-        operatorFactory = new OperatorFactory(this);
-        // create all operators
-        List<Operator> operators = operatorFactory.createOperators();
-        for (int i = 0; i < operators.size(); i++) {
-            System.out.println(operators.get(i));
-        }
-        mcmc.setInputValue("operator", operators);
-
-        loggerFactory = new LoggerFactory(this);
-        // 3 default loggers: parameter logger, screen logger, tree logger.
-        List<Logger> defaultLoggers = loggerFactory.createLoggers(logEvery, fileName);
-        mcmc.setInputValue("logger", defaultLoggers);
-
-        State state = new State();
-        state.setInputValue("stateNode", this.state);
-        state.initAndValidate();
-        elements.put(state, null);
-
-        // TODO make sure the stateNode list is being correctly populated
-        mcmc.setInputValue("state", state);
-
-        if (inits.size() > 0) mcmc.setInputValue("init", inits);
-
-        if (preBurnin > 0)
-            mcmc.setInputValue("preBurnin", preBurnin);
-
-        mcmc.initAndValidate();
-        return mcmc;
-    }
-
     protected int getAllStatesSize(List<StateNode> stateNodes) {
         int size = 0;
         for (StateNode stateNode : stateNodes) {
@@ -907,9 +895,9 @@ public class BEASTContext {
         skipOperators.clear();
     }
 
-    public void runBEAST(String fileNameStem) {
+    public void runBEAST(String logFileStem) {
 
-        MCMC mcmc = createMCMC(1000000, 1000, fileNameStem, 0);
+        MCMC mcmc = createMCMC(1000000, 1000, logFileStem, 0);
 
         try {
             mcmc.run();
@@ -918,36 +906,65 @@ public class BEASTContext {
         }
     }
 
-    public static final int NUM_OF_SAMPLES = 2000;
+    //*** add, setter, getter ***//
+
+    public void addSkipOperator(StateNode stateNode) {
+        skipOperators.add(stateNode);
+    }
+
+    public void addExtraOperator(Operator operator) {
+        extraOperators.add(operator);
+    }
+
+    public boolean hasExtraOperator(String opID) {
+        return extraOperators.stream().anyMatch(op -> op.getID().equals(opID));
+    }
+
+    public List<StateNode> getState() {
+        return state;
+    }
+
+    public Multimap<BEASTInterface, GraphicalModelNode<?>> getElements() {
+        return elements;
+    }
+
+    public Map<BEASTInterface, GraphicalModelNode<?>> getBEASTToLPHYMap() {
+        return BEASTToLPHYMap;
+    }
+
+    public Set<StateNode> getSkipOperators() {
+        return skipOperators;
+    }
+
+    public List<Operator> getExtraOperators() {
+        return extraOperators;
+    }
+
+    public List<Loggable> getExtraLoggables() {
+        return extraLoggables;
+    }
+
+    public List<LoggerHelper> getExtraLoggers() {
+        return extraLoggers;
+    }
+
+    public void addExtraLoggable(Loggable loggable) {
+        extraLoggables.add(loggable);
+    }
 
     /**
-     * Process configurations to create BEAST 2 XML from LPhy objects.
-     *
-     * @param fileNameStem
-     * @param chainLength  if <=0, then use default 1,000,000.
-     *                     logEvery = chainLength / numOfSamples,
-     *                     where numOfSamples = 2000 as default.
-     * @param preBurnin    preBurnin for BEAST MCMC, if preBurnin < 0,
-     *                     then will be automatically assigned to all state nodes size * 10.
-     * @return BEAST 2 XML in String
+     * {@link LoggerHelper} creates BEAST2 {@link Logger}.
      */
-    public String toBEASTXML(final String fileNameStem, long chainLength, int preBurnin) {
-        // default to 1M if not specified
-        if (chainLength < NUM_OF_SAMPLES)
-            throw new IllegalArgumentException("Invalid length for MCMC chain, len = " + chainLength);
-        // Will throw an ArithmeticException in case of overflow.
-        int logEvery = toIntExact(chainLength / NUM_OF_SAMPLES);
+    public void addExtraLogger(LoggerHelper loggerHelper) {
+        extraLoggers.add(loggerHelper);
+    }
 
-        // if preBurnin < 0, then will be defined by all state nodes size
-        if (preBurnin < 0)
-            preBurnin = getAllStatesSize(this.state) * 10;
+    public void addInit(StateNodeInitialiser beastInitializer) {
+        inits.add(beastInitializer);
+    }
 
-        LoggerUtils.log.info("Set MCMC chain length = " + chainLength + ", log every = " +
-                logEvery + ", samples = " + NUM_OF_SAMPLES + ", preBurnin = " + preBurnin);
-
-        MCMC mcmc = createMCMC(chainLength, logEvery, fileNameStem, preBurnin);
-
-        return new XMLProducer().toXML(mcmc, elements.keySet());
+    public Map<SequenceType, DataType> getDataTypeMap() {
+        return this.dataTypeMap;
     }
 
     public void addTaxon(String taxonID) {
@@ -977,17 +994,6 @@ public class BEASTContext {
             }
         }
         return taxonList;
-    }
-
-    /**
-     * The special method to to fill in context,
-     * use it as a caution.
-     * @param node
-     * @param beastInterface
-     * @see #valueToBEAST(Value)
-     */
-    public void putBEASTObject(GraphicalModelNode node, BEASTInterface beastInterface) {
-        addToContext(node, beastInterface);
     }
 
     public List<Value<lphy.evolution.alignment.Alignment>> getAlignments() {

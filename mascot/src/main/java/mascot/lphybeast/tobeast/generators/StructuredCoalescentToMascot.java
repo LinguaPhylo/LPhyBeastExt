@@ -142,7 +142,7 @@ public class StructuredCoalescentToMascot implements
 //            context.addExtraLogger(dynamics);
             // extra logging
             MascotExtraTreeLogger extraTreeLogger = new MascotExtraTreeLogger(mascot);
-            context.addExtraLoggable(extraTreeLogger);
+            context.addExtraLogger(extraTreeLogger);
 
             return mascot;
         }

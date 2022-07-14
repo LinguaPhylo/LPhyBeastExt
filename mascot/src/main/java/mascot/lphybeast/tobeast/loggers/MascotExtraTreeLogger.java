@@ -1,46 +1,63 @@
 package mascot.lphybeast.tobeast.loggers;
 
+import beast.core.BEASTInterface;
 import beast.core.Logger;
 import beast.evolution.tree.TreeInterface;
 import beast.mascot.distribution.Mascot;
 import beast.mascot.logger.StructuredTreeLogger;
-import lphybeast.ExtraLogger;
-
-import java.util.Objects;
+import com.google.common.collect.Multimap;
+import lphy.graphicalModel.GraphicalModelNode;
+import lphybeast.TreeLoggerHelper;
 
 /**
  * @author Walter Xie
  */
-public class MascotExtraTreeLogger extends ExtraLogger {
+public class MascotExtraTreeLogger implements TreeLoggerHelper {
     // Mascot is a TreeDistribution
+    final protected Mascot mascot;
+    String fileName;
+
     public MascotExtraTreeLogger(Mascot mascot) {
-        super(mascot);
+        this.mascot = mascot;
     }
 
     @Override
-    public Logger createExtraLogger(int logEvery, String fileNameStem) {
+    public Logger createLogger(int logEvery, final Multimap<BEASTInterface, GraphicalModelNode<?>> elements) {
         // Mascot StructuredTreeLogger
-        TreeInterface tree = ((Mascot) loggable).treeInput.get();
+        TreeInterface tree = getTree();
 
         StructuredTreeLogger structuredTreeLogger = new StructuredTreeLogger();
         // not logging tree directly
-        structuredTreeLogger.setInputValue("mascot", loggable);
+        structuredTreeLogger.setInputValue("mascot", mascot);
 
         Logger logger = new Logger();
         logger.setInputValue("logEvery", logEvery);
         logger.setInputValue("log", structuredTreeLogger);
 
-        String treeFNSteam = Objects.requireNonNull(fileNameStem);
-        // ((Mascot) loggable).getID() == null
-        if (hasMultiTrees()) // multi-partitions and unlink trees
-            treeFNSteam = fileNameStem + "_" + tree.getID();
-        String fileName = treeFNSteam + ".mascot.trees";
-        logger.setInputValue("fileName", fileName);
-        logger.setID("StructuredTreeLogger" + (hasMultiTrees() ? "." + treeFNSteam : ""));
+        logger.setInputValue("fileName", getFileName());
+        logger.setID("StructuredTreeLogger" + tree.getID());
 
         logger.setInputValue("mode", "tree");
         logger.initAndValidate();
 
         return logger;
+    }
+
+    @Override
+    public String getFileName() {
+        return fileName;
+    }
+
+    @Override
+    public void setFileName(String fileStem, boolean isMultiple) {
+        if (isMultiple) // multi-partitions and unlink trees
+            fileName = fileStem + "_" + getTree().getID() + ".mascot.trees";
+        else
+            fileName = fileStem + ".mascot.trees";
+    }
+
+    @Override
+    public TreeInterface getTree() {
+        return mascot.treeInput.get();
     }
 }
