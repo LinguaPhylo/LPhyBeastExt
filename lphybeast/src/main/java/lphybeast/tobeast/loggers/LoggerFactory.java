@@ -25,6 +25,7 @@ import static lphybeast.BEASTContext.*;
 /**
  * A class to create all operators
  * @author Walter Xie
+ * @author Alexei Drommand
  */
 public class LoggerFactory implements LoggerHelper {
     // state nodes

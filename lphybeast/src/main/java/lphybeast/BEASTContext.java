@@ -77,18 +77,15 @@ public class BEASTContext {
     private Set<StateNode> skipOperators = new HashSet<>();
     // extra operators either for default or from extensions
     private List<Operator> extraOperators = new ArrayList<>();
-    // TODO eventually all operator related code should go there
-    // create XML operator section, with the capability to replace default operators
-    OperatorFactory operatorFactory;
+    // A strategy pattern to define how to create operators, which is replaceable in extensions.
+    // Currently, only support changes in 1 extension
+    TreeOperatorStrategy treeOperatorStrategy;
 
     //*** operators ***//
     // a list of extra loggables in 3 default loggers: parameter logger, screen logger, tree logger.
     private List<Loggable> extraLoggables = new ArrayList<>();
     // helper to create extra loggers from extensions
     private List<LoggerHelper> extraLoggers = new ArrayList<>();
-    // TODO eventually all logging related code should go there
-    // create XML logger section
-    LoggerFactory loggerFactory;
 
     @Deprecated
     public BEASTContext(LPhyParser parser) {
@@ -114,6 +111,8 @@ public class BEASTContext {
 
         excludedGeneratorClasses = loader.excludedGeneratorClasses;
         excludedValueClasses = loader.excludedValueClasses;
+
+        treeOperatorStrategy = new DefaultTreeOperatorStrategy(elements);
     }
 
     public static final int NUM_OF_SAMPLES = 2000;
@@ -148,6 +147,14 @@ public class BEASTContext {
         return new XMLProducer().toXML(mcmc, elements.keySet());
     }
 
+    /**
+     * only support changes in 1 extension
+     * @param treeOperatorStrategy   define how to create operators
+     */
+    public void setTreeOperatorStrategy(TreeOperatorStrategy treeOperatorStrategy) {
+        this.treeOperatorStrategy = treeOperatorStrategy;
+        LoggerUtils.log.warning("Tree operators strategy is changed into '" + treeOperatorStrategy.getName() + "' ! ");
+    }
 
     //*** BEAST 2 Parameters ***//
 
@@ -772,15 +779,19 @@ public class BEASTContext {
         mcmc.setInputValue("distribution", posterior);
         mcmc.setInputValue("chainLength", chainLength);
 
-        operatorFactory = new OperatorFactory(this);
-        // create all operators
-        List<Operator> operators = operatorFactory.createOperators();
+        // TODO eventually all operator related code should go there
+        // create XML operator section, with the capability to replace default operators
+        OperatorFactory operatorFactory = new OperatorFactory(this);
+        // create all operators, where tree operators strategy can be changed in an extension.
+        List<Operator> operators = operatorFactory.createOperators(treeOperatorStrategy);
         for (int i = 0; i < operators.size(); i++) {
             System.out.println(operators.get(i));
         }
         mcmc.setInputValue("operator", operators);
 
-        loggerFactory = new LoggerFactory(this);
+        // TODO eventually all logging related code should go there
+        // create XML logger section
+        LoggerFactory loggerFactory = new LoggerFactory(this);
         // 3 default loggers: parameter logger, screen logger, tree logger.
         List<Logger> loggers = loggerFactory.createLoggers(logEvery, logFileStem, elements);
         // extraLoggers processed in LoggerFactory
