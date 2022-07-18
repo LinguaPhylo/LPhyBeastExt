@@ -11,6 +11,7 @@ import beast.evolution.alignment.Alignment;
 import beast.evolution.alignment.Taxon;
 import beast.evolution.datatype.DataType;
 import beast.evolution.substitutionmodel.Frequencies;
+import beast.evolution.tree.Tree;
 import beast.evolution.tree.TreeInterface;
 import beast.math.distributions.ParametricDistribution;
 import beast.math.distributions.Prior;
@@ -77,9 +78,9 @@ public class BEASTContext {
     private Set<StateNode> skipOperators = new HashSet<>();
     // extra operators either for default or from extensions
     private List<Operator> extraOperators = new ArrayList<>();
-    // A strategy pattern to define how to create operators, which is replaceable in extensions.
-    // Currently, only support changes in 1 extension
-    TreeOperatorStrategy treeOperatorStrategy;
+    // A list of strategy patterns define how to create operators in extensions,
+    // which already exclude DefaultTreeOperatorStrategy
+    private List<TreeOperatorStrategy> newTreeOperatorStrategies;
 
     //*** operators ***//
     // a list of extra loggables in 3 default loggers: parameter logger, screen logger, tree logger.
@@ -112,7 +113,7 @@ public class BEASTContext {
         excludedGeneratorClasses = loader.excludedGeneratorClasses;
         excludedValueClasses = loader.excludedValueClasses;
 
-        treeOperatorStrategy = new DefaultTreeOperatorStrategy(elements);
+        newTreeOperatorStrategies = loader.newTreeOperatorStrategies;
     }
 
     public static final int NUM_OF_SAMPLES = 2000;
@@ -147,14 +148,6 @@ public class BEASTContext {
         return new XMLProducer().toXML(mcmc, elements.keySet());
     }
 
-    /**
-     * only support changes in 1 extension
-     * @param treeOperatorStrategy   define how to create operators
-     */
-    public void setTreeOperatorStrategy(TreeOperatorStrategy treeOperatorStrategy) {
-        this.treeOperatorStrategy = treeOperatorStrategy;
-        LoggerUtils.log.warning("Tree operators strategy is changed into '" + treeOperatorStrategy.getName() + "' ! ");
-    }
 
     //*** BEAST 2 Parameters ***//
 
@@ -767,6 +760,28 @@ public class BEASTContext {
     }
 
     /**
+     * Decide which strategy to create tree operators, given a tree.
+     * @param tree   a tree
+     * @return    final TreeOperatorStrategy
+     */
+    public TreeOperatorStrategy resolveTreeOperatorStrategy(Tree tree) {
+        TreeOperatorStrategy finalStrategy = new DefaultTreeOperatorStrategy();
+
+        for (TreeOperatorStrategy tOS : newTreeOperatorStrategies) {
+            boolean applyThis = tOS.applyStrategyToTree(tree, this);
+            // TODO multiple strategies (true) ?
+            if (applyThis) {
+                finalStrategy = tOS;
+                LoggerUtils.log.warning("The default strategy to create tree operators is changed into '" +
+                        tOS.getName() + "' ! ");
+                break;
+            }
+        }
+        return finalStrategy;
+    }
+
+
+    /**
      * Init BEAST 2 MCMC here
      */
     private MCMC createMCMC(long chainLength, int logEvery, String logFileStem, int preBurnin) {
@@ -783,7 +798,7 @@ public class BEASTContext {
         // create XML operator section, with the capability to replace default operators
         OperatorFactory operatorFactory = new OperatorFactory(this);
         // create all operators, where tree operators strategy can be changed in an extension.
-        List<Operator> operators = operatorFactory.createOperators(treeOperatorStrategy);
+        List<Operator> operators = operatorFactory.createOperators();
         for (int i = 0; i < operators.size(); i++) {
             System.out.println(operators.get(i));
         }

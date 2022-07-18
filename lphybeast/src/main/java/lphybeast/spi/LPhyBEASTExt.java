@@ -4,7 +4,9 @@ import beast.evolution.datatype.DataType;
 import jebl.evolution.sequences.SequenceType;
 import lphy.graphicalModel.Generator;
 import lphy.graphicalModel.Value;
+import lphybeast.DefaultTreeOperatorStrategy;
 import lphybeast.GeneratorToBEAST;
+import lphybeast.TreeOperatorStrategy;
 import lphybeast.ValueToBEAST;
 
 import java.util.List;
@@ -30,5 +32,9 @@ public interface LPhyBEASTExt {
     List<Class<? extends Generator>> getExcludedGenerator();
 
     List<Class<? extends Value>> getExcludedValue();
+
+    default TreeOperatorStrategy getTreeOperatorStrategy() {
+        return new DefaultTreeOperatorStrategy();
+    }
 
 }

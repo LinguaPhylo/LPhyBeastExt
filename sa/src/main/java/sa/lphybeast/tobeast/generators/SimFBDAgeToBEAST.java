@@ -1,4 +1,4 @@
-package lphybeast.tobeast.generators;
+package sa.lphybeast.tobeast.generators;
 
 import beast.core.BEASTInterface;
 import beast.core.parameter.RealParameter;
@@ -10,8 +10,7 @@ import lphy.graphicalModel.Value;
 import lphybeast.BEASTContext;
 import lphybeast.GeneratorToBEAST;
 
-public class SimFBDAgeToBEAST implements
-        GeneratorToBEAST<SimFBDAge, SABirthDeathModel> {
+public class SimFBDAgeToBEAST implements GeneratorToBEAST<SimFBDAge, SABirthDeathModel> {
 
     public static final String suffix = ".origin";
 

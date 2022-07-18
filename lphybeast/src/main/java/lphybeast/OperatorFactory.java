@@ -31,39 +31,25 @@ import static lphybeast.BEASTContext.getOperatorWeight;
  * @author Alexei Drommand
  */
 public class OperatorFactory {
-    // state nodes
-    final private List<StateNode> state;
-    // a list of extra beast elements in the keys,
-    // with a pointer to the graphical model node that caused their production
-    final private Multimap<BEASTInterface, GraphicalModelNode<?>> elements;
-    // a map of BEASTInterface to graphical model nodes that they represent
-    final private Map<BEASTInterface, GraphicalModelNode<?>> BEASTToLPHYMap;
 
-    // a list of beast state nodes to skip the automatic operator creation for.
-    final private Set<StateNode> skipOperators;
-    // extra operators either for default or from extensions
-    final private List<Operator> extraOperators;
+    private final BEASTContext context;
 
     /**
      * @param context               passing all configurations
      */
     public OperatorFactory(BEASTContext context) {
-        this.state = context.getState();
-        this.elements = context.getElements();
-        this.BEASTToLPHYMap = context.getBEASTToLPHYMap();
-        this.skipOperators = context.getSkipOperators();
-        this.extraOperators = context.getExtraOperators();
+        this.context = context;
     }
 
     /**
-     * @param treeOperatorStrategy  define how to create operators
      * @return  a list of {@link Operator}.
      */
-    public List<Operator> createOperators(TreeOperatorStrategy treeOperatorStrategy) {
+    public List<Operator> createOperators() {
 
         List<Operator> operators = new ArrayList<>();
 
-        for (StateNode stateNode : state) {
+        Set<StateNode> skipOperators = context.getSkipOperators();
+        for (StateNode stateNode : context.getState()) {
             if (!skipOperators.contains(stateNode)) {
                 if (stateNode instanceof RealParameter realParameter) {
                     Operator operator = createBEASTOperator(realParameter);
@@ -73,14 +59,18 @@ public class OperatorFactory {
                 } else if (stateNode instanceof BooleanParameter booleanParameter) {
                     operators.add(createBitFlipOperator(booleanParameter));
                 } else if (stateNode instanceof Tree tree) {
-                    List<Operator> treeOperators = Objects.requireNonNull(treeOperatorStrategy).
-                            createTreeOperators(tree);
+                    TreeOperatorStrategy treeOperatorStrategy = context.resolveTreeOperatorStrategy(tree);
+                    // create operators
+                    List<Operator> treeOperators = treeOperatorStrategy.createTreeOperators(tree, context);
+                    if (treeOperators.size() < 1)
+                        throw new IllegalArgumentException("No operators are created by strategy " +
+                                treeOperatorStrategy.getName() + " !");
                     operators.addAll(treeOperators);
                 }
             }
         }
 
-        operators.addAll(extraOperators);
+        operators.addAll(context.getExtraOperators());
         operators.sort(Comparator.comparing(BEASTObject::getID));
 
         return operators;
@@ -89,7 +79,7 @@ public class OperatorFactory {
     //*** parameter operators ***//
 
     private Operator createBEASTOperator(RealParameter parameter) {
-
+        Multimap<BEASTInterface, GraphicalModelNode<?>> elements = context.getElements();
         Collection<GraphicalModelNode<?>> nodes = elements.get(parameter);
 
         if (nodes.stream().anyMatch(node -> node instanceof RandomVariable)) {
@@ -128,11 +118,14 @@ public class OperatorFactory {
     }
 
     private Operator createBEASTOperator(IntegerParameter parameter) {
+        Map<BEASTInterface, GraphicalModelNode<?>> BEASTToLPHYMap = context.getBEASTToLPHYMap();
+        // TODO safe cast?
         RandomVariable<?> variable = (RandomVariable<?>) BEASTToLPHYMap.get(parameter);
 
         Operator operator;
         if (variable.getGenerativeDistribution() instanceof RandomComposition) {
             System.out.println("Constructing operator for randomComposition");
+
             operator = new DeltaExchangeOperator();
             operator.setInputValue("intparameter", parameter);
             operator.setInputValue("weight", getOperatorWeight(parameter.getDimension() - 1));
@@ -150,6 +143,7 @@ public class OperatorFactory {
             operator.initAndValidate();
             operator.setID(parameter.getID() + ".randomWalk");
         }
+        Multimap<BEASTInterface, GraphicalModelNode<?>> elements = context.getElements();
         elements.put(operator, null);
         return operator;
     }
