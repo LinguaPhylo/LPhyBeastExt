@@ -25,7 +25,7 @@ val notReleasedJars = fileTree("lib") {
 val lblibs by configurations.creating {
     // Add to defaultDependencies to get their all jars
     defaultDependencies {
-        add(project.dependencies.implementation("com.google.guava:guava:23.6-jre"))
+        add(project.dependencies.api("com.google.guava:guava:23.6-jre")) // required by LoggerHelper
         add(project.dependencies.implementation("org.jblas:jblas:1.2.3"))
         add(project.dependencies.implementation("info.picocli:picocli:4.6.2"))
     }

@@ -1,4 +1,4 @@
-package lphybeast.tobeast.generators;
+package sa.lphybeast.tobeast.generators;
 
 import beast.core.BEASTInterface;
 import beast.core.parameter.RealParameter;

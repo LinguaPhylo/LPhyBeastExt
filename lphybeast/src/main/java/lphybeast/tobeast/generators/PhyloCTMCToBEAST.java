@@ -32,6 +32,7 @@ import lphy.graphicalModel.RandomVariable;
 import lphy.graphicalModel.Value;
 import lphybeast.BEASTContext;
 import lphybeast.GeneratorToBEAST;
+import lphybeast.tobeast.loggers.TraitTreeLogger;
 
 import java.util.Map;
 
@@ -67,8 +68,9 @@ public class PhyloCTMCToBEAST implements GeneratorToBEAST<PhyloCTMC, GenericTree
 
         treeLikelihood.initAndValidate();
         treeLikelihood.setID(traitAlignment.getID() + ".treeLikelihood");
-        // logging
-        context.addExtraLogger(treeLikelihood);
+        // Extra Logger
+        TraitTreeLogger traitTreeLogger = new TraitTreeLogger(treeLikelihood);
+        context.addExtraLogger(traitTreeLogger);
 
         return treeLikelihood;
     }
@@ -109,7 +111,7 @@ public class PhyloCTMCToBEAST implements GeneratorToBEAST<PhyloCTMC, GenericTree
             if (svsLogger.getID() == null)
                 svsLogger.setID(svsLogger.toString().substring(0, 3));
 
-            context.addExtraLogger(svsLogger);
+            context.addExtraLoggable(svsLogger);
         }
         siteModel.setID("geo." + siteModel.toString());
         return siteModel;
@@ -131,7 +133,7 @@ public class PhyloCTMCToBEAST implements GeneratorToBEAST<PhyloCTMC, GenericTree
         treeLikelihood.initAndValidate();
         treeLikelihood.setID(alignment.getID() + ".treeLikelihood");
         // logging
-        context.addExtraLogger(treeLikelihood);
+        context.addExtraLoggable(treeLikelihood);
 
         return treeLikelihood;
     }

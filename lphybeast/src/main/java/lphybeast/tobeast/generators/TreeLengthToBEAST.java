@@ -16,7 +16,7 @@ public class TreeLengthToBEAST implements GeneratorToBEAST<TreeLength, TreeStatL
         treeStatLogger.setInputValue("tree", tree);
         treeStatLogger.initAndValidate();
 
-        context.addExtraLogger(treeStatLogger);
+        context.addExtraLoggable(treeStatLogger);
 
         return treeStatLogger;
     }

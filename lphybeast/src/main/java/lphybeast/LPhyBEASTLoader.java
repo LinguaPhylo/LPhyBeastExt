@@ -57,6 +57,11 @@ public class LPhyBEASTLoader {
      * {@link Value}
      */
     public List<Class<? extends Value>> excludedValueClasses;
+    /**
+     * Not {@link DefaultTreeOperatorStrategy}
+     */
+    public List<TreeOperatorStrategy> newTreeOperatorStrategies;
+
 
     /**
      * Use {@link PackageManager} to load the container classes from LPhyBEAST extensions,
@@ -93,6 +98,8 @@ public class LPhyBEASTLoader {
         excludedGeneratorClasses = new ArrayList<>();
         excludedValueClasses = new ArrayList<>();
 
+        newTreeOperatorStrategies = new ArrayList<>();
+
         try {
 //            Iterator<LPhyBEASTExt> extensions = loader.iterator();
 //            while (extensions.hasNext()) { // TODO validation if add same name
@@ -114,6 +121,9 @@ public class LPhyBEASTLoader {
 
                     excludedGeneratorClasses.addAll(ext.getExcludedGenerator());
                     excludedValueClasses.addAll(ext.getExcludedValue());
+
+                    if ( ! (ext.getTreeOperatorStrategy() instanceof DefaultTreeOperatorStrategy) )
+                        newTreeOperatorStrategies.add(ext.getTreeOperatorStrategy());
                 }
             }
 
