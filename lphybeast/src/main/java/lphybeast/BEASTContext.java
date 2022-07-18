@@ -771,10 +771,13 @@ public class BEASTContext {
             boolean applyThis = tOS.applyStrategyToTree(tree, this);
             // TODO multiple strategies (true) ?
             if (applyThis) {
+                if (! (finalStrategy instanceof DefaultTreeOperatorStrategy) )
+                    throw new UnsupportedOperationException("Cannot resolve multiple changes, giving " +
+                            tOS.getName() + " ! The default strategy has been changed to " + finalStrategy.getName());
+
                 finalStrategy = tOS;
                 LoggerUtils.log.warning("The default strategy to create tree operators is changed into '" +
                         tOS.getName() + "' ! ");
-                break;
             }
         }
         return finalStrategy;
