@@ -15,7 +15,7 @@ public interface TreeLoggerHelper extends LoggerHelper {
 
 
     default List<Loggable> getLoggables() {
-        return null; // use getTree()
+        return null; // use getTree() in createLogger(...)
     }
 
     /**

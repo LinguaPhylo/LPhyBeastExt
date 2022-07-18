@@ -14,10 +14,12 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * The extra tree logger for discrete phylogeography.
+ * @see TreeWithTraitLogger
  * @author Walter Xie
  */
 public class TraitTreeLogger implements TreeLoggerHelper {
-    // Mascot is a TreeDistribution
+    // add extra tree logger for AncestralStateTreeLikelihood
     final protected AncestralStateTreeLikelihood treeLikelihood;
     String fileName;
 
