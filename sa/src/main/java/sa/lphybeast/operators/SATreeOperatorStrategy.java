@@ -78,7 +78,7 @@ public class SATreeOperatorStrategy implements TreeOperatorStrategy {
 
     @Override
     public String getName() {
-        return "default tree operator strategy";
+        return "sampled-ancestor tree operator strategy";
     }
 
 }
