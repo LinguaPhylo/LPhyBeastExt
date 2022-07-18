@@ -193,11 +193,7 @@ public class PhyloCTMCToBEAST implements GeneratorToBEAST<PhyloCTMC, GenericTree
             } else if (generator instanceof LocalBranchRates) {
                 treeLikelihood.setInputValue("branchRateModel", context.getBEASTObject(generator));
             } else {
-                throw new RuntimeException("Only localBranchRates and lognormally distributed branchRates currently supported for BEAST2 conversion");
-            }
-
-            if (branchRates instanceof RandomVariable && timeTreeValue instanceof RandomVariable) {
-//                throw new UnsupportedOperationException("in development");
+                throw new UnsupportedOperationException("Only localBranchRates and lognormally distributed branchRates currently supported for LPhyBEAST !");
             }
 
         } else {
