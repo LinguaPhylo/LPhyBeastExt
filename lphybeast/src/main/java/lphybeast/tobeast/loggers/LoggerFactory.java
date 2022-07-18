@@ -28,25 +28,15 @@ import static lphybeast.BEASTContext.*;
  * @author Alexei Drommand
  */
 public class LoggerFactory implements LoggerHelper {
-    // state nodes
-    final private List<StateNode> state;
-    // a map of BEASTInterface to graphical model nodes that they represent
-    final private Map<BEASTInterface, GraphicalModelNode<?>> BEASTToLPHYMap;
 
-    // a list of extra loggables in 3 default loggers: parameter logger, screen logger, tree logger.
-    final private List<Loggable> extraLoggables;
-    // extra loggers from extensions
-    final private List<LoggerHelper> extraLoggers;
+    private final BEASTContext context;
 
     private CompoundDistribution[] topDist = new CompoundDistribution[3];
 
     String fileName = null;
 
     public LoggerFactory(BEASTContext context) {
-        this.state = context.getState();
-        this.BEASTToLPHYMap = context.getBEASTToLPHYMap();
-        this.extraLoggables = context.getExtraLoggables();
-        this.extraLoggers = context.getExtraLoggers();
+        this.context = context;
     }
 
     /**
@@ -78,7 +68,7 @@ public class LoggerFactory implements LoggerHelper {
         }
 
         // extraLoggers, create a seperated logger each time
-        for (LoggerHelper loggerHelper : extraLoggers) {
+        for (LoggerHelper loggerHelper : context.getExtraLoggers()) {
             // implement to set a different file name to the default names.
             loggerHelper.setFileName(logFileStem, multipleTrees);
             Logger logger = loggerHelper.createLogger(logEvery, elements);
@@ -106,6 +96,7 @@ public class LoggerFactory implements LoggerHelper {
     }
 
     public List<Loggable> getLoggables() {
+        List<StateNode> state = context.getState();
         List<Loggable> nonTrees = state.stream()
                 .filter(stateNode -> !(stateNode instanceof Tree))
                 .collect(Collectors.toList());
@@ -123,7 +114,7 @@ public class LoggerFactory implements LoggerHelper {
 
         // not in screen logging
         if ( getFileName() != null ) {
-            nonTrees.addAll(extraLoggables);
+            nonTrees.addAll(context.getExtraLoggables());
         }
 
 //        for (Loggable loggable : extraLoggables) {
@@ -159,6 +150,7 @@ public class LoggerFactory implements LoggerHelper {
      */
     public List<TreeInterface> getTrees() {
         //TODO get trees from CTMC?
+        List<StateNode> state = context.getState();
         return state.stream()
                 .filter(stateNode -> stateNode instanceof TreeInterface)
                 .map(stateNode -> (TreeInterface) stateNode)
@@ -195,27 +187,31 @@ public class LoggerFactory implements LoggerHelper {
             this.tree = tree;
         }
 
-        public Logger createLogger(int logEvery, Multimap<BEASTInterface, GraphicalModelNode<?>> elements) {
+        private boolean logMetaData() {
             TreeInterface tree = getTree();
+            Map<BEASTInterface, GraphicalModelNode<?>> BEASTToLPHYMap = context.getBEASTToLPHYMap();
             GraphicalModelNode graphicalModelNode = BEASTToLPHYMap.get(tree);
             Generator generator = ((RandomVariable) graphicalModelNode).getGenerator();
 
-            boolean logMetaData = generator instanceof SkylineCoalescent ||
-                    generator instanceof StructuredCoalescent; // TODO more general?
+            // TODO more general?
+            return generator instanceof SkylineCoalescent ||
+                    generator instanceof StructuredCoalescent;
+        }
 
+        public Logger createLogger(int logEvery, Multimap<BEASTInterface, GraphicalModelNode<?>> elements) {
             Logger logger = new Logger();
             logger.setInputValue("logEvery", logEvery);
-            if (logMetaData) {
+            if (logMetaData()) {
                 TreeWithMetaDataLogger treeWithMetaDataLogger = new TreeWithMetaDataLogger();
-                treeWithMetaDataLogger.setInputValue("tree", tree);
+                treeWithMetaDataLogger.setInputValue("tree", getTree());
                 logger.setInputValue("log", treeWithMetaDataLogger);
             } else
-                logger.setInputValue("log", tree);
+                logger.setInputValue("log", getTree());
 
             logger.setInputValue("fileName", getFileName());
             logger.setInputValue("mode", "tree");
             logger.initAndValidate();
-            logger.setID(tree.getID() + ".treeLogger");
+            logger.setID(getTree().getID() + ".treeLogger");
             elements.put(logger, null);
 
             return logger;
@@ -239,83 +235,6 @@ public class LoggerFactory implements LoggerHelper {
             return tree;
         }
 
-//    public List<Logger> createTreeLoggers(int logEvery, String logFileStem) {
-//
-//        List<TreeInterface> trees = getTrees();
-//
-//        boolean multipleTrees = trees.size() > 1;
-//
-//        List<Logger> treeLoggers = new ArrayList<>();
-//
-//        // TODO: use tree-likelihood instead, and get all trees from tree-likelihood?
-//
-//        for (TreeInterface tree : trees) {
-//            GraphicalModelNode graphicalModelNode = BEASTToLPHYMap.get(tree);
-//            Generator generator = ((RandomVariable) graphicalModelNode).getGenerator();
-//
-//            boolean logMetaData = generator instanceof SkylineCoalescent ||
-//                    generator instanceof StructuredCoalescent;
-//
-//            Logger logger = new Logger();
-//            logger.setInputValue("logEvery", logEvery);
-//            if (logMetaData) { // TODO
-//                TreeWithMetaDataLogger treeWithMetaDataLogger = new TreeWithMetaDataLogger();
-//                treeWithMetaDataLogger.setInputValue("tree", tree);
-//                logger.setInputValue("log", treeWithMetaDataLogger);
-//            } else
-//                logger.setInputValue("log", tree);
-//
-//            String fileName = Objects.requireNonNull(logFileStem) + ".trees";
-//            if (multipleTrees) // multi-partitions and unlink trees
-//                fileName = logFileStem + "_" + tree.getID() + ".trees";
-//
-//            logger.setInputValue("fileName", fileName);
-//            logger.setInputValue("mode", "tree");
-//            logger.initAndValidate();
-//            logger.setID(tree.getID() + ".treeLogger");
-//            treeLoggers.add(logger);
-//            elements.put(logger, null);
-//        }
-//
-//        // extra tree logger
-//        // extraLoggables are used to retain all tree-likelihoods
-//        for (Loggable loggable : extraLoggables) {
-//            // TODO add to extraLoggers, create a seperated logger instead
-//            if (loggable instanceof AncestralStateTreeLikelihood ancestralStateTreeLikelihood) {
-//                // DPG: TreeWithTraitLogger
-//                TreeInterface tree = ancestralStateTreeLikelihood.treeInput.get();
-//
-//                TreeWithTraitLogger treeWithTraitLogger = new TreeWithTraitLogger();
-//                treeWithTraitLogger.setInputValue("tree", tree);
-//
-//                List<BEASTObject> metadata = new ArrayList<>();
-//                metadata.add((AncestralStateTreeLikelihood) loggable);
-//                // posterior
-//                metadata.add(getPosteriorDist());
-//                treeWithTraitLogger.setInputValue("metadata", metadata);
-//
-//                Logger logger = new Logger();
-//                logger.setInputValue("logEvery", logEvery);
-//                logger.setInputValue("log", treeWithTraitLogger);
-//
-//                String treeFNSteam = Objects.requireNonNull(logFileStem) + "_with_trait";
-//                if (multipleTrees) // multi-partitions and unlink trees
-//                    treeFNSteam = logFileStem + "_" + tree.getID();
-//                String fileName = treeFNSteam + ".trees";
-//                logger.setInputValue("fileName", fileName);
-//                logger.setID("TreeWithTraitLogger" + (multipleTrees ? "." + treeFNSteam : ""));
-//
-//                logger.setInputValue("mode", "tree");
-//                logger.initAndValidate();
-//
-//                treeLoggers.add(logger);
-//                elements.put(logger, null);
-//            }
-//
-//        }
-//
-//        return treeLoggers;
-//    }
     }
 
 }
