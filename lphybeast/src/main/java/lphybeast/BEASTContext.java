@@ -811,7 +811,7 @@ public class BEASTContext {
         // create XML logger section
         LoggerFactory loggerFactory = new LoggerFactory(this);
         // 3 default loggers: parameter logger, screen logger, tree logger.
-        List<Logger> loggers = loggerFactory.createLoggers(logEvery, logFileStem, elements);
+        List<Logger> loggers = loggerFactory.createLoggers(logEvery, logFileStem);
         // extraLoggers processed in LoggerFactory
         mcmc.setInputValue("logger", loggers);
 

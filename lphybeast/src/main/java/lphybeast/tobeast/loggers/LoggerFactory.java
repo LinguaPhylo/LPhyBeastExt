@@ -45,8 +45,8 @@ public class LoggerFactory implements LoggerHelper {
      * @return    3 default loggers: parameter logger, screen logger, tree logger.
      * @see Logger
      */
-    public List<Logger> createLoggers(int logEvery, String logFileStem,
-                                      Multimap<BEASTInterface, GraphicalModelNode<?>> elements) {
+    public List<Logger> createLoggers(int logEvery, String logFileStem) {
+        Multimap<BEASTInterface, GraphicalModelNode<?>> elements = context.getElements();
         topDist = getTopCompoundDist(elements);
 
         List<Logger> loggers = new ArrayList<>();
