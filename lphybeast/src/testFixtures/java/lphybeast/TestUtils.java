@@ -69,4 +69,14 @@ public class TestUtils {
         int occ = (alig.length() - temp.length()) / "<sequence".length();
         assertEquals(ntaxa,  occ, "ntaxa");
     }
+
+    public static void assertJC(String xml) {
+        // <substModel id="JukesCantor" spec="JukesCantor"/>
+        int jcId1 = xml.indexOf("<substModel");
+        int jcId2 = xml.indexOf("spec=\"JukesCantor\"/>");
+        assertTrue(jcId1 > 1 && jcId2 > jcId1, "substModel");
+        // remove all spaces
+        String jcId = xml.substring(jcId1, jcId2).replaceAll("\\s+","");
+        assertEquals("<substModelid=\"JukesCantor\"", jcId, "JukesCantor");
+    }
 }
