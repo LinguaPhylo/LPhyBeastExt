@@ -34,9 +34,10 @@ class SimFBDAgeToBEASTTest {
                 "SABirthDeath parameters");
 
         // operators
-        assertEquals(6,xml.split("<operator", -1).length - 1, "operators" );
+        assertEquals(8,xml.split("<operator", -1).length - 1, "operators" );
         assertTrue(xml.contains("spec=\"SAScaleOperator\"") && xml.contains("spec=\"SAExchange\"") &&
-                        xml.contains("spec=\"SAUniform\""), "SA operators");
+                xml.contains("spec=\"SAUniform\"") && xml.contains("spec=\"SAWilsonBalding\"") &&
+                xml.contains("spec=\"LeafToSampledAncestorJump\""), "SA operators");
 
     }
 

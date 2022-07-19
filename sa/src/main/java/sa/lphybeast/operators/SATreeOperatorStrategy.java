@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static lphybeast.BEASTContext.getOperatorWeight;
+
 /**
  * @author Walter Xie
  * @author Alexei Drommand
@@ -45,12 +47,22 @@ public class SATreeOperatorStrategy implements TreeOperatorStrategy {
         operators.add(createExchangeOperator(tree, true, elements));
         operators.add(createExchangeOperator(tree, false, elements));
         operators.add(createTreeUniformOperator(tree, elements));
-//TODO missing operators https://github.com/CompEvol/sampled-ancestors/blob/master/examples/fossil.xml
-
-//        if (!isSampledAncestor(tree)) operators.add(createWilsonBaldingOperator(tree));
-//        if (!isSampledAncestor(tree)) operators.add(createSubtreeSlideOperator(tree));
+        //https://github.com/CompEvol/sampled-ancestors/blob/master/examples/fossil.xml
+        operators.add(createWilsonBaldingOperator(tree, elements));
+        operators.add(createLeafToSampledAncestorJumpOperator(tree, elements));
         return operators;
     }
+
+    private Operator createLeafToSampledAncestorJumpOperator(Tree tree, Multimap<BEASTInterface, GraphicalModelNode<?>> elements) {
+        Operator leafToSA = new LeafToSampledAncestorJump();
+        leafToSA.setInputValue("tree", tree);
+        leafToSA.setInputValue("weight", getOperatorWeight(tree.getInternalNodeCount()));
+        leafToSA.initAndValidate();
+        leafToSA.setID(tree.getID() + "." + "leafToSA");
+        elements.put(leafToSA, null);
+        return leafToSA;
+    }
+
 
     @Override
     public Operator getScaleOperator() {
