@@ -45,6 +45,7 @@ public class SATreeOperatorStrategy implements TreeOperatorStrategy {
         operators.add(createExchangeOperator(tree, true, elements));
         operators.add(createExchangeOperator(tree, false, elements));
         operators.add(createTreeUniformOperator(tree, elements));
+//TODO missing operators https://github.com/CompEvol/sampled-ancestors/blob/master/examples/fossil.xml
 
 //        if (!isSampledAncestor(tree)) operators.add(createWilsonBaldingOperator(tree));
 //        if (!isSampledAncestor(tree)) operators.add(createSubtreeSlideOperator(tree));
