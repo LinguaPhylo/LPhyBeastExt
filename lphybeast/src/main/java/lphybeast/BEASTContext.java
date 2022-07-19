@@ -520,7 +520,7 @@ public class BEASTContext {
 
 
     /**
-     * Init BEAST 2 MCMC here
+     * The main class to init BEAST 2 MCMC
      */
     private MCMC createMCMC(long chainLength, int logEvery, String logFileStem, int preBurnin) {
 
@@ -822,11 +822,11 @@ public class BEASTContext {
             // TODO multiple strategies (true) ?
             if (applyThis) {
                 if (! (finalStrategy instanceof DefaultTreeOperatorStrategy) )
-                    throw new UnsupportedOperationException("Cannot resolve multiple changes, giving " +
-                            tOS.getName() + " ! The default strategy has been changed to " + finalStrategy.getName());
+                    throw new UnsupportedOperationException("Attempted to apply '" + tOS.getName() +
+                            "' after already applying tree operator strategy '" + finalStrategy.getName() + "' !");
 
                 finalStrategy = tOS;
-                LoggerUtils.log.warning("The default strategy to create tree operators is changed into '" +
+                LoggerUtils.log.info("The default strategy to create tree operators is changed into '" +
                         tOS.getName() + "' ! ");
             }
         }
