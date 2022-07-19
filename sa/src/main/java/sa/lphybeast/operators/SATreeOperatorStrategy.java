@@ -5,7 +5,9 @@ import beast.core.Operator;
 import beast.evolution.operators.*;
 import beast.evolution.tree.Tree;
 import com.google.common.collect.Multimap;
+import lphy.evolution.birthdeath.FossilBirthDeathTree;
 import lphy.evolution.birthdeath.SimFBDAge;
+import lphy.evolution.birthdeath.SimFossilsPoisson;
 import lphy.evolution.tree.TimeTree;
 import lphy.graphicalModel.GraphicalModelNode;
 import lphy.graphicalModel.Value;
@@ -32,7 +34,9 @@ public class SATreeOperatorStrategy implements TreeOperatorStrategy {
         Map<BEASTInterface, GraphicalModelNode<?>> BEASTToLPHYMap = context.getBEASTToLPHYMap();
         GraphicalModelNode<TimeTree> graphicalModelNode = (GraphicalModelNode<TimeTree>) BEASTToLPHYMap.get(tree);
         if (graphicalModelNode instanceof Value<TimeTree> timeTreeValue)
-            return timeTreeValue.getGenerator() instanceof SimFBDAge;
+            return timeTreeValue.getGenerator() instanceof SimFBDAge ||  // simFBDAge.lphy
+                    timeTreeValue.getGenerator() instanceof FossilBirthDeathTree ||  // simFossilsCompact.lphy
+                    timeTreeValue.getGenerator() instanceof SimFossilsPoisson;   // simFossils.lphy
         else
             throw new IllegalArgumentException("BEAST tree " + tree + " must map to Value<TimeTree> !");
     }

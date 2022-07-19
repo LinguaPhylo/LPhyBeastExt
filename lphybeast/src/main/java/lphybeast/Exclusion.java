@@ -13,6 +13,7 @@ import lphy.core.functions.datatype.BinaryDatatypeFunction;
 import lphy.core.functions.datatype.NucleotidesFunction;
 import lphy.core.functions.datatype.StandardDatatypeFunction;
 import lphy.core.functions.taxa.*;
+import lphy.core.functions.tree.ExtantTree;
 import lphy.core.functions.tree.MigrationCount;
 import lphy.core.functions.tree.NodeCount;
 import lphy.evolution.Taxa;
@@ -59,7 +60,7 @@ public class Exclusion {
                 generator instanceof RangeList || generator instanceof ElementsAt || generator instanceof Rep ||
                 generator instanceof MigrationMatrix || generator instanceof MigrationCount ||
                 generator instanceof Length || generator instanceof Select || generator instanceof SumBoolean ||
-                generator instanceof DiscretizedGamma ||
+                generator instanceof DiscretizedGamma || generator instanceof ExtantTree ||
                 // ignore all data types
                 generator instanceof NucleotidesFunction || generator instanceof StandardDatatypeFunction ||
                 generator instanceof BinaryDatatypeFunction || //generator instanceof PhasedGenotypeFunction ||
