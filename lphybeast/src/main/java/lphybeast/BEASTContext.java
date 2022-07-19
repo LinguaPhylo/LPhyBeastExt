@@ -444,28 +444,6 @@ public class BEASTContext {
 
 
     /**
-     * Make a BEAST2 model from the current model in parser.
-     */
-    public void createBEASTObjects() {
-
-        List<Value<?>> sinks = parser.getModelSinks();
-
-        for (Value<?> value : sinks) {
-            createBEASTValueObjects(value);
-        }
-
-        Set<Generator> visited = new HashSet<>();
-        for (Value<?> value : sinks) {
-            traverseBEASTGeneratorObjects(value, true, false, visited);
-        }
-
-        visited.clear();
-        for (Value<?> value : sinks) {
-            traverseBEASTGeneratorObjects(value, false, true, visited);
-        }
-    }
-
-    /**
      * @param id
      * @return true if the given id has a value in the data block and random variable in the model block
      */
@@ -539,6 +517,78 @@ public class BEASTContext {
         addToContext(node, beastInterface);
     }
 
+
+
+    /**
+     * Init BEAST 2 MCMC here
+     */
+    private MCMC createMCMC(long chainLength, int logEvery, String logFileStem, int preBurnin) {
+
+        createBEASTObjects();
+
+        CompoundDistribution posterior = createBEASTPosterior();
+
+        MCMC mcmc = new MCMC();
+        mcmc.setInputValue("distribution", posterior);
+        mcmc.setInputValue("chainLength", chainLength);
+
+        // TODO eventually all operator related code should go there
+        // create XML operator section, with the capability to replace default operators
+        OperatorFactory operatorFactory = new OperatorFactory(this);
+        // create all operators, where tree operators strategy can be changed in an extension.
+        List<Operator> operators = operatorFactory.createOperators();
+        for (int i = 0; i < operators.size(); i++) {
+            System.out.println(operators.get(i));
+        }
+        mcmc.setInputValue("operator", operators);
+
+        // TODO eventually all logging related code should go there
+        // create XML logger section
+        LoggerFactory loggerFactory = new LoggerFactory(this);
+        // 3 default loggers: parameter logger, screen logger, tree logger.
+        List<Logger> loggers = loggerFactory.createLoggers(logEvery, logFileStem);
+        // extraLoggers processed in LoggerFactory
+        mcmc.setInputValue("logger", loggers);
+
+        State state = new State();
+        state.setInputValue("stateNode", this.state);
+        state.initAndValidate();
+        elements.put(state, null);
+
+        // TODO make sure the stateNode list is being correctly populated
+        mcmc.setInputValue("state", state);
+
+        if (inits.size() > 0) mcmc.setInputValue("init", inits);
+
+        if (preBurnin > 0)
+            mcmc.setInputValue("preBurnin", preBurnin);
+
+        mcmc.initAndValidate();
+        return mcmc;
+    }
+
+
+    /**
+     * Make a BEAST2 model from the current model in parser.
+     */
+    private void createBEASTObjects() {
+
+        List<Value<?>> sinks = parser.getModelSinks();
+
+        for (Value<?> value : sinks) {
+            createBEASTValueObjects(value);
+        }
+
+        Set<Generator> visited = new HashSet<>();
+        for (Value<?> value : sinks) {
+            traverseBEASTGeneratorObjects(value, true, false, visited);
+        }
+
+        visited.clear();
+        for (Value<?> value : sinks) {
+            traverseBEASTGeneratorObjects(value, false, true, visited);
+        }
+    }
 
     /**
      * Creates the beast value objects in a post-order traversal, so that inputs are always created before outputs.
@@ -781,55 +831,6 @@ public class BEASTContext {
             }
         }
         return finalStrategy;
-    }
-
-
-    /**
-     * Init BEAST 2 MCMC here
-     */
-    private MCMC createMCMC(long chainLength, int logEvery, String logFileStem, int preBurnin) {
-
-        createBEASTObjects();
-
-        CompoundDistribution posterior = createBEASTPosterior();
-
-        MCMC mcmc = new MCMC();
-        mcmc.setInputValue("distribution", posterior);
-        mcmc.setInputValue("chainLength", chainLength);
-
-        // TODO eventually all operator related code should go there
-        // create XML operator section, with the capability to replace default operators
-        OperatorFactory operatorFactory = new OperatorFactory(this);
-        // create all operators, where tree operators strategy can be changed in an extension.
-        List<Operator> operators = operatorFactory.createOperators();
-        for (int i = 0; i < operators.size(); i++) {
-            System.out.println(operators.get(i));
-        }
-        mcmc.setInputValue("operator", operators);
-
-        // TODO eventually all logging related code should go there
-        // create XML logger section
-        LoggerFactory loggerFactory = new LoggerFactory(this);
-        // 3 default loggers: parameter logger, screen logger, tree logger.
-        List<Logger> loggers = loggerFactory.createLoggers(logEvery, logFileStem);
-        // extraLoggers processed in LoggerFactory
-        mcmc.setInputValue("logger", loggers);
-
-        State state = new State();
-        state.setInputValue("stateNode", this.state);
-        state.initAndValidate();
-        elements.put(state, null);
-
-        // TODO make sure the stateNode list is being correctly populated
-        mcmc.setInputValue("state", state);
-
-        if (inits.size() > 0) mcmc.setInputValue("init", inits);
-
-        if (preBurnin > 0)
-            mcmc.setInputValue("preBurnin", preBurnin);
-
-        mcmc.initAndValidate();
-        return mcmc;
     }
 
     private CompoundDistribution createBEASTPosterior() {

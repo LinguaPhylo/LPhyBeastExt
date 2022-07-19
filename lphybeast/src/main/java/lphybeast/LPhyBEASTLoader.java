@@ -132,6 +132,7 @@ public class LPhyBEASTLoader {
             System.out.println(dataTypeMap.size() + " Data Type = " + dataTypeMap);
             System.out.println(excludedGeneratorClasses.size() + " extra Generator(s) excluded = " + excludedGeneratorClasses);
             System.out.println(excludedValueClasses.size() + " extra Value(s) excluded = " + excludedValueClasses);
+            System.out.println(newTreeOperatorStrategies.size() + " new Tree Operator Strategies = " + newTreeOperatorStrategies);
 
         } catch (ServiceConfigurationError serviceError) {
             System.err.println(serviceError);

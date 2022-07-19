@@ -56,6 +56,8 @@ public class LPhyScriptsToBEASTTest {
                         xml.contains("spec=\"beast.evolution.branchratemodel.UCRelaxedClockModel\"") &&
                         xml.contains("distr=\"@LogNormalDistributionModel") && xml.contains("rates=\"@branchRates\""),
                 "UCRelaxedClockModel prior" );
+
+        //TODO operators
     }
 
 }
