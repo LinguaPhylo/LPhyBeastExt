@@ -13,12 +13,12 @@ java {
 }
 
 dependencies {
-    implementation(project(":lphybeast"))
+//    implementation(project(":lphybeast"))
     implementation(fileTree("lib"))
 
     // tests
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
-    testImplementation(testFixtures(project(":lphybeast")))
+//    testImplementation(testFixtures(project(":lphybeast")))
 }
 
 val developers = "LPhyBEAST developer team"

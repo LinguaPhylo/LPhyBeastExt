@@ -1,8 +1,7 @@
-# But not releases
-!releases/*.zip
-
 # macOS Files
 **/.DS_Store
+/.idea/
+/.gradle/
 
 # BlueJ files
 *.ctxt
