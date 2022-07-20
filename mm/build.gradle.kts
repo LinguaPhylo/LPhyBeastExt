@@ -1,6 +1,6 @@
 plugins {
     `java-library`
-    `java-test-fixtures` // which produces test fixtures
+//    `java-test-fixtures` // which produces test fixtures
 }
 
 version = "0.0.1-SNAPSHOT"
@@ -12,13 +12,36 @@ java {
     withSourcesJar()
 }
 
+val zippedConfig by configurations.creating
 dependencies {
-//    implementation(project(":lphybeast"))
+    implementation("io.github.linguaphylo:lphy:1.3.0")
+
+    implementation(fileTree("$rootDir/lib2"))
     implementation(fileTree("lib"))
+
+    //*** lphybeast + ... ***//
+    zippedConfig("io.github.linguaphylo:lphybeast:0.4.0-SNAPSHOT")
+//    implementation(fileTree("dir" to "${lb.get().outputs.dir("lib")}", "include" to "**/*.jar"))
+    implementation(files( { lb.get().extra["lblibs"] } ))
 
     // tests
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
+    testImplementation(fileTree("$rootDir/lib-test"))
 //    testImplementation(testFixtures(project(":lphybeast")))
+}
+tasks.compileJava.get().dependsOn("installLPhyBEAST")
+
+// unzip lphybeast-*.zip to ${buildDir}/lphybeast/
+val lb = tasks.register<Sync>("installLPhyBEAST") {
+    val outDir = "${buildDir}/lphybeast"
+    zippedConfig.resolvedConfiguration.resolvedArtifacts.forEach({
+        println(name + " --- " + it.file.name)
+        if (it.file.name.endsWith("zip")) {
+            from(zipTree(it.file))
+            into(outDir)
+        }
+    })
+    extra["lblibs"] = fileTree("dir" to "${outDir}/lib", "include" to "**/*.jar")
 }
 
 val developers = "LPhyBEAST developer team"

@@ -5,7 +5,7 @@ import jebl.evolution.sequences.SequenceType;
 import lphy.graphicalModel.Generator;
 import lphy.graphicalModel.Value;
 import lphybeast.GeneratorToBEAST;
-import lphybeast.TreeOperatorStrategy;
+import lphybeast.tobeast.operators.TreeOperatorStrategy;
 import lphybeast.ValueToBEAST;
 import lphybeast.spi.LPhyBEASTExt;
 import sa.lphybeast.operators.SATreeOperatorStrategy;
