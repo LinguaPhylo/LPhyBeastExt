@@ -1,36 +1,17 @@
 <addon name='lphybeastExt' version='0.1.0'>
-    <depends on='beast2' atleast='2.6.7'/>
-    <depends on='BEASTLabs' atleast='1.9.7'/>
-    <depends on='feast' atleast='7.11.0'
-             projectURL="https://github.com/tgvaughan/feast"
-             description="Expands the flexibility of BEAST 2 XML."/>
+    <depends on='lphybeast' atleast='0.4.0'/>
 
-    <depends on='BEAST_CLASSIC' atleast='1.5.0'/>
-    <depends on='SSM' atleast='1.1.0'
-             description="Standard Nucleotide Substitution Models"
-             projectURL="https://github.com/BEAST2-Dev/substmodels/"/>
-    <depends on='MM' atleast='1.1.1'
-             projectURL="https://github.com/CompEvol/morph-models"
-             description="Enables models of morphological character evolution"/>
-    <depends on='SA' atleast='2.0.2'
-             projectURL="https://github.com/CompEvol/sampled-ancestors"
-             description="Sampled ancestor trees"/>
     <depends on='Mascot' atleast='2.1.2'
              description="Marginal approximation of the structured coalescent"
              projectURL="https://taming-the-beast.org/tutorials/Mascot-Tutorial/"/>
-    <depends on='FastRelaxedClockLogNormal' atleast='1.1.1'/>
 
-    <!--    <depends on='StarBEAST2' atleast='0.15.13'-->
-    <!--             projectURL="https://github.com/genomescale/starbeast2"-->
-    <!--             description="Multispecies coalescent inference using multi-locus and fossil data"/>-->
+    <depends on='MM' atleast='1.1.1'
+             projectURL="https://github.com/CompEvol/morph-models"
+             description="Enables models of morphological character evolution"/>
 
-    <!-- Not released : contraband bdtree -->
-
-    <packageapp description="A command-line program that takes an LPhy model specification including a data block, and produces a BEAST 2 XML input file."
-                class="lphybeast.LPhyBeastCMD"
-                args=""
-    />
-
+    <depends on='SA' atleast='2.0.2'
+             projectURL="https://github.com/CompEvol/sampled-ancestors"
+             description="Sampled ancestor trees"/>
 
 </addon>
 
