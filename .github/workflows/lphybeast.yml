@@ -24,11 +24,11 @@ jobs:
           pwd
           ls LPhyBeastExt
           find . -name "lib"
+          ls LPhyBeastExt/lphybeastExt
 
       - name: Run unit tests
         # change working dir, so gradle will work
         working-directory: ./LPhyBeastExt
-        # only available in lphy at the moment
         run: ./gradlew test --no-daemon
 
       - name: Publish unit test results
