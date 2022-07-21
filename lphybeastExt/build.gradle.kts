@@ -15,7 +15,7 @@ tasks.jar.get().enabled = false
 tasks.testFixturesJar.get().enabled = false
 
 version = "0.1.0-SNAPSHOT"
-//base.archivesName.set("LPhyBeastExt")
+base.archivesName.set("LPhyBeastExt")
 
 //val lbver = "0.4.0-SNAPSHOT"
 val zippedConfig by configurations.creating
@@ -69,7 +69,7 @@ tasks.getByName<Tar>("distTar").enabled = false
 //    But for lphybeast extensions, lphy part has to be included, due to BEAST class loader.
 distributions {
     main {
-        distributionBaseName.set("LPhyBeastExt")
+        distributionBaseName.set(project.base.archivesName.get())
         contents {
 //            eachFile {  println(relativePath)  }
             includeEmptyDirs = false
