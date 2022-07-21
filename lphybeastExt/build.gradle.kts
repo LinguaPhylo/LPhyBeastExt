@@ -15,7 +15,7 @@ tasks.jar.get().enabled = false
 tasks.testFixturesJar.get().enabled = false
 
 version = "0.1.0-SNAPSHOT"
-//base.archivesName.set("lphybeastExt")
+//base.archivesName.set("LPhyBeastExt")
 
 //val lbver = "0.4.0-SNAPSHOT"
 val zippedConfig by configurations.creating
@@ -55,6 +55,8 @@ val lb = tasks.register<Sync>("installLPhyBEAST") {
 }
 
 //++++++++ release ++++++++//
+// It needs to run ./gradlew clean build to build all subprojects,
+// and then ./gradlew build -x test again, to create zip having contents from other subprojects
 
 tasks.getByName<Tar>("distTar").enabled = false
 // exclude start scripts
@@ -67,6 +69,7 @@ tasks.getByName<Tar>("distTar").enabled = false
 //    But for lphybeast extensions, lphy part has to be included, due to BEAST class loader.
 distributions {
     main {
+        distributionBaseName.set("LPhyBeastExt")
         contents {
 //            eachFile {  println(relativePath)  }
             includeEmptyDirs = false
