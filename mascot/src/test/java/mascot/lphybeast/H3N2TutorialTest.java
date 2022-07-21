@@ -112,8 +112,16 @@ public class H3N2TutorialTest {
 
         assertTrue(xml.contains("chainLength=\"1000000\"") && xml.contains("logEvery=\"500\"") &&
                 xml.contains("fileName=\"" + fileStem + ".log\"") && xml.contains("fileName=\"" + fileStem + ".trees\"") &&
-                xml.contains("fileName=\"" + fileStem + ".mascot.trees\"") &&  xml.contains("mode=\"tree\"") &&
-                xml.contains("spec=\"beast.mascot.logger.StructuredTreeLogger\"") && xml.contains("mascot=\"@Mascot\""),
+                xml.contains("<log idref=\"posterior\"/>") && xml.contains("<log idref=\"likelihood\"/>") &&
+                xml.contains("<log idref=\"prior\"/>") && xml.contains("<log idref=\"pi\"/>") &&
+                xml.contains("<log idref=\"kappa\"/>") && xml.contains("<log idref=\"mu\"/>") &&
+                xml.contains("<log idref=\"gamma\"/>") && xml.contains("<log idref=\"m\"/>") &&
+                xml.contains("<log idref=\"Theta\"/>") && xml.contains("<log idref=\"D.treeLikelihood\"/>"),
                 "logger" );
+
+        assertTrue(xml.contains("<log idref=\"Mascot\"/>") && xml.contains("mascot=\"@Mascot\"") &&
+                xml.contains("fileName=\"" + fileStem + ".mascot.trees\"") && xml.contains("mode=\"tree\"") &&
+                xml.contains("spec=\"beast.mascot.logger.StructuredTreeLogger\""),
+                "Mascot logger" );
     }
 }

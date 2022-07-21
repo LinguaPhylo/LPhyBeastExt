@@ -140,6 +140,8 @@ public class StructuredCoalescentToMascot implements
             // but it is duplicated to popsize and rates Loggable.
             // <log idref="Constant"/>
 //            context.addExtraLogger(dynamics);
+            // <log idref="Mascot"/>
+            context.addExtraLoggable(mascot);
             // extra logging
             MascotExtraTreeLogger extraTreeLogger = new MascotExtraTreeLogger(mascot);
             context.addExtraLogger(extraTreeLogger);
