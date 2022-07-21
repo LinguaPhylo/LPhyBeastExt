@@ -1,7 +1,7 @@
 
 rootProject.name = "LPhyBeastExt"
 
-include("lphybeast")
+include("lphybeastExt")
 include("mascot")
 include("mm")
 include("sa")

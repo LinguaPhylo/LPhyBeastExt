@@ -14,7 +14,7 @@ java {
 
 dependencies {
 //    implementation("io.github.linguaphylo:lphy:1.3.0")
-    implementation(project(":lphybeast"))
+    implementation(project(":lphybeastExt"))
 
     implementation(fileTree("lib"))
 

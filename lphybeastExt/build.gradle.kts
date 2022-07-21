@@ -10,9 +10,10 @@ java {
 tasks.jar.get().enabled = false
 tasks.testFixturesJar.get().enabled = false
 
-// subproject name has to be lphybeast
+version = "0.1.0-SNAPSHOT"
+base.archivesName.set("lphybeastExt")
 
-val lbver = "0.4.0-SNAPSHOT"
+//val lbver = "0.4.0-SNAPSHOT"
 val zippedConfig by configurations.creating
 
 dependencies {
@@ -22,7 +23,7 @@ dependencies {
 
     //*** lphybeast + ... ***//
     // cannot use "version" in zippedConfig
-    zippedConfig("io.github.linguaphylo:lphybeast:$lbver")
+    zippedConfig("io.github.linguaphylo:lphybeast:0.4.0-SNAPSHOT")
 //    implementation(fileTree("dir" to "${lb.get().outputs.dir("lib")}", "include" to "**/*.jar"))
     api(files( { lb.get().extra["lblibs"] } ))
 

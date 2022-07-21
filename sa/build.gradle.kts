@@ -13,7 +13,7 @@ java {
 }
 
 dependencies {
-    implementation(project(":lphybeast"))
+    implementation(project(":lphybeastExt"))
 
     implementation(fileTree("lib"))
 
