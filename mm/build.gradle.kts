@@ -3,7 +3,7 @@ plugins {
 //    `java-test-fixtures` // which produces test fixtures
 }
 
-version = "0.0.1-SNAPSHOT"
+version = "0.0.1"
 base.archivesName.set("mm-lb")
 
 java {
@@ -13,13 +13,13 @@ java {
 }
 
 dependencies {
-    implementation(project(":lphybeastExt"))
+    implementation(project(":lphybeast-ext"))
 
     implementation(fileTree("lib"))
 
     // tests
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
-    testImplementation(project(":lphybeastExt"))
+    testImplementation(project(":lphybeast-ext"))
 }
 
 
