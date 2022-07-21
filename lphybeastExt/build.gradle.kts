@@ -15,7 +15,7 @@ tasks.jar.get().enabled = false
 tasks.testFixturesJar.get().enabled = false
 
 version = "0.1.0-SNAPSHOT"
-base.archivesName.set("lphybeastExt")
+//base.archivesName.set("lphybeastExt")
 
 //val lbver = "0.4.0-SNAPSHOT"
 val zippedConfig by configurations.creating
@@ -121,7 +121,7 @@ tasks.withType<Zip>() {
 }
 
 val developers = "LPhyBEAST developer team"
-val webSteam = "github.com/LinguaPhylo/LPhyBeast"
+val webSteam = "github.com/LinguaPhylo/LPhyBeastExt"
 publishing {
     publications {
         // project.name contains "lphy" substring

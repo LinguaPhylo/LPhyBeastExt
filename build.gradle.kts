@@ -16,7 +16,7 @@ subprojects {
     group = "io.github.linguaphylo"
     // TODO 3 versions: here, LPhyBEAST, version.xml
     // version has to be manually adjusted to keep same between version.xml and here
-    val webSteam = "github.com/LinguaPhylo/LPhyBeast"
+    val webSteam = "github.com/LinguaPhylo/LPhyBeastExt"
     val web = "https://${webSteam}"
 
     var calendar: java.util.Calendar? = java.util.Calendar.getInstance()
