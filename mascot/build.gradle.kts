@@ -13,16 +13,15 @@ java {
 }
 
 dependencies {
-//    implementation("io.github.linguaphylo:lphy:1.3.0")
     implementation(project(":lphybeastExt"))
 
     implementation(fileTree("lib"))
 
     // tests
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
+    testImplementation(project(":lphybeastExt"))
 
-//    testImplementation(project(":lphybeast"))
-//    testImplementation(testFixtures(project(":lphybeast")))
+//    testImplementation(testFixtures(project(":lphybeastExt")))
 //    testImplementation(fileTree("$rootDir/lib-test"))
 //    testImplementation(testFixtures("io.github.linguaphylo:lphybeast:0.4.0-SNAPSHOT"))
 //    testFixturesImplementation("io.github.linguaphylo:lphybeast:0.4.0-SNAPSHOT")
