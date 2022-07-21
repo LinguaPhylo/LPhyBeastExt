@@ -1,6 +1,6 @@
 plugins {
     `java-library`
-    `java-test-fixtures` // which produces test fixtures
+//    `java-test-fixtures` // which produces test fixtures
 }
 
 version = "0.0.1-SNAPSHOT"
