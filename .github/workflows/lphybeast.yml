@@ -1,0 +1,38 @@
+name: LPhy BEAST Ext tests
+on: [ push, pull_request, workflow_dispatch ]
+
+jobs:
+  test-lphybeast:
+    runs-on: ubuntu-latest
+
+    steps:
+      # must under LPhyBeast folder, otherwise build will failed
+      - name: Checkout main
+        uses: actions/checkout@v2
+        with:
+          path: LPhyBeastExt
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v2
+        with:
+          java-version: 17
+          distribution: 'adopt'
+          cache: 'gradle'
+
+      - name: Check file paths
+        run: |
+          pwd
+          ls LPhyBeastExt
+          find . -name "lib"
+
+      - name: Run unit tests
+        # change working dir, so gradle will work
+        working-directory: ./LPhyBeastExt
+        # only available in lphy at the moment
+        run: ./gradlew test --no-daemon
+
+      - name: Publish unit test results
+        uses: EnricoMi/publish-unit-test-result-action@v1
+        if: always()
+        with:
+          files: ./LPhyBeastExt/*/build/test-results/**/*.xml
