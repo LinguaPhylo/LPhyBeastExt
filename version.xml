@@ -1,5 +1,5 @@
 <addon name='LPhyBeastExt' version='0.1.0'>
-    <depends on='lphybeast' atleast='0.4.0'/>
+    <depends on='lphybeast' atleast='0.4.1'/>
 
     <depends on='Mascot' atleast='2.1.2'
              description="Marginal approximation of the structured coalescent"
