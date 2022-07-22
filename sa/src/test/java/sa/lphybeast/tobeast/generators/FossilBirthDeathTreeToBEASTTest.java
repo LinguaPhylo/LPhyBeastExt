@@ -1,7 +1,6 @@
 package sa.lphybeast.tobeast.generators;
 
 import lphybeast.TestUtils;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -20,8 +19,6 @@ class FossilBirthDeathTreeToBEASTTest {
             fossilTree ~ FossilBirthDeathTree(lambda=lambda, mu=mu, taxa=taxa, psi=1.0, rho=1.0);
             daCount = fossilTree.directAncestorCount();""";
 
-    //TODO BEASTLoader loads both dev code and installed packages, SATreeOperatorStrategy was loaded twice
-    @Disabled
     @Test
     public void testSimFossilsCompact() {
         String xml = TestUtils.lphyScriptToBEASTXML(simFossilsCompact, "simFossilsCompact");

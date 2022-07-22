@@ -1,7 +1,6 @@
 package sa.lphybeast.tobeast.generators;
 
 import lphybeast.TestUtils;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -17,8 +16,6 @@ class SimFBDAgeToBEASTTest {
             daCount = tree.directAncestorCount();""";
     //TODO It requires 2nd cmd to make "tree" added into List<StateNode> state in BEASTContext
 
-    //TODO BEASTLoader loads both dev code and installed packages, SATreeOperatorStrategy was loaded twice
-    @Disabled
     @Test
     public void testSimFBDAge() {
         String xml = TestUtils.lphyScriptToBEASTXML(simFBDAge, "simFBDAge");

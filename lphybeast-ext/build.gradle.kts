@@ -27,7 +27,7 @@ dependencies {
 
     //*** lphybeast + ... ***//
     // cannot use "version" in zippedConfig
-    zippedConfig("io.github.linguaphylo:lphybeast:0.4.0")
+    zippedConfig("io.github.linguaphylo:lphybeast:0.4.1-SNAPSHOT")
 //    implementation(fileTree("dir" to "${lb.get().outputs.dir("lib")}", "include" to "**/*.jar"))
     api(files( { lb.get().extra["lblibs"] } ))
 
@@ -52,6 +52,7 @@ val lb = tasks.register<Sync>("installLPhyBEAST") {
         }
     })
     extra["lblibs"] = fileTree("dir" to "${outDir}/lib", "include" to "**/*.jar")
+    extra["lbsrc"] = fileTree("dir" to "${outDir}/src", "include" to "**/*-sources.jar")
 }
 
 //++++++++ release ++++++++//
