@@ -27,7 +27,7 @@ dependencies {
 
     //*** lphybeast + ... ***//
     // cannot use "version" in zippedConfig
-    zippedConfig("io.github.linguaphylo:lphybeast:0.4.1-SNAPSHOT")
+    zippedConfig("io.github.linguaphylo:lphybeast:0.4.1")
 //    implementation(fileTree("dir" to "${lb.get().outputs.dir("lib")}", "include" to "**/*.jar"))
     api(files( { lb.get().extra["lblibs"] } ))
 
