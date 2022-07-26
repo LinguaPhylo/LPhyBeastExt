@@ -14,7 +14,7 @@ java {
 tasks.jar.get().enabled = false
 tasks.testFixturesJar.get().enabled = false
 
-version = "0.1.0"
+version = "0.1.1-SNAPSHOT"
 base.archivesName.set("LPhyBeastExt")
 
 //val lbver = "0.4.0-SNAPSHOT"
