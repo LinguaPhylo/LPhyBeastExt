@@ -20,10 +20,14 @@ base.archivesName.set("LPhyBeastExt")
 //val lbver = "0.4.0-SNAPSHOT"
 val zippedConfig by configurations.creating
 
+val beast2Jars = fileTree("lib2") {
+    exclude("**/*-sources.jar")
+}
+
 dependencies {
     api("io.github.linguaphylo:lphy:1.3.0")
     // BEAST2
-    api(fileTree("lib2"))
+    api(beast2Jars)
 
     //*** lphybeast + ... ***//
     // cannot use "version" in zippedConfig
