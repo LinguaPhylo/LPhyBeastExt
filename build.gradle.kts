@@ -47,3 +47,16 @@ subprojects {
     }
 
 }
+
+//plugins {
+//    idea
+//}
+//idea.project {
+//    var b2lib = org.gradle.plugins.ide.idea.model.ProjectLibrary()
+//    b2lib.name = "beast2.6"
+//    b2lib.classes = fileTree("lib2") {
+//        exclude("**/*-sources.jar")
+//    }.files
+//    b2lib.sources = files("lib2/*-sources.jar").files
+//    projectLibraries.add(b2lib)
+//}
