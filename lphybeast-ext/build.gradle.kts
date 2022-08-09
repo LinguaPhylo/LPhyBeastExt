@@ -25,6 +25,12 @@ val beast2Jars = fileTree("lib2") {
 }
 
 dependencies {
+    /**
+     * The behaviour of this default version declaration chooses any available highest version first.
+     * If the exact version is required, then use the "strictly version" declaration
+     * such as "io.github.linguaphylo:lphy:1.2.0!!".
+     * https://docs.gradle.org/current/userguide/rich_versions.html#sec:strict-version
+     */
     api("io.github.linguaphylo:lphy:1.3.1-SNAPSHOT")
     // BEAST2
     api(beast2Jars)
