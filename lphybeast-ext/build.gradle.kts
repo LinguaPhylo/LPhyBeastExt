@@ -25,7 +25,7 @@ val beast2Jars = fileTree("lib2") {
 }
 
 dependencies {
-    api("io.github.linguaphylo:lphy:1.3.0")
+    api("io.github.linguaphylo:lphy:1.3.1-SNAPSHOT")
     // BEAST2
     api(beast2Jars)
 
