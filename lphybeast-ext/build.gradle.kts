@@ -14,7 +14,7 @@ java {
 tasks.jar.get().enabled = false
 tasks.testFixturesJar.get().enabled = false
 
-version = "0.1.1-SNAPSHOT"
+version = "0.1.1"
 base.archivesName.set("LPhyBeastExt")
 
 //val lbver = "0.4.0-SNAPSHOT"
@@ -31,7 +31,7 @@ dependencies {
      * such as "io.github.linguaphylo:lphy:1.2.0!!".
      * https://docs.gradle.org/current/userguide/rich_versions.html#sec:strict-version
      */
-    api("io.github.linguaphylo:lphy:1.3.1-SNAPSHOT")
+    api("io.github.linguaphylo:lphy:1.3.1")
     // BEAST2
     api(beast2Jars)
 
