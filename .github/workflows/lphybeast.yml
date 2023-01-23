@@ -23,8 +23,7 @@ jobs:
       - name: Set environmental variables
         run: |
           pwd
-          ls LPhyBeast
-          find . -name "lib"
+          ls LPhyBeastExt
           echo "BEAST_LIB=LPhyBeastExt/lphybeast-ext/lib" >> $GITHUB_ENV
           echo "LAUNCHER=launcher-2.7.3.jar" >> $GITHUB_ENV
 
@@ -51,8 +50,6 @@ jobs:
 
       - name: Check file paths
         run: |
-          pwd
-          ls LPhyBeastExt
           find . -name "lib"
           ls LPhyBeastExt/lphybeast-ext
 
