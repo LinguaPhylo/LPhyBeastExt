@@ -19,6 +19,36 @@ jobs:
           distribution: 'adopt'
           cache: 'gradle'
 
+      ###TODO: require version.xml, so check out all depended B2 pkg
+      - name: Set environmental variables
+        run: |
+          pwd
+          ls LPhyBeast
+          find . -name "lib"
+          echo "BEAST_LIB=LPhyBeastExt/lphybeast-ext/lib" >> $GITHUB_ENV
+          echo "LAUNCHER=launcher-2.7.3.jar" >> $GITHUB_ENV
+
+      # /home/runner/.beast/2.7
+      - name: Install packages
+        run: |
+          java -Djava.library.path="$BEAST_LIB" -cp "$BEAST_LIB/$LAUNCHER" beast.pkgmgmt.PackageManager -add bdtree
+          java -Djava.library.path="$BEAST_LIB" -cp "$BEAST_LIB/$LAUNCHER" beast.pkgmgmt.PackageManager -add BEAST_CLASSIC
+          java -Djava.library.path="$BEAST_LIB" -cp "$BEAST_LIB/$LAUNCHER" beast.pkgmgmt.PackageManager -add BEASTLabs
+          java -Djava.library.path="$BEAST_LIB" -cp "$BEAST_LIB/$LAUNCHER" beast.pkgmgmt.PackageManager -add FastRelaxedClockLogNormal
+          java -Djava.library.path="$BEAST_LIB" -cp "$BEAST_LIB/$LAUNCHER" beast.pkgmgmt.PackageManager -add feast
+          java -Djava.library.path="$BEAST_LIB" -cp "$BEAST_LIB/$LAUNCHER" beast.pkgmgmt.PackageManager -add SSM
+          java -Djava.library.path="$BEAST_LIB" -cp "$BEAST_LIB/$LAUNCHER" beast.pkgmgmt.PackageManager -add Mascot
+          java -Djava.library.path="$BEAST_LIB" -cp "$BEAST_LIB/$LAUNCHER" beast.pkgmgmt.PackageManager -add MM
+          java -Djava.library.path="$BEAST_LIB" -cp "$BEAST_LIB/$LAUNCHER" beast.pkgmgmt.PackageManager -add SA
+      # https://github.com/CompEvol/beast2/issues/1078
+      - name: Install beast2 base
+        run: |
+          ls /home/runner/.beast/2.7
+          mkdir /home/runner/.beast/2.7/BEAST.base
+          cp $BEAST_LIB/BEAST.base.version.xml /home/runner/.beast/2.7/BEAST.base/version.xml
+          mkdir /home/runner/.beast/2.7/BEAST.base/lib
+          cp $BEAST_LIB/BEAST-base-*.jar /home/runner/.beast/2.7/BEAST.base/lib
+
       - name: Check file paths
         run: |
           pwd
