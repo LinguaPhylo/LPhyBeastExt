@@ -20,7 +20,7 @@ base.archivesName.set("LPhyBeastExt")
 //val lbver = "0.4.0-SNAPSHOT"
 val zippedConfig by configurations.creating
 
-val beast2Jars = fileTree("lib2") {
+val beast2Jars = fileTree("lib") {
     exclude("**/*-sources.jar")
 }
 
