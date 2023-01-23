@@ -1,10 +1,10 @@
 package mascot.lphybeast.tobeast.loggers;
 
-import beast.core.BEASTInterface;
-import beast.core.Logger;
-import beast.evolution.tree.TreeInterface;
-import beast.mascot.distribution.Mascot;
-import beast.mascot.logger.StructuredTreeLogger;
+import beast.base.core.BEASTInterface;
+import beast.base.inference.Logger;
+import beast.base.evolution.tree.TreeInterface;
+import mascot.distribution.Mascot;
+import mascot.logger.StructuredTreeLogger;
 import com.google.common.collect.Multimap;
 import lphy.graphicalModel.GraphicalModelNode;
 import lphybeast.tobeast.loggers.TreeLoggerHelper;

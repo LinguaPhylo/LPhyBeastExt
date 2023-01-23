@@ -3,7 +3,7 @@ plugins {
 //    `java-test-fixtures` // which produces test fixtures
 }
 
-version = "0.0.1"
+version = "0.1.0"
 base.archivesName.set("mm-lb")
 
 java {

@@ -1,12 +1,12 @@
 package mascot.lphybeast.tobeast.generators;
 
-import beast.core.BEASTInterface;
-import beast.core.parameter.RealParameter;
-import beast.evolution.alignment.Taxon;
-import beast.evolution.alignment.TaxonSet;
-import beast.evolution.tree.TraitSet;
-import beast.mascot.distribution.StructuredTreeIntervals;
-import beast.mascot.dynamics.Constant;
+import beast.base.core.BEASTInterface;
+import beast.base.inference.parameter.RealParameter;
+import beast.base.evolution.alignment.Taxon;
+import beast.base.evolution.alignment.TaxonSet;
+import beast.base.evolution.tree.TraitSet;
+import mascot.distribution.StructuredTreeIntervals;
+import mascot.dynamics.Constant;
 import lphy.core.functions.MigrationMatrix;
 import lphy.evolution.coalescent.StructuredCoalescent;
 import lphy.evolution.tree.TimeTree;
@@ -21,12 +21,12 @@ import java.util.Arrays;
 import java.util.List;
 
 public class StructuredCoalescentToMascot implements
-        GeneratorToBEAST<StructuredCoalescent, beast.mascot.distribution.Mascot> {
+        GeneratorToBEAST<StructuredCoalescent, mascot.distribution.Mascot> {
 
     @Override
-    public beast.mascot.distribution.Mascot generatorToBEAST(StructuredCoalescent coalescent, BEASTInterface value, BEASTContext context) {
+    public mascot.distribution.Mascot generatorToBEAST(StructuredCoalescent coalescent, BEASTInterface value, BEASTContext context) {
 
-        beast.mascot.distribution.Mascot mascot = new beast.mascot.distribution.Mascot();
+        mascot.distribution.Mascot mascot = new mascot.distribution.Mascot();
 
         Value<Double[][]> M = coalescent.getM();
 
@@ -172,7 +172,7 @@ public class StructuredCoalescentToMascot implements
     }
 
     @Override
-    public Class<beast.mascot.distribution.Mascot> getBEASTClass() {
-        return beast.mascot.distribution.Mascot.class;
+    public Class<mascot.distribution.Mascot> getBEASTClass() {
+        return mascot.distribution.Mascot.class;
     }
 }

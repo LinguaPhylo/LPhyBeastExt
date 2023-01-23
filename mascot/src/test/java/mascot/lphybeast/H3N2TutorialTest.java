@@ -1,10 +1,13 @@
 package mascot.lphybeast;
 
+import lphy.system.UserDir;
+import lphybeast.LPhyBEASTLoader;
 import lphybeast.TestUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -22,6 +25,12 @@ public class H3N2TutorialTest {
 
     @BeforeEach
     public void setUp() {
+        // TODO better way?
+        Path vfPath = Paths.get(UserDir.getUserDir().toAbsolutePath().toString(), "..", "version.xml");
+        LPhyBEASTLoader.addBEAST2Services(new String[]{vfPath.toAbsolutePath().toString()});
+
+        System.out.println("Adding local BEAST2 services from " + vfPath.toAbsolutePath());
+
         fPath = TestUtils.getFileForResources("h3n2.nexus");
     }
 

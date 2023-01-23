@@ -1,9 +1,9 @@
 package sa.lphybeast.operators;
 
-import beast.core.BEASTInterface;
-import beast.core.Operator;
-import beast.evolution.operators.*;
-import beast.evolution.tree.Tree;
+import beast.base.core.BEASTInterface;
+import beast.base.inference.Operator;
+import beast.base.evolution.operator.SubtreeSlide;
+import beast.base.evolution.tree.Tree;
 import com.google.common.collect.Multimap;
 import lphy.evolution.birthdeath.FossilBirthDeathTree;
 import lphy.evolution.birthdeath.SimFBDAge;
@@ -13,6 +13,7 @@ import lphy.graphicalModel.GraphicalModelNode;
 import lphy.graphicalModel.Value;
 import lphybeast.BEASTContext;
 import lphybeast.tobeast.operators.TreeOperatorStrategy;
+import sa.evolution.operators.*;
 
 import java.util.ArrayList;
 import java.util.List;
