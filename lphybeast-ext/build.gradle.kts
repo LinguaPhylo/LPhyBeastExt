@@ -12,7 +12,7 @@ java {
     targetCompatibility = JavaVersion.VERSION_17
 }
 tasks.jar.get().enabled = false
-tasks.testFixturesJar.get().enabled = false
+//tasks.testFixturesJar.get().enabled = false
 
 version = "0.2.0-SNAPSHOT"
 base.archivesName.set("LPhyBeastExt")
@@ -58,6 +58,8 @@ val lb = tasks.register<Sync>("installLPhyBEAST") {
         println(name + " --- " + it.file.name)
         if (it.file.name.endsWith("zip")) {
             from(zipTree(it.file))
+            // why zipTree cannot provide files in root
+            from(zipTree(it.file).matching({ include("**/version.xml") }).singleFile)
             into(outDir)
         }
     })

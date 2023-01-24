@@ -1,7 +1,12 @@
 package sa.lphybeast.tobeast.generators;
 
+import lphy.system.UserDir;
 import lphybeast.TestUtils;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -18,6 +23,18 @@ class FossilBirthDeathTreeToBEASTTest {
             taxa = taxa(names=1:20);
             fossilTree ~ FossilBirthDeathTree(lambda=lambda, mu=mu, taxa=taxa, psi=1.0, rho=1.0);
             daCount = fossilTree.directAncestorCount();""";
+
+
+    @BeforeEach
+    public void setUp() {
+        // load lphybeast-ext/build/lphybeast/version.xml
+        Path lphybeastDir = Paths.get(UserDir.getUserDir().toAbsolutePath().getParent().toString(),
+                "lphybeast-ext","build","lphybeast");
+        TestUtils.loadServices(lphybeastDir.toString());
+        // load sa/version.xml
+        Path parentDir = UserDir.getUserDir().toAbsolutePath();
+        TestUtils.loadServices(parentDir.toString());
+    }
 
     @Test
     public void testSimFossilsCompact() {

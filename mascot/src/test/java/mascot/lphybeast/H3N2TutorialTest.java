@@ -1,7 +1,6 @@
 package mascot.lphybeast;
 
 import lphy.system.UserDir;
-import lphybeast.LPhyBEASTLoader;
 import lphybeast.TestUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,12 +24,13 @@ public class H3N2TutorialTest {
 
     @BeforeEach
     public void setUp() {
-        // TODO better way?
-        Path vfPath = Paths.get(UserDir.getUserDir().toAbsolutePath().toString(), "..", "version.xml");
-        LPhyBEASTLoader.addBEAST2Services(new String[]{vfPath.toAbsolutePath().toString()});
-
-        System.out.println("Adding local BEAST2 services from " + vfPath.toAbsolutePath());
-
+        // load lphybeast-ext/build/lphybeast/version.xml
+        Path lphybeastDir = Paths.get(UserDir.getUserDir().toAbsolutePath().getParent().toString(),
+                "lphybeast-ext","build","lphybeast");
+        TestUtils.loadServices(lphybeastDir.toString());
+        // load mascot/version.xml
+        Path parentDir = UserDir.getUserDir().toAbsolutePath();
+        TestUtils.loadServices(parentDir.toString());
         fPath = TestUtils.getFileForResources("h3n2.nexus");
     }
 
@@ -78,7 +78,7 @@ public class H3N2TutorialTest {
                 xml.contains("A/Waikato/5/2001|CY013072|2001.367123|New_Zealand=0.624657999999954"), "Time" );
 
         assertTrue(xml.contains("<distribution") && xml.contains("id=\"Theta.prior\"") &&
-                xml.contains("x=\"@Theta\"") && xml.contains("spec=\"beast.math.distributions.LogNormalDistributionModel\"") &&
+                xml.contains("x=\"@Theta\"") && xml.contains("distribution.LogNormalDistributionModel") &&
                 xml.contains("name=\"M\">0.0</parameter>") && xml.contains("name=\"S\">1.0</parameter>"), "Theta prior");
         assertTrue(xml.contains("x=\"@m\"") && xml.contains("id=\"m.prior\"") &&
                         xml.contains("id=\"Exponential\"") && xml.contains("name=\"mean\">1.0</parameter>"),
@@ -99,10 +99,11 @@ public class H3N2TutorialTest {
                 xml.contains("name=\"S\">2.0</parameter>"),  "SiteModel & gamma shape prior" );
 
         assertTrue(xml.contains("id=\"Mascot\"") && xml.contains("tree=\"@psi\"") &&
+                xml.contains("mascot.distribution.Mascot") && xml.contains("mascot.dynamics.Constant") &&
                 xml.contains("<dynamics") && xml.contains("id=\"Constant\"") &&
-                xml.contains("spec=\"beast.mascot.distribution.StructuredTreeIntervals\"") &&
+                xml.contains("mascot.distribution.StructuredTreeIntervals") &&
                 xml.contains("backwardsMigration=\"@m\""), "Mascot" );
-        assertTrue(xml.contains("spec=\"beast.evolution.tree.TraitSet\"") && xml.contains("traitname=\"deme\"") &&
+        assertTrue(xml.contains("beast.base.evolution.tree.TraitSet") && xml.contains("traitname=\"deme\"") &&
                 xml.contains("A/New_York/169/2000|CY000657|2000.005464|New_York=New_York") &&
                 xml.contains("A/Hong_Kong/1269/2001|KP457669|2001.657534|Hong_Kong=Hong_Kong") &&
                 xml.contains("A/Waikato/5/2000|CY011960|2000.661202|New_Zealand=New_Zealand") &&
@@ -130,7 +131,7 @@ public class H3N2TutorialTest {
 
         assertTrue(xml.contains("<log idref=\"Mascot\"/>") && xml.contains("mascot=\"@Mascot\"") &&
                 xml.contains("fileName=\"" + fileStem + ".mascot.trees\"") && xml.contains("mode=\"tree\"") &&
-                xml.contains("spec=\"beast.mascot.logger.StructuredTreeLogger\""),
+                xml.contains("mascot.logger.StructuredTreeLogger"),
                 "Mascot logger" );
     }
 }

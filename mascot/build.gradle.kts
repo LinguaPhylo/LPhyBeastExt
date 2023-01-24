@@ -20,8 +20,8 @@ dependencies {
     // tests
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
     testImplementation(project(":lphybeast-ext"))
+//    testImplementation(testFixtures(project(":lphybeast-ext")))
 
-//    testImplementation(testFixtures(project(":lphybeastExt")))
 //    testImplementation(fileTree("$rootDir/lib-test"))
 //    testImplementation(testFixtures("io.github.linguaphylo:lphybeast:0.4.0-SNAPSHOT"))
 //    testFixturesImplementation("io.github.linguaphylo:lphybeast:0.4.0-SNAPSHOT")

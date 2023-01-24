@@ -1,7 +1,12 @@
 package sa.lphybeast.tobeast.generators;
 
+import lphy.system.UserDir;
 import lphybeast.TestUtils;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -16,6 +21,18 @@ class SimFBDAgeToBEASTTest {
             daCount = tree.directAncestorCount();""";
     //TODO It requires 2nd cmd to make "tree" added into List<StateNode> state in BEASTContext
 
+
+    @BeforeEach
+    public void setUp() {
+        // load lphybeast-ext/build/lphybeast/version.xml
+        Path lphybeastDir = Paths.get(UserDir.getUserDir().toAbsolutePath().getParent().toString(),
+                "lphybeast-ext","build","lphybeast");
+        TestUtils.loadServices(lphybeastDir.toString());
+        // load sa/version.xml
+        Path parentDir = UserDir.getUserDir().toAbsolutePath();
+        TestUtils.loadServices(parentDir.toString());
+    }
+
     @Test
     public void testSimFBDAge() {
         String xml = TestUtils.lphyScriptToBEASTXML(simFBDAge, "simFBDAge");
@@ -26,7 +43,7 @@ class SimFBDAgeToBEASTTest {
                 xml.contains("traitname=\"date-backward\""), "TraitSet" );
         assertTrue(xml.contains("id=\"SABirthDeathModel\"") &&
                 xml.contains("conditionOnSampling=\"true\"") && xml.contains("origin=\"@tree.origin\"") &&
-                xml.contains("spec=\"beast.evolution.speciation.SABirthDeathModel\""), "SABirthDeathModel");
+                xml.contains("sa.evolution.speciation.SABirthDeathModel"), "SABirthDeathModel");
 
         assertTrue(xml.contains("\"birthRate\">1.0</parameter>") &&
                 xml.contains("\"deathRate\">0.6</parameter>") && xml.contains("\"samplingRate\">0.4</parameter>") &&
@@ -35,9 +52,11 @@ class SimFBDAgeToBEASTTest {
 
         // operators
         assertEquals(8,xml.split("<operator", -1).length - 1, "operators" );
-        assertTrue(xml.contains("spec=\"SAScaleOperator\"") && xml.contains("spec=\"SAExchange\"") &&
-                xml.contains("spec=\"SAUniform\"") && xml.contains("spec=\"SAWilsonBalding\"") &&
-                xml.contains("spec=\"LeafToSampledAncestorJump\""), "SA operators");
+        assertTrue(xml.contains("sa.evolution.operators.SAScaleOperator") &&
+                xml.contains("sa.evolution.operators.SAExchange") &&
+                xml.contains("sa.evolution.operators.SAUniform") &&
+                xml.contains("sa.evolution.operators.SAWilsonBalding") &&
+                xml.contains("sa.evolution.operators.LeafToSampledAncestorJump"), "SA operators");
 
     }
 
