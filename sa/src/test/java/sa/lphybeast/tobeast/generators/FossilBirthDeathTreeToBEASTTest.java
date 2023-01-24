@@ -47,21 +47,23 @@ class FossilBirthDeathTreeToBEASTTest {
         assertTrue(xml.contains("id=\"SABirthDeathModel\"") && xml.contains("birthRate=\"@lambda\"") &&
                 xml.contains("deathRate=\"@mu\"") && xml.contains("conditionOnSampling=\"true\"") &&
                 xml.contains("origin=\"@fossilTree.origin\"") &&
-                xml.contains("spec=\"beast.evolution.speciation.SABirthDeathModel\""), "SABirthDeathModel");
+                xml.contains("sa.evolution.speciation.SABirthDeathModel"), "SABirthDeathModel");
 
         assertTrue(xml.contains("id=\"lambda\"") && xml.contains("id=\"mu\"") &&
                         xml.contains("\"samplingRate\">1.0</parameter>") &&
                 xml.contains("\"removalProbability\">0.0</parameter>") && xml.contains("\"rho\">1.0</parameter>"),
                 "SABirthDeath parameters");
 
-        assertTrue(xml.contains("spec=\"beast.math.distributions.Uniform\"") &&
+        assertTrue(xml.contains("distribution.Uniform") &&
                 xml.contains("lower=\"0.5\"") && xml.contains("lower=\"1.0\"") && xml.contains("upper=\"1.5\"") &&
                 xml.contains("x=\"@mu\"") && xml.contains("x=\"@lambda\""), "Uniform prior");
 
         // operators
-        assertTrue(xml.contains("spec=\"SAScaleOperator\"") && xml.contains("spec=\"SAExchange\"") &&
-                xml.contains("spec=\"SAUniform\"") && xml.contains("spec=\"SAWilsonBalding\"") &&
-                xml.contains("spec=\"LeafToSampledAncestorJump\""), "SA operators");
+        assertTrue(xml.contains("sa.evolution.operators.SAScaleOperator") &&
+                xml.contains("sa.evolution.operators.SAExchange") &&
+                xml.contains("sa.evolution.operators.SAUniform") &&
+                xml.contains("sa.evolution.operators.SAWilsonBalding") &&
+                xml.contains("sa.evolution.operators.LeafToSampledAncestorJump"), "SA operators");
 
     }
 
