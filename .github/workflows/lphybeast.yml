@@ -62,7 +62,9 @@ jobs:
         # gradle will download lphybeast from Maven repo database
         run: |
           ./gradlew build -x test --no-daemon
-          ls build/lphybeast
+          pwd
+          ls lphybeast-ext/build
+          ls lphybeast-ext/build/lphybeast
 
       - name: Run unit tests
         # change working dir, so gradle will work
