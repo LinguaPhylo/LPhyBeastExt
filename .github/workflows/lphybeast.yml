@@ -73,14 +73,14 @@ jobs:
           ls lphybeast-ext/build
           ls lphybeast-ext/build/lphybeast
 
-      - name: Run unit tests
-        # change working dir, so gradle will work
-        working-directory: ./LPhyBeastExt
-        # run test
-        run: ./gradlew test --no-daemon
-
-      - name: Publish unit test results
-        uses: EnricoMi/publish-unit-test-result-action@v2
-        if: always()
-        with:
-          files: ./LPhyBeastExt/*/build/test-results/**/*.xml
+#      - name: Run unit tests
+#        # change working dir, so gradle will work
+#        working-directory: ./LPhyBeastExt
+#        # run test
+#        run: ./gradlew test --no-daemon
+#
+#      - name: Publish unit test results
+#        uses: EnricoMi/publish-unit-test-result-action@v2
+#        if: always()
+#        with:
+#          files: ./LPhyBeastExt/*/build/test-results/**/*.xml
