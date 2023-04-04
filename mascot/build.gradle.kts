@@ -3,7 +3,7 @@ plugins {
 //    `java-test-fixtures` // which produces test fixtures
 }
 
-version = "0.1.0"
+version = "0.2.0"
 base.archivesName.set("mascot-lb")
 
 java {
