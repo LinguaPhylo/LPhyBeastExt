@@ -27,7 +27,7 @@ jobs:
           echo $PWD
           mkdir $PWD/.beast
           mkdir $PWD/.beast/2.7
-          ls LPhyBeast
+          ls LPhyBeastExt
           find . -name "lib"
           echo "BEAST_LIB=LPhyBeastExt/lphybeast-ext/lib" >> $GITHUB_ENV
           echo "LAUNCHER=launcher-2.7.4.jar" >> $GITHUB_ENV
