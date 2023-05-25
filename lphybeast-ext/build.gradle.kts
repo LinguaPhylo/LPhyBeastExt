@@ -14,7 +14,7 @@ java {
 tasks.jar.get().enabled = false
 //tasks.testFixturesJar.get().enabled = false
 
-version = "0.2.0" // -SNAPSHOT
+version = "0.2.1-SNAPSHOT" // -SNAPSHOT
 base.archivesName.set("LPhyBeastExt")
 
 val zippedConfig by configurations.creating
