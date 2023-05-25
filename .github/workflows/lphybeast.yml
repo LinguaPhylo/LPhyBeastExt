@@ -30,7 +30,7 @@ jobs:
           find . -name "lib"
           echo "BEAST_LIB=LPhyBeastExt/lphybeast-ext/lib" >> $GITHUB_ENV
           echo "LAUNCHER=launcher-2.7.4.jar" >> $GITHUB_ENV
-          echo "REPO_DIR=$PWD/.beast/2.7" >> $GITHUB_ENV
+          echo "REPO_DIR=/home/runner/.beast/2.7" >> $GITHUB_ENV
           echo $REPO_DIR
 
       # /home/runner/.beast/2.7
