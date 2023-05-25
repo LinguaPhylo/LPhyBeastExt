@@ -19,19 +19,19 @@ jobs:
           distribution: 'adopt'
           cache: 'gradle'
 
-      ###TODO: require version.xml, so check out all depended B2 pkg
-      # pwd /home/runner/work/LPhyBeastExt/LPhyBeastExt
+      # pwd /home/runner/work/LPhyBeast/LPhyBeast
+      # PWD=$(pwd)
+      # package path /home/runner/.beast/2.7
       - name: Set environmental variables
         run: |
-          PWD=$(pwd)
-          echo $PWD
-          mkdir $PWD/.beast
-          mkdir $PWD/.beast/2.7
+          mkdir /home/runner/.beast
+          mkdir /home/runner/.beast/2.7
           ls LPhyBeastExt
           find . -name "lib"
           echo "BEAST_LIB=LPhyBeastExt/lphybeast-ext/lib" >> $GITHUB_ENV
           echo "LAUNCHER=launcher-2.7.4.jar" >> $GITHUB_ENV
           echo "REPO_DIR=$PWD/.beast/2.7" >> $GITHUB_ENV
+          echo $REPO_DIR
 
       # /home/runner/.beast/2.7
       - name: Install packages
@@ -73,14 +73,14 @@ jobs:
           ls lphybeast-ext/build
           ls lphybeast-ext/build/lphybeast
 
-#      - name: Run unit tests
-#        # change working dir, so gradle will work
-#        working-directory: ./LPhyBeastExt
-#        # run test
-#        run: ./gradlew test --no-daemon
-#
-#      - name: Publish unit test results
-#        uses: EnricoMi/publish-unit-test-result-action@v2
-#        if: always()
-#        with:
-#          files: ./LPhyBeastExt/*/build/test-results/**/*.xml
+      - name: Run unit tests
+        # change working dir, so gradle will work
+        working-directory: ./LPhyBeastExt
+        # run test
+        run: ./gradlew test --no-daemon
+
+      - name: Publish unit test results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: ./LPhyBeastExt/*/build/test-results/**/*.xml
