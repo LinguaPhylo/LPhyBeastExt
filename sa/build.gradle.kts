@@ -3,7 +3,7 @@ plugins {
 //    `java-test-fixtures` // which produces test fixtures
 }
 
-version = "0.2.1"
+version = "0.2.2"
 base.archivesName.set("sa-lb")
 
 java {

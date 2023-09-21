@@ -1,10 +1,9 @@
 package sa.lphybeast.operators;
 
 import beast.base.core.BEASTInterface;
-import beast.base.inference.Operator;
 import beast.base.evolution.operator.SubtreeSlide;
 import beast.base.evolution.tree.Tree;
-import com.google.common.collect.Multimap;
+import beast.base.inference.Operator;
 import lphy.evolution.birthdeath.FossilBirthDeathTree;
 import lphy.evolution.birthdeath.SimFBDAge;
 import lphy.evolution.birthdeath.SimFossilsPoisson;
@@ -12,6 +11,7 @@ import lphy.evolution.tree.TimeTree;
 import lphy.graphicalModel.GraphicalModelNode;
 import lphy.graphicalModel.Value;
 import lphybeast.BEASTContext;
+import lphybeast.tobeast.operators.OperatorFactory;
 import lphybeast.tobeast.operators.TreeOperatorStrategy;
 import sa.evolution.operators.*;
 
@@ -46,25 +46,24 @@ public class SATreeOperatorStrategy implements TreeOperatorStrategy {
     public List<Operator> createTreeOperators(Tree tree, BEASTContext context) {
         List<Operator> operators = new ArrayList<>();
 
-        Multimap<BEASTInterface, GraphicalModelNode<?>> elements = context.getElements();
-        operators.add(createTreeScaleOperator(tree, elements));
-        operators.add(createRootHeightOperator(tree, elements));
-        operators.add(createExchangeOperator(tree, true, elements));
-        operators.add(createExchangeOperator(tree, false, elements));
-        operators.add(createTreeUniformOperator(tree, elements));
+        operators.add(OperatorFactory.createTreeScaleOperator(tree, context));
+        operators.add(OperatorFactory.createRootHeightOperator(tree, context));
+        operators.add(OperatorFactory.createExchangeOperator(tree, context, true));
+        operators.add(OperatorFactory.createExchangeOperator(tree, context, false));
+        operators.add(OperatorFactory.createTreeUniformOperator(tree, context));
         //https://github.com/CompEvol/sampled-ancestors/blob/master/examples/fossil.xml
-        operators.add(createWilsonBaldingOperator(tree, elements));
-        operators.add(createLeafToSampledAncestorJumpOperator(tree, elements));
+        operators.add(OperatorFactory.createWilsonBaldingOperator(tree, context));
+        operators.add(createLeafToSampledAncestorJumpOperator(tree, context));
         return operators;
     }
 
-    private Operator createLeafToSampledAncestorJumpOperator(Tree tree, Multimap<BEASTInterface, GraphicalModelNode<?>> elements) {
+    private Operator createLeafToSampledAncestorJumpOperator(Tree tree, BEASTContext context) {
         Operator leafToSA = new LeafToSampledAncestorJump();
         leafToSA.setInputValue("tree", tree);
         leafToSA.setInputValue("weight", getOperatorWeight(tree.getInternalNodeCount()));
         leafToSA.initAndValidate();
         leafToSA.setID(tree.getID() + "." + "leafToSA");
-        elements.put(leafToSA, null);
+        context.getElements().put(leafToSA, null);
         return leafToSA;
     }
 

@@ -1,13 +1,13 @@
 package mascot.lphybeast.tobeast.loggers;
 
 import beast.base.core.BEASTInterface;
-import beast.base.inference.Logger;
 import beast.base.evolution.tree.TreeInterface;
-import mascot.distribution.Mascot;
-import mascot.logger.StructuredTreeLogger;
+import beast.base.inference.Logger;
 import com.google.common.collect.Multimap;
 import lphy.graphicalModel.GraphicalModelNode;
 import lphybeast.tobeast.loggers.TreeLoggerHelper;
+import mascot.distribution.Mascot;
+import mascot.logger.StructuredTreeLogger;
 
 /**
  * @author Walter Xie
@@ -22,7 +22,7 @@ public class MascotExtraTreeLogger implements TreeLoggerHelper {
     }
 
     @Override
-    public Logger createLogger(int logEvery, final Multimap<BEASTInterface, GraphicalModelNode<?>> elements) {
+    public Logger createLogger(long logEvery, final Multimap<BEASTInterface, GraphicalModelNode<?>> elements) {
         // Mascot StructuredTreeLogger
         TreeInterface tree = getTree();
 

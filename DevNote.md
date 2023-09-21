@@ -1,5 +1,14 @@
 # Developer Guide
 
+## After LPhyBEAST core changed
+
+If IntelliJ cannot build, please use the command line below to build the 
+subproject `lphybeast-ext` first:
+
+```bash
+./gradlew :lphybeast-ext:build
+```
+
 ## To be compatible with BEAST 2.7.x framework
 
 Either running application or unit tests from IDE or Gradle tasks 
