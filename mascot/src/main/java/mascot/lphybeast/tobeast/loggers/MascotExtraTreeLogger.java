@@ -31,7 +31,8 @@ public class MascotExtraTreeLogger implements TreeLoggerHelper {
         structuredTreeLogger.setInputValue("mascot", mascot);
 
         Logger logger = new Logger();
-        logger.setInputValue("logEvery", logEvery);
+        // must convert to int
+        logger.setInputValue("logEvery", Math.toIntExact(logEvery));
         logger.setInputValue("log", structuredTreeLogger);
 
         logger.setInputValue("fileName", getFileName());
