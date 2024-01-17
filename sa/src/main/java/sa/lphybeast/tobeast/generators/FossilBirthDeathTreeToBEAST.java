@@ -1,14 +1,14 @@
 package sa.lphybeast.tobeast.generators;
 
 import beast.base.core.BEASTInterface;
-import beast.base.inference.parameter.RealParameter;
-import sa.evolution.speciation.SABirthDeathModel;
 import beast.base.evolution.tree.Tree;
-import lphy.evolution.birthdeath.FossilBirthDeathTree;
-import lphy.evolution.tree.TimeTree;
-import lphy.graphicalModel.Value;
+import beast.base.inference.parameter.RealParameter;
+import lphy.base.evolution.birthdeath.FossilBirthDeathTree;
+import lphy.base.evolution.tree.TimeTree;
+import lphy.core.model.Value;
 import lphybeast.BEASTContext;
 import lphybeast.GeneratorToBEAST;
+import sa.evolution.speciation.SABirthDeathModel;
 
 public class FossilBirthDeathTreeToBEAST implements
         GeneratorToBEAST<FossilBirthDeathTree, SABirthDeathModel> {

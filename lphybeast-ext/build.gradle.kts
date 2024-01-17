@@ -14,7 +14,7 @@ java {
 tasks.jar.get().enabled = false
 //tasks.testFixturesJar.get().enabled = false
 
-version = "0.2.2" // -SNAPSHOT
+version = "0.3.0-SNAPSHOT" // -SNAPSHOT
 base.archivesName.set("LPhyBeastExt")
 
 val zippedConfig by configurations.creating
@@ -30,13 +30,14 @@ dependencies {
      * such as "io.github.linguaphylo:lphy:1.2.0!!".
      * https://docs.gradle.org/current/userguide/rich_versions.html#sec:strict-version
      */
-    api("io.github.linguaphylo:lphy:1.4.4-SNAPSHOT")
+    api("io.github.linguaphylo:lphy:1.5.0-SNAPSHOT") //-SNAPSHOT
+    api("io.github.linguaphylo:lphy-base:1.5.0-SNAPSHOT")
     // BEAST2
     api(beast2Jars)
 
     //*** lphybeast + ... ***//
     // cannot use "version" in zippedConfig
-    zippedConfig("io.github.linguaphylo:lphybeast:1.0.3-SNAPSHOT")
+    zippedConfig("io.github.linguaphylo:lphybeast:1.1.0-SNAPSHOT")
 //    implementation(fileTree("dir" to "${lb.get().outputs.dir("lib")}", "include" to "**/*.jar"))
     api(files( { lb.get().extra["lblibs"] } ))
 

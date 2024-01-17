@@ -1,20 +1,20 @@
 package mascot.lphybeast.tobeast.generators;
 
 import beast.base.core.BEASTInterface;
-import beast.base.inference.parameter.RealParameter;
 import beast.base.evolution.alignment.Taxon;
 import beast.base.evolution.alignment.TaxonSet;
 import beast.base.evolution.tree.TraitSet;
-import mascot.distribution.StructuredTreeIntervals;
-import mascot.dynamics.Constant;
-import lphy.core.functions.MigrationMatrix;
-import lphy.evolution.coalescent.StructuredCoalescent;
-import lphy.evolution.tree.TimeTree;
-import lphy.evolution.tree.TimeTreeNode;
-import lphy.graphicalModel.Value;
+import beast.base.inference.parameter.RealParameter;
+import lphy.base.evolution.coalescent.StructuredCoalescent;
+import lphy.base.evolution.tree.TimeTree;
+import lphy.base.evolution.tree.TimeTreeNode;
+import lphy.base.function.MigrationMatrix;
+import lphy.core.model.Value;
 import lphybeast.BEASTContext;
 import lphybeast.GeneratorToBEAST;
 import lphybeast.tobeast.values.TimeTreeToBEAST;
+import mascot.distribution.StructuredTreeIntervals;
+import mascot.dynamics.Constant;
 import mascot.lphybeast.tobeast.loggers.MascotExtraTreeLogger;
 
 import java.util.Arrays;

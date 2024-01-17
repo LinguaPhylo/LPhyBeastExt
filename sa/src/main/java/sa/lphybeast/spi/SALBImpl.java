@@ -2,12 +2,12 @@ package sa.lphybeast.spi;
 
 import beast.base.evolution.datatype.DataType;
 import jebl.evolution.sequences.SequenceType;
-import lphy.graphicalModel.Generator;
-import lphy.graphicalModel.Value;
+import lphy.core.model.Generator;
+import lphy.core.model.Value;
 import lphybeast.GeneratorToBEAST;
-import lphybeast.tobeast.operators.TreeOperatorStrategy;
 import lphybeast.ValueToBEAST;
 import lphybeast.spi.LPhyBEASTExt;
+import lphybeast.tobeast.operators.TreeOperatorStrategy;
 import sa.lphybeast.operators.SATreeOperatorStrategy;
 import sa.lphybeast.tobeast.generators.FossilBirthDeathTreeToBEAST;
 import sa.lphybeast.tobeast.generators.SimFBDAgeToBEAST;

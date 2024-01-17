@@ -4,14 +4,13 @@ import beast.base.core.BEASTInterface;
 import beast.base.evolution.operator.SubtreeSlide;
 import beast.base.evolution.tree.Tree;
 import beast.base.inference.Operator;
-import lphy.evolution.birthdeath.FossilBirthDeathTree;
-import lphy.evolution.birthdeath.SimFBDAge;
-import lphy.evolution.birthdeath.SimFossilsPoisson;
-import lphy.evolution.tree.TimeTree;
-import lphy.graphicalModel.GraphicalModelNode;
-import lphy.graphicalModel.Value;
+import lphy.base.evolution.birthdeath.FossilBirthDeathTree;
+import lphy.base.evolution.birthdeath.SimFBDAge;
+import lphy.base.evolution.birthdeath.SimFossilsPoisson;
+import lphy.base.evolution.tree.TimeTree;
+import lphy.core.model.GraphicalModelNode;
+import lphy.core.model.Value;
 import lphybeast.BEASTContext;
-import lphybeast.tobeast.operators.OperatorFactory;
 import lphybeast.tobeast.operators.TreeOperatorStrategy;
 import sa.evolution.operators.*;
 
@@ -46,13 +45,13 @@ public class SATreeOperatorStrategy implements TreeOperatorStrategy {
     public List<Operator> createTreeOperators(Tree tree, BEASTContext context) {
         List<Operator> operators = new ArrayList<>();
 
-        operators.add(OperatorFactory.createTreeScaleOperator(tree, context));
-        operators.add(OperatorFactory.createRootHeightOperator(tree, context));
-        operators.add(OperatorFactory.createExchangeOperator(tree, context, true));
-        operators.add(OperatorFactory.createExchangeOperator(tree, context, false));
-        operators.add(OperatorFactory.createTreeUniformOperator(tree, context));
+        operators.add(TreeOperatorStrategy.createTreeScaleOperator(tree, context));
+        operators.add(TreeOperatorStrategy.createRootHeightOperator(tree, context));
+        operators.add(TreeOperatorStrategy.createExchangeOperator(tree, context, true));
+        operators.add(TreeOperatorStrategy.createExchangeOperator(tree, context, false));
+        operators.add(TreeOperatorStrategy.createTreeUniformOperator(tree, context));
         //https://github.com/CompEvol/sampled-ancestors/blob/master/examples/fossil.xml
-        operators.add(OperatorFactory.createWilsonBaldingOperator(tree, context));
+        operators.add(TreeOperatorStrategy.createWilsonBaldingOperator(tree, context));
         operators.add(createLeafToSampledAncestorJumpOperator(tree, context));
         return operators;
     }

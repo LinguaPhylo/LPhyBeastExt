@@ -1,6 +1,6 @@
 package mascot.lphybeast;
 
-import lphy.system.UserDir;
+import lphy.core.io.UserDir;
 import lphybeast.TestUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
