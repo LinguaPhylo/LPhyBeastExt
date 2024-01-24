@@ -4,3 +4,7 @@ The BEAST 2 package extended from the core project [LPhyBeast](https://github.co
 - Mascot LPhyBeast extension;
 - MM LPhyBeast extension;
 - SA LPhyBeast extension.
+
+## Developer Guide
+
+[DevNote.md](DevNote.md)

@@ -110,15 +110,15 @@ public class H3N2TutorialTest {
                 xml.contains("<typeTrait"), "Trait set" );
 
         // 7 ScaleOperator, incl. tree
-        assertEquals(7, xml.split("ScaleOperator", -1).length - 1, "ScaleOperator" );
+        assertEquals(7, xml.split("BactrianScaleOperator", -1).length - 1, "BactrianScaleOperator" );
 
-        assertTrue(xml.contains("Exchange") && xml.contains("SubtreeSlide") && xml.contains("Uniform") &&
-                xml.contains("WilsonBalding"), "Tree Operator" );
+        assertTrue(xml.contains("Exchange") && xml.contains("BactrianSubtreeSlide") &&
+                xml.contains("BactrianNodeOperator") && xml.contains("WilsonBalding"), "Tree Operator" );
 
-        assertTrue(xml.contains("UpDownOperator") &&
-                xml.contains("<up") && xml.contains("<down"), "UpDownOperator" );
+        assertTrue(xml.contains("BactrianUpDownOperator") &&
+                xml.contains("<up") && xml.contains("<down"), "BactrianUpDownOperator" );
         // 1 DeltaExchangeOperator
-        assertEquals(1, xml.split("DeltaExchangeOperator", -1).length - 1, "DeltaExchangeOperator");
+        assertEquals(1, xml.split("BactrianDeltaExchangeOperator", -1).length - 1, "BactrianDeltaExchangeOperator");
 
         assertTrue(xml.contains("chainLength=\"1000000\"") && xml.contains("logEvery=\"500\"") &&
                 xml.contains("fileName=\"" + fileStem + ".log\"") && xml.contains("fileName=\"" + fileStem + ".trees\"") &&
