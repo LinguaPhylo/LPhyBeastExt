@@ -20,7 +20,7 @@ This process can be done either from command line below,
 or IntelliJ (screenshot on the right side).
 
 ```bash
-./gradlew phylonco-lphybeast:installLPhyBEAST
+./gradlew lphybeast-ext:installLPhyBEAST
 ```
 
 3. Build lphybeast-ext subproject. If IntelliJ cannot build, please use the command line below to build the 
