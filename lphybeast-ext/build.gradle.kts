@@ -23,6 +23,8 @@ val beast2Jars = fileTree("lib") {
     exclude("**/*-sources.jar")
 }
 
+val outDir = "${buildDir}/lphybeast"
+
 dependencies {
     /**
      * The behaviour of this default version declaration chooses any available highest version first.
@@ -38,8 +40,9 @@ dependencies {
     //*** lphybeast + ... ***//
     // cannot use "version" in zippedConfig
     zippedConfig("io.github.linguaphylo:lphybeast:1.1.0-SNAPSHOT")
-//    implementation(fileTree("dir" to "${lb.get().outputs.dir("lib")}", "include" to "**/*.jar"))
-    api(files( { lb.get().extra["lblibs"] } ))
+    // it must run installLPhyBEAST to unzip lphybeast.zip and create ${outDir}/lib,
+    // the build is cleaned, or lphybeast version is renewed.
+    api(fileTree("dir" to "${outDir}/lib", "include" to "**/*.jar"))
 
     api(fileTree("lib-test"))
     // test api not working
@@ -53,7 +56,6 @@ tasks.compileJava.get().dependsOn("installLPhyBEAST")
 
 // unzip lphybeast-*.zip to ${buildDir}/lphybeast/
 val lb = tasks.register<Sync>("installLPhyBEAST") {
-    val outDir = "${buildDir}/lphybeast"
     zippedConfig.resolvedConfiguration.resolvedArtifacts.forEach({
         println(name + " --- " + it.file.name)
         if (it.file.name.endsWith("zip")) {
@@ -63,8 +65,8 @@ val lb = tasks.register<Sync>("installLPhyBEAST") {
             into(outDir)
         }
     })
-    extra["lblibs"] = fileTree("dir" to "${outDir}/lib", "include" to "**/*.jar")
-    extra["lbsrc"] = fileTree("dir" to "${outDir}/src", "include" to "**/*-sources.jar")
+//    extra["lblibs"] = fileTree("dir" to "${outDir}/lib", "include" to "**/*.jar")
+//    extra["lbsrc"] = fileTree("dir" to "${outDir}/src", "include" to "**/*-sources.jar")
 }
 
 //++++++++ release ++++++++//
