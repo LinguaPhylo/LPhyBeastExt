@@ -1,0 +1,22 @@
+<project>
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>io.github.linguaphylo</groupId>
+        <artifactId>lphybeast-ext</artifactId>
+        <version>${revision}</version>
+    </parent>
+
+    <artifactId>lphybeast-mm</artifactId>
+
+    <dependencies>
+        <dependency>
+            <groupId>beast2</groupId>
+            <artifactId>lphybeast-mm</artifactId>
+            <version>${beastVersion}</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/MM.addon.v1.2.1.jar</systemPath>
+        </dependency>
+    </dependencies>
+
+
+</project>
