@@ -11,8 +11,8 @@
     <dependencies>
         <dependency>
             <groupId>beast2</groupId>
-            <artifactId>lphybeast-mm</artifactId>
-            <version>${beastVersion}</version>
+            <artifactId>mm</artifactId>
+            <version>1.2.1</version>
             <scope>system</scope>
             <systemPath>${project.basedir}/lib/MM.addon.v1.2.1.jar</systemPath>
         </dependency>

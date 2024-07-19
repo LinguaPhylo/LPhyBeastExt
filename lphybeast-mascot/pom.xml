@@ -11,8 +11,8 @@
     <dependencies>
         <dependency>
             <groupId>beast2</groupId>
-            <artifactId>lphybeast-mascot</artifactId>
-            <version>${beastVersion}</version>
+            <artifactId>mascot</artifactId>
+            <version>3.0.0</version>
             <scope>system</scope>
             <systemPath>${project.basedir}/lib/Mascot.v3.0.0.jar</systemPath>
         </dependency>
