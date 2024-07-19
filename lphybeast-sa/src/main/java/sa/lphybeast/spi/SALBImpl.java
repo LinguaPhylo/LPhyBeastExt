@@ -3,7 +3,6 @@ package sa.lphybeast.spi;
 import beast.base.evolution.datatype.DataType;
 import jebl.evolution.sequences.SequenceType;
 import lphy.core.model.Generator;
-import lphy.core.model.Value;
 import lphybeast.GeneratorToBEAST;
 import lphybeast.ValueToBEAST;
 import lphybeast.spi.LPhyBEASTExt;
@@ -48,7 +47,8 @@ public class SALBImpl implements LPhyBEASTExt {
     }
 
     @Override
-    public List<Class<? extends Value>> getExcludedValue() {
+    public List<Class> getExcludedValueType() {
+        // For a complex logic, or arrays, use isExcludedValue
         return new ArrayList<>();
     }
 
