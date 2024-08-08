@@ -5,6 +5,7 @@ import lphybeast.TestUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -26,10 +27,12 @@ public class LewisMKToBEASTTest {
 
     @BeforeEach
     public void setUp() {
-        // load lphybeast-ext/build/lphybeast/version.xml
+        // load ../LPhyBeast/version.xml
         Path lphybeastDir = Paths.get(UserDir.getUserDir().toAbsolutePath().getParent().toString(),
-                "lphybeast-ext","build","lphybeast");
-        TestUtils.loadServices(lphybeastDir.toString());
+                "..","LPhyBeast");
+        if (!Files.exists(lphybeastDir))
+            throw new IllegalArgumentException("Cannot locate LPhyBeast Dir : " + lphybeastDir);
+
         // load mm/version.xml
         Path parentDir = UserDir.getUserDir().toAbsolutePath();
         TestUtils.loadServices(parentDir.toString());
