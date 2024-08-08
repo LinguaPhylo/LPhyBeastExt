@@ -1,5 +1,5 @@
-<package name='LPhyBeastExt' version='0.3.0'>
-    <depends on='lphybeast' atleast='1.1.0'/>
+<package name='LPhyBeastExt' version='1.0.0'>
+    <depends on='lphybeast' atleast='1.2.0'/>
 
     <depends on='Mascot' atleast='3.0.0'
              description="Marginal approximation of the structured coalescent"
