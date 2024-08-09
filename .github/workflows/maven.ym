@@ -39,7 +39,7 @@ jobs:
           cache: maven
 
       - name: Clean
-        run: mvn clean install
+        run: mvn clean #install
         # -B,--batch-mode   Run in non-interactive (batch) mode (disables output color)
       - name: Test with Maven
         run: mvn -B test --file pom.xml
@@ -48,4 +48,4 @@ jobs:
         uses: EnricoMi/publish-unit-test-result-action@v2
         if: always()
         with:
-          files: ./LPhyBeast/*/target/surefire-reports/**/*.xml
+          files: ./LPhyBeastExt/*/target/surefire-reports/**/*.xml
